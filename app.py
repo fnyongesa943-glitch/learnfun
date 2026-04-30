@@ -81,8 +81,139 @@ def run_migrations():
 
 def seed_data():
     """Seed database with subjects, quizzes, shop items, and questions."""
-    if Subject.query.first():
-        return
+    from models import ShopItem
+
+    # Add shop items if not seeded
+    if not ShopItem.query.first():
+        shop_items = [
+            ShopItem(name='Star Frame', icon='⭐', item_type='frame', price=50, description='A shiny star border!'),
+            ShopItem(name='Rainbow Frame', icon='🌈', item_type='frame', price=100, description='Colorful rainbow frame!'),
+            ShopItem(name='Gold Trophy', icon='🏆', item_type='badge', price=150, description='Show off your gold trophy!'),
+            ShopItem(name='Wizard Hat', icon='🧙', item_type='hat', price=200, description='Become a learning wizard!'),
+            ShopItem(name='Crown', icon='👑', item_type='hat', price=300, description='Fit for a king or queen!'),
+            ShopItem(name='Rocket', icon='🚀', item_type='badge', price=250, description='Ready for liftoff!'),
+            ShopItem(name='Diamond Badge', icon='💎', item_type='badge', price=500, description='Rare and sparkling!'),
+            ShopItem(name='Unicorn', icon='🦄', item_type='avatar', price=400, description='Magical and majestic!'),
+            ShopItem(name='Dino', icon='🦖', item_type='avatar', price=400, description='Rawr!'),
+            ShopItem(name='Astronaut', icon='🧑‍🚀', item_type='avatar', price=600, description='To the moon!'),
+        ]
+        db.session.add_all(shop_items)
+        db.session.commit()
+
+    # Always check for missing subjects
+    existing_names = {s.name for s in Subject.query.all()}
+    subjects = [
+        Subject(name='Math', icon='🔢', color='#4F46E5', description='Addition, subtraction, multiplication!'),
+        Subject(name='Reading', icon='📚', color='#7C3AED', description='Word puzzles and stories!'),
+        Subject(name='Science', icon='🔬', color='#059669', description='Animals, weather, and space!'),
+        Subject(name='Geography', icon='🌍', color='#D97706', description='Countries, maps, and landmarks!'),
+        Subject(name='Art', icon='🎨', color='#EC4899', description='Colors, shapes, and famous artists!'),
+        Subject(name='Coding', icon='💻', color='#3B82F6', description='Logic puzzles and algorithms!'),
+        Subject(name='Music', icon='🎵', color='#8B5CF6', description='Instruments and rhythms!'),
+        Subject(name='ABC', icon='🔤', color='#EC4899', description='Learn the alphabet A-Z!'),
+        Subject(name='123', icon='🔢', color='#14B8A6', description='Count from 1 to 100!'),
+    ]
+    
+    new_subjects = [s for s in subjects if s.name not in existing_names]
+    if new_subjects:
+        db.session.add_all(new_subjects)
+        db.session.commit()
+        existing_names = {s.name for s in Subject.query.all()}
+
+    # Build subject lookup
+    subject_map = {s.name: s for s in Subject.query.all()}
+
+    # Helper to add quizzes if they don't exist
+    def add_quiz_if_missing(title, sub_name, difficulty, description):
+        sub = subject_map.get(sub_name)
+        if not sub:
+            return None
+        existing = Quiz.query.filter_by(title=title).first()
+        if existing:
+            return existing
+        q = Quiz(title=title, subject_id=sub.id, difficulty=difficulty, description=description)
+        db.session.add(q)
+        db.session.commit()
+        return q
+
+    # Helper to add questions if quiz has none
+    def add_questions_if_missing(quiz, qs):
+        if not quiz or Question.query.filter_by(quiz_id=quiz.id).first():
+            return
+        db.session.add_all(qs)
+        db.session.commit()
+
+    # --- ABC QUIZZES ---
+    abc1 = add_quiz_if_missing('Letters A-F', 'ABC', 'easy', 'First letters!')
+    if abc1:
+        add_questions_if_missing(abc1, [
+            Question(quiz_id=abc1.id, text='What letter comes after A?', option_a='C', option_b='B', option_c='D', option_d='E', correct_answer='B', explanation='A, B! B comes after A!', hint='A then what?', points=5),
+            Question(quiz_id=abc1.id, text='What letter comes before D?', option_a='C', option_b='E', option_c='B', option_d='A', correct_answer='A', explanation='C comes before D! A, B, C, D.', hint='A, B, ?, D.', points=5),
+            Question(quiz_id=abc1.id, text='What letter is "Apple" for?', option_a='A', option_b='B', option_c='C', option_d='D', correct_answer='A', explanation='Apple starts with A!', hint='🍎 Apple.', points=5),
+            Question(quiz_id=abc1.id, text='What letter comes after F?', option_a='E', option_b='D', option_c='G', option_d='H', correct_answer='C', explanation='G comes after F!', hint='After F comes?', points=5),
+            Question(quiz_id=abc1.id, text='Which is a letter?', option_a='1', option_b='B', option_c='+', option_d='%', correct_answer='B', explanation='B is a letter!', hint='Look for ABC.', points=5),
+        ])
+
+    abc2 = add_quiz_if_missing('Letters G-L', 'ABC', 'easy', 'Next letters!')
+    if abc2:
+        add_questions_if_missing(abc2, [
+            Question(quiz_id=abc2.id, text='What letter comes after L?', option_a='K', option_b='J', option_c='M', option_d='N', correct_answer='C', explanation='M comes after L!', hint='J, K, L, ?', points=5),
+            Question(quiz_id=abc2.id, text='What letter comes before I?', option_a='J', option_b='H', option_c='G', option_d='K', correct_answer='B', explanation='H comes before I!', hint='G, ?, I.', points=5),
+            Question(quiz_id=abc2.id, text='J is for?', option_a='Jump', option_b='Dog', option_c='Cat', option_d='Fish', correct_answer='A', explanation='Jump starts with J!', hint='Up and down!', points=5),
+            Question(quiz_id=abc2.id, text='What letter is "Kite" for?', option_a='J', option_b='L', option_c='K', option_d='M', correct_answer='C', explanation='Kite starts with K!', hint='🪁 Kite.', points=5),
+            Question(quiz_id=abc2.id, text='Letter after G?', option_a='F', option_b='H', option_c='I', option_d='J', correct_answer='B', explanation='H comes after G!', hint='F, G, ?', points=5),
+        ])
+
+    abc3 = add_quiz_if_missing('Letters M-Z', 'ABC', 'easy', 'Last letters!')
+    if abc3:
+        add_questions_if_missing(abc3, [
+            Question(quiz_id=abc3.id, text='What letter is "Zebra" for?', option_a='X', option_b='Y', option_c='Z', option_d='W', correct_answer='C', explanation='Zebra starts with Z!', hint='🦓 Last letter.', points=5),
+            Question(quiz_id=abc3.id, text='What letter comes before Y?', option_a='Z', option_b='X', option_c='W', option_d='V', correct_answer='B', explanation='X comes before Y!', hint='W, ?, Y, Z.', points=5),
+            Question(quiz_id=abc3.id, text='What letter is "Monkey" for?', option_a='M', option_b='N', option_c='O', option_d='L', correct_answer='A', explanation='Monkey starts with M!', hint='🐒 Mmm!', points=5),
+            Question(quiz_id=abc3.id, text='What letter is after T?', option_a='S', option_b='R', option_c='U', option_d='V', correct_answer='C', explanation='U comes after T!', hint='R, S, T, ?', points=5),
+            Question(quiz_id=abc3.id, text='Last letter of alphabet?', option_a='X', option_b='Y', option_c='Z', option_d='A', correct_answer='C', explanation='Z is the last letter!', hint='🦓 Zebra.', points=5),
+        ])
+
+    # --- 123 QUIZZES ---
+    num1 = add_quiz_if_missing('Count 1-10', '123', 'easy', 'First numbers!')
+    if num1:
+        add_questions_if_missing(num1, [
+            Question(quiz_id=num1.id, text='What number comes after 1?', option_a='3', option_b='2', option_c='4', option_d='5', correct_answer='B', explanation='1, 2!', hint='One, then?', points=5),
+            Question(quiz_id=num1.id, text='How many fingers on one hand?', option_a='3', option_b='4', option_c='5', option_d='6', correct_answer='C', explanation='5 fingers!', hint='Count your hand.', points=5),
+            Question(quiz_id=num1.id, text='What number is 1 + 1?', option_a='1', option_b='3', option_c='2', option_d='4', correct_answer='C', explanation='1 + 1 = 2!', hint='One and one more.', points=5),
+            Question(quiz_id=num1.id, text='What comes after 4?', option_a='3', option_b='5', option_c='6', option_d='7', correct_answer='B', explanation='5 comes after 4!', hint='1, 2, 3, 4, ?', points=5),
+            Question(quiz_id=num1.id, text='Biggest number?', option_a='3', option_b='7', option_c='2', option_d='5', correct_answer='B', explanation='7 is biggest!', hint='Count highest.', points=5),
+        ])
+
+    num2 = add_quiz_if_missing('Count 11-20', '123', 'easy', 'Teen numbers!')
+    if num2:
+        add_questions_if_missing(num2, [
+            Question(quiz_id=num2.id, text='What comes after 10?', option_a='12', option_b='11', option_c='9', option_d='13', correct_answer='B', explanation='11 comes after 10!', hint='Ten then?', points=5),
+            Question(quiz_id=num2.id, text='What is 10 + 5?', option_a='14', option_b='16', option_c='15', option_d='13', correct_answer='C', explanation='10 + 5 = 15!', hint='Count from 10 up 5.', points=5),
+            Question(quiz_id=num2.id, text='What comes before 20?', option_a='18', option_b='21', option_c='19', option_d='17', correct_answer='C', explanation='19 comes before 20!', hint='? then 20.', points=5),
+            Question(quiz_id=num2.id, text='What number is "fifteen"?', option_a='14', option_b='16', option_c='15', option_d='13', correct_answer='C', explanation='Fifteen is 15!', hint='One and five.', points=5),
+            Question(quiz_id=num2.id, text='Count: 13, 14, __?', option_a='16', option_b='15', option_c='12', option_d='17', correct_answer='B', explanation='15!', hint='After fourteen?', points=5),
+        ])
+
+    num3 = add_quiz_if_missing('Count 21-50', '123', 'easy', 'Big counting!')
+    if num3:
+        add_questions_if_missing(num3, [
+            Question(quiz_id=num3.id, text='What comes after 20?', option_a='22', option_b='19', option_c='21', option_d='23', correct_answer='C', explanation='21 comes after 20!', hint='Twenty then?', points=5),
+            Question(quiz_id=num3.id, text='What is 25 + 5?', option_a='28', option_b='30', option_c='31', option_d='29', correct_answer='B', explanation='25 + 5 = 30!', hint='Twenty-five plus five.', points=5),
+            Question(quiz_id=num3.id, text='What comes before 30?', option_a='28', option_b='29', option_c='31', option_d='27', correct_answer='B', explanation='29 comes before 30!', hint='Twenty-?', points=5),
+            Question(quiz_id=num3.id, text='What is 40 - 10?', option_a='25', option_b='35', option_c='30', option_d='20', correct_answer='C', explanation='40 - 10 = 30!', hint='Count back from 40.', points=5),
+            Question(quiz_id=num3.id, text='Count: 45, 46, __?', option_a='48', option_b='47', option_c='44', option_d='49', correct_answer='B', explanation='47!', hint='After forty-six.', points=5),
+        ])
+
+    num4 = add_quiz_if_missing('Count 51-100', '123', 'medium', 'All the way!')
+    if num4:
+        add_questions_if_missing(num4, [
+            Question(quiz_id=num4.id, text='What comes after 50?', option_a='52', option_b='49', option_c='51', option_d='53', correct_answer='C', explanation='51 comes after 50!', hint='Fifty then?', points=5),
+            Question(quiz_id=num4.id, text='What is 75 + 25?', option_a='90', option_b='100', option_c='95', option_d='85', correct_answer='B', explanation='75 + 25 = 100!', hint='Three quarters plus one.', points=5),
+            Question(quiz_id=num4.id, text='What comes before 100?', option_a='98', option_b='99', option_c='97', option_d='101', correct_answer='B', explanation='99 comes before 100!', hint='Ninety-?', points=5),
+            Question(quiz_id=num4.id, text='What is 90 - 30?', option_a='50', option_b='70', option_c='60', option_d='55', correct_answer='C', explanation='90 - 30 = 60!', hint='Count back from 90.', points=5),
+            Question(quiz_id=num4.id, text='Count: 88, 89, __?', option_a='91', option_b='87', option_c='90', option_d='92', correct_answer='C', explanation='90!', hint='After eighty-nine.', points=5),
+        ])
 
     # 1. Subjects
     subjects = [
@@ -93,6 +224,8 @@ def seed_data():
         Subject(name='Art', icon='🎨', color='#EC4899', description='Colors, shapes, and famous artists!'),
         Subject(name='Coding', icon='💻', color='#3B82F6', description='Logic puzzles and algorithms!'),
         Subject(name='Music', icon='🎵', color='#8B5CF6', description='Instruments and rhythms!'),
+        Subject(name='ABC', icon='🔤', color='#EC4899', description='Learn the alphabet A-Z!'),
+        Subject(name='123', icon='🔢', color='#14B8A6', description='Count from 1 to 100!'),
     ]
     db.session.add_all(subjects)
     db.session.commit()
