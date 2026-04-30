@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz Results - LearnFun{% endblock %}
+
+{% block content %}
+<div class="container-sm">
+    <div class="result-container card">
+        <div style="font-size: 4rem; margin-bottom: 0.5rem;">
+            {% if score >= 80 %}
+            🎉
+            {% elif score >= 50 %}
+            👍
+            {% else %}
+            💪
+            {% endif %}
+        </div>
+
+        <h1>{{ quiz.title }} - Results</h1>
+
+        <div class="result-score {{ 'excellent' if score >= 80 else ('good' if score >= 50 else 'try-again') }}">
+            {{ score }}%
+        </div>
+
+        <div class="result-stars">
+            {% if score >= 80 %}
+            <span>⭐</span><span>⭐</span><span>⭐</span>
+            {% elif score >= 50 %}
+            <span>⭐</span><span>⭐</span><span style="opacity: 0.2;">⭐</span>
+            {% else %}
+            <span>⭐</span><span style="opacity: 0.2;">⭐</span><span style="opacity: 0.2;">⭐</span>
+            {% endif %}
+        </div>
+
+        <div class="result-message">
+            {% if score == 100 %}
+            PERFECT SCORE! You're amazing! 🌟
+            {% elif score >= 80 %}
+            Great job! You did awesome! 🎉
+            {% elif score >= 50 %}
+            Good work! Keep practicing! 👍
+            {% else %}
+            Nice try! Practice makes perfect! 💪
+            {% endif %}
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-grid" style="margin: 2rem 0;">
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-value">{{ correct }}</div>
+                <div class="stat-label">Correct</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">❌</div>
+                <div class="stat-value">{{ total - correct }}</div>
+                <div class="stat-label">Incorrect</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-value">+{{ earned_points }}</div>
+                <div class="stat-label">Points Earned</div>
+            </div>
+        </div>
+
+        <!-- Level Up Notification -->
+        {% if leveled_up %}
+        <div class="card mt-3" style="background: linear-gradient(135deg, #FEF3C7, #FDE68A); border: 3px solid #F59E0B;">
+            <div style="font-size: 3rem; margin-bottom: 0.5rem;">🚀</div>
+            <h2 style="color: #92400E;">LEVEL UP!</h2>
+            <p style="color: #92400E; font-size: 1.2rem;">You reached Level {{ current_user.level }}! Keep going!</p>
+        </div>
+        {% endif %}
+
+        <!-- New Badges -->
+        {% if new_badges %}
+        <div class="card mt-3" style="background: linear-gradient(135deg, #EEF2FF, #C7D2FE); border: 3px solid #6366F1;">
+            <h2 style="color: #4F46E5;">🏆 New Badges Earned!</h2>
+            <div class="badge-grid" style="margin: 1rem 0;">
+                {% for badge in new_badges %}
+                <div class="badge-card">
+                    <span class="badge-icon">{{ badge.icon }}</span>
+                    <div class="badge-name">{{ badge.name }}</div>
+                    <div class="badge-desc">{{ badge.description }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Action Buttons -->
+        <div class="flex-center gap-2 mt-4" style="flex-wrap: wrap;">
+            <a href="{{ url_for('quiz.start_quiz', quiz_id=quiz.id) }}" class="btn btn-primary">
+                🔄 Try Again
+            </a>
+            <a href="{{ url_for('main.subject_detail', subject_id=quiz.subject_id) }}" class="btn btn-outline">
+                📚 More Quizzes
+            </a>
+            <a href="{{ url_for('progress.dashboard') }}" class="btn btn-success">
+                📊 My Progress
+            </a>
+        </div>
+    </div>
+
+    <!-- Detailed Results -->
+    <h2 class="mt-4">📝 Review Your Answers</h2>
+
+    {% for result in results %}
+    <div class="question-card {{ 'correct' if result.is_correct else 'incorrect' }}">
+        <span class="question-number">Question {{ loop.index }}</span>
+        {% if result.is_correct %}
+        <span style="color: var(--success); font-weight: 800; margin-left: 0.5rem;">✅ Correct! +{{ result.points }} pts</span>
+        {% else %}
+        <span style="color: var(--danger); font-weight: 800; margin-left: 0.5rem;">❌ Incorrect</span>
+        {% endif %}
+
+        <p class="question-text">{{ result.text }}</p>
+
+        <div class="options-grid" style="pointer-events: none;">
+            <div class="option-btn {{ 'correct-answer' if result.correct_answer == 'A' }} {{ 'wrong-answer' if result.user_answer == 'A' and result.correct_answer != 'A' }}">
+                <span class="option-label">A</span>
+                <span>{{ questions[loop.index0].option_a if questions[loop.index0] is defined else '' }}</span>
+            </div>
+            <div class="option-btn {{ 'correct-answer' if result.correct_answer == 'B' }} {{ 'wrong-answer' if result.user_answer == 'B' and result.correct_answer != 'B' }}">
+                <span class="option-label">B</span>
+                <span>{{ questions[loop.index0].option_b if questions[loop.index0] is defined else '' }}</span>
+            </div>
+            <div class="option-btn {{ 'correct-answer' if result.correct_answer == 'C' }} {{ 'wrong-answer' if result.user_answer == 'C' and result.correct_answer != 'C' }}">
+                <span class="option-label">C</span>
+                <span>{{ questions[loop.index0].option_c if questions[loop.index0] is defined else '' }}</span>
+            </div>
+            <div class="option-btn {{ 'correct-answer' if result.correct_answer == 'D' }} {{ 'wrong-answer' if result.user_answer == 'D' and result.correct_answer != 'D' }}">
+                <span class="option-label">D</span>
+                <span>{{ questions[loop.index0].option_d if questions[loop.index0] is defined else '' }}</span>
+            </div>
+        </div>
+
+        <div class="explanation">
+            <strong>💡 Learn more:</strong> {{ result.explanation }}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

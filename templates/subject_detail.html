@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}{{ subject.name }} - LearnFun{% endblock %}
+
+{% block content %}
+<div class="container-sm">
+    <!-- Subject Header -->
+    <div class="card mb-4" style="border-top: 5px solid {{ subject.color }};">
+        <div class="flex-center gap-3" style="flex-wrap: wrap;">
+            <span style="font-size: 4rem;">{{ subject.icon }}</span>
+            <div>
+                <h1 style="margin-bottom: 0.3rem; color: {{ subject.color }};">{{ subject.name }}</h1>
+                <p style="color: var(--text-secondary); margin: 0;">{{ subject.description }}</p>
+            </div>
+        </div>
+    </div>
+
+    <a href="{{ url_for('main.subjects') }}" class="btn btn-outline btn-sm mb-3">
+        ← Back to Subjects
+    </a>
+
+    <h2>📝 Available Quizzes</h2>
+    <p style="color: var(--text-secondary);">Pick a quiz and start learning!</p>
+
+    <!-- Quiz List -->
+    <div class="quiz-list">
+        {% for quiz in quizzes %}
+        <div class="quiz-item">
+            <div class="quiz-info">
+                <div class="quiz-number" style="background: linear-gradient(135deg, {{ subject.color }}, {{ subject.color }}dd);">
+                    {{ loop.index }}
+                </div>
+                <div>
+                    <div class="quiz-title">{{ quiz.title }}</div>
+                    <div class="quiz-desc">{{ quiz.description }} • {{ quiz.questions|length }} questions</div>
+                </div>
+            </div>
+            <div class="flex-center gap-2" style="flex-wrap: wrap;">
+                <span class="difficulty-badge difficulty-{{ quiz.difficulty }}">{{ quiz.difficulty }}</span>
+                {% if current_user %}
+                <a href="{{ url_for('quiz.start_quiz', quiz_id=quiz.id) }}" class="btn btn-primary btn-sm">
+                    Start! 🚀
+                </a>
+                {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-sm">
+                    Log In to Play
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if not quizzes %}
+    <div class="card text-center mt-4">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🔜</div>
+        <h3>Coming Soon!</h3>
+        <p style="color: var(--text-secondary);">New quizzes are being created. Check back soon!</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

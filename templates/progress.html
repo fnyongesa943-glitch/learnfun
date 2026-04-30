@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}My Progress - LearnFun{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- User Header -->
+    <div class="card mb-4" style="background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white;">
+        <div class="flex-center gap-3" style="flex-wrap: wrap;">
+            <div style="width: 80px; height: 80px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 3rem;">
+                {% set avatars = {'bear': '🐻', 'cat': '🐱', 'dog': '🐶', 'fox': '🦊', 'penguin': '🐧', 'lion': '🦁', 'panda': '🐼', 'rabbit': '🐰'} %}
+                {{ avatars.get(user.avatar, '🐻') }}
+            </div>
+            <div>
+                <h1 style="margin: 0; color: white;">{{ user.username }}</h1>
+                <p style="margin: 0; opacity: 0.9;">Member since {{ user.created_at.strftime('%B %Y') }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Level Progress -->
+    <div class="level-progress">
+        <div class="level-header">
+            <div class="level-badge">
+                ⭐ Level {{ user.level }}
+            </div>
+            <span style="font-weight: 700;">{{ current_level_points }}/100 points to Level {{ user.level + 1 }}</span>
+        </div>
+        <div class="level-bar">
+            <div class="level-bar-fill" style="width: {{ progress_to_next }}%;"></div>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <h2>📊 Your Stats</h2>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📝</div>
+            <div class="stat-value">{{ total_quizzes }}</div>
+            <div class="stat-label">Quizzes Done</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⭐</div>
+            <div class="stat-value">{{ user.total_points }}</div>
+            <div class="stat-label">Total Points</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-value">{{ avg_score }}%</div>
+            <div class="stat-label">Avg Score</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-value">{{ badges|length }}</div>
+            <div class="stat-label">Badges Earned</div>
+        </div>
+    </div>
+
+    <!-- Subject Progress -->
+    <h2 class="mt-4">📚 Subject Progress</h2>
+    <div class="card-grid">
+        {% for subject in subject_progress %}
+        <div class="card">
+            <div class="flex-center gap-2" style="justify-content: space-between; margin-bottom: 1rem;">
+                <div class="flex-center gap-2">
+                    <span style="font-size: 2rem;">{{ subject.icon }}</span>
+                    <h3 style="margin: 0; color: {{ subject.color }};">{{ subject.name }}</h3>
+                </div>
+                <span style="font-weight: 800; color: {{ subject.color }};">{{ subject.percentage }}%</span>
+            </div>
+            <div class="progress-bar-container" style="margin-bottom: 1rem;">
+                <div class="progress-bar-fill" style="width: {{ subject.percentage }}%; background: {{ subject.color }};"></div>
+            </div>
+            <div class="flex-center gap-2" style="justify-content: space-between; font-size: 0.95rem;">
+                <span style="color: var(--text-secondary);">{{ subject.completed }}/{{ subject.total }} quizzes</span>
+                <span style="font-weight: 700; color: var(--success);">Best: {{ subject.best_score }}%</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Badges Collection -->
+    <h2 class="mt-4">🏆 Badge Collection</h2>
+    {% set badge_defs = {
+        'First Steps': {'icon': '🌟', 'description': 'Complete your first quiz'},
+        'Perfect Score': {'icon': '💯', 'description': 'Get 100% on any quiz'},
+        'Math Star': {'icon': '🔢', 'description': 'Complete 3 math quizzes'},
+        'Reading Pro': {'icon': '📚', 'description': 'Complete 3 reading quizzes'},
+        'Science Wizard': {'icon': '🔬', 'description': 'Complete 3 science quizzes'},
+        'Quiz Master': {'icon': '🎯', 'description': 'Complete 5 quizzes'},
+        'Champion': {'icon': '🏆', 'description': 'Complete 10 quizzes'},
+        'Rocket Learner': {'icon': '🚀', 'description': 'Reach level 5'},
+    } %}
+
+    <div class="badge-grid">
+        {% for badge_name, badge_def in badge_defs.items() %}
+        {% set earned = namespace(found=false) %}
+        {% for b in badges %}
+            {% if b.badge_name == badge_name %}
+            {% set earned.found = true %}
+            {% endif %}
+        {% endfor %}
+        <div class="badge-card {{ 'locked' if not earned.found }}">
+            <span class="badge-icon">{{ badge_def.icon }}</span>
+            <div class="badge-name">{{ badge_name }}</div>
+            <div class="badge-desc">{{ badge_def.description }}</div>
+            {% if earned.found %}
+            <div style="color: var(--success); font-size: 0.8rem; font-weight: 700; margin-top: 0.5rem;">✅ Earned!</div>
+            {% else %}
+            <div style="color: var(--text-light); font-size: 0.8rem; font-weight: 700; margin-top: 0.5rem;">🔒 Locked</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Recent Activity -->
+    <h2 class="mt-4">📈 Recent Activity</h2>
+    {% if recent_activity %}
+    <ul class="activity-list">
+        {% for activity in recent_activity %}
+        <li class="activity-item">
+            <div class="activity-icon" style="background: {{ '#D1FAE5' if activity.score >= 70 else ('#FEF3C7' if activity.score >= 50 else '#FEE2E2') }};">
+                {{ activity.subject_icon }}
+            </div>
+            <div class="activity-details">
+                <div class="activity-title">{{ activity.quiz_title }}</div>
+                <div class="activity-meta">{{ activity.subject_name }} • {{ activity.completed_at.strftime('%b %d, %Y') }}</div>
+            </div>
+            <div class="activity-score {{ 'high' if activity.score >= 70 else ('medium' if activity.score >= 50 else 'low') }}">
+                {{ activity.score }}%
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <div class="card text-center" style="padding: 3rem;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">📝</div>
+        <h3>No quizzes taken yet!</h3>
+        <p style="color: var(--text-secondary);">Start your learning journey by taking your first quiz!</p>
+        <a href="{{ url_for('main.subjects') }}" class="btn btn-primary mt-2">
+            🚀 Start Learning
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

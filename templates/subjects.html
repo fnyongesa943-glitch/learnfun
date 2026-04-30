@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Subjects - LearnFun{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center">📚 Choose Your Subject</h1>
+    <p class="text-center" style="color: var(--text-secondary); font-size: 1.2rem; margin-bottom: 2rem;">Pick what you want to learn today!</p>
+
+    <div class="card-grid">
+        {% for subject in subjects %}
+        <a href="{{ url_for('main.subject_detail', subject_id=subject.id) }}" class="card subject-card" style="--card-accent: {{ subject.color }};">
+            <span class="subject-icon">{{ subject.icon }}</span>
+            <h3 class="subject-name">{{ subject.name }}</h3>
+            <p class="subject-desc">{{ subject.description }}</p>
+            <span class="subject-badge" style="background: {{ subject.color }};">
+                {{ subject.quiz_count }} Quizzes
+            </span>
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Ollie's Tip -->
+    <div class="mascot mt-4">
+        <div class="mascot-avatar">🦉</div>
+        <div class="mascot-speech">
+            <p><span class="mascot-name">Ollie the Owl says:</span> "Try all three subjects to earn special badges! The more you learn, the more stars you collect!"</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

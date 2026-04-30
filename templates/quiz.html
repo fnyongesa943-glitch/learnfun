@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}{{ quiz.title }} - LearnFun{% endblock %}
+
+{% block content %}
+<div class="container-sm">
+    <!-- Quiz Header -->
+    <div class="quiz-header">
+        <div class="flex-center gap-2" style="justify-content: space-between; flex-wrap: wrap; margin-bottom: 1rem;">
+            <h2 style="margin: 0;">{{ quiz.title }}</h2>
+            <a href="{{ url_for('main.subject_detail', subject_id=quiz.subject_id) }}" class="btn btn-outline btn-sm">
+                ← Exit Quiz
+            </a>
+        </div>
+        <div class="quiz-progress">
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" style="width: 0%;"></div>
+            </div>
+            <span class="progress-text">0/{{ questions|length }}</span>
+        </div>
+        <p style="color: var(--text-secondary); margin: 0;">Answer each question and learn something new! 🌟</p>
+    </div>
+
+    <!-- Questions -->
+    <form method="POST" action="{{ url_for('quiz.submit_quiz', quiz_id=quiz.id) }}">
+        {% for question in questions %}
+        <div class="question-card" data-question-id="{{ question.id }}" data-correct="{{ question.correct_answer }}">
+            <span class="question-number">Question {{ loop.index }} of {{ questions|length }}</span>
+
+            <p class="question-text">{{ question.text }}</p>
+
+            <div class="options-grid">
+                <button type="button" class="option-btn" data-answer="A">
+                    <span class="option-label">A</span>
+                    <span>{{ question.option_a }}</span>
+                </button>
+                <button type="button" class="option-btn" data-answer="B">
+                    <span class="option-label">B</span>
+                    <span>{{ question.option_b }}</span>
+                </button>
+                <button type="button" class="option-btn" data-answer="C">
+                    <span class="option-label">C</span>
+                    <span>{{ question.option_c }}</span>
+                </button>
+                <button type="button" class="option-btn" data-answer="D">
+                    <span class="option-label">D</span>
+                    <span>{{ question.option_d }}</span>
+                </button>
+            </div>
+
+            <!-- Hidden radio inputs for form submission -->
+            <input type="hidden" name="q{{ question.id }}" value="">
+
+            <!-- Explanation (hidden initially) -->
+            <div class="explanation" style="display: none;">
+                <strong>💡 Learn more:</strong> {{ question.explanation }}
+            </div>
+
+            <!-- Next button (hidden initially) -->
+            <div style="text-align: center; margin-top: 1.5rem;">
+                {% if loop.last %}
+                <button type="submit" class="btn btn-success btn-lg next-btn" style="display: none;">
+                    See My Results! 🎉
+                </button>
+                {% else %}
+                <button type="button" class="btn btn-primary next-btn" style="display: none;">
+                    Next Question →
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </form>
+
+    <!-- Mascot Encouragement -->
+    <div class="mascot mt-4">
+        <div class="mascot-avatar">🦉</div>
+        <div class="mascot-speech">
+            <p><span class="mascot-name">Ollie says:</span> "Take your time and think carefully. You can do this!"</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Handle hidden input updates for form submission
+document.querySelectorAll('.option-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const questionCard = this.closest('.question-card');
+        const questionId = questionCard.dataset.questionId;
+        const answer = this.dataset.answer;
+        const hiddenInput = questionCard.querySelector(`input[name="q${questionId}"]`);
+        if (hiddenInput) {
+            hiddenInput.value = answer;
+        }
+    });
+});
+</script>
+{% endblock %}
