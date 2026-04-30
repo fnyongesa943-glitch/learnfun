@@ -4,7 +4,7 @@ Updated with new subjects, shop, and enhanced features.
 """
 import os
 from flask import Flask, session
-from models import db
+from models import db, User, Subject, Quiz, Question, Score, UserBadge, ShopItem, UserOwnedItem
 from config import Config
 
 
@@ -17,6 +17,7 @@ def create_app():
 
     with app.app_context():
         db.create_all()
+        run_migrations()
         seed_data()
 
     from blueprints.main import main_bp
@@ -37,18 +38,49 @@ def create_app():
     def inject_user():
         user = None
         if 'user_id' in session:
-            from models import User
             user = User.query.get(session['user_id'])
         return {'current_user': user}
 
     return app
 
 
+def run_migrations():
+    """Add missing columns to existing SQLite tables safely."""
+    from sqlalchemy import inspect, text
+    inspector = inspect(db.engine)
+    
+    # Check User table
+    if 'users' in inspector.get_table_names():
+        cols = {c['name']: c for c in inspector.get_columns('users')}
+        
+        if 'avatar_frame' not in cols:
+            db.session.execute(text('ALTER TABLE users ADD COLUMN avatar_frame VARCHAR(20) DEFAULT "none"'))
+        if 'coins' not in cols:
+            db.session.execute(text('ALTER TABLE users ADD COLUMN coins INTEGER DEFAULT 0'))
+        if 'streak_days' not in cols:
+            db.session.execute(text('ALTER TABLE users ADD COLUMN streak_days INTEGER DEFAULT 0'))
+        if 'last_active' not in cols:
+            db.session.execute(text('ALTER TABLE users ADD COLUMN last_active DATETIME'))
+        if 'parent_pin' not in cols:
+            db.session.execute(text('ALTER TABLE users ADD COLUMN parent_pin VARCHAR(4) DEFAULT "0000"'))
+
+    # Check questions table
+    if 'questions' in inspector.get_table_names():
+        cols = {c['name']: c for c in inspector.get_columns('questions')}
+        if 'hint' not in cols:
+            db.session.execute(text('ALTER TABLE questions ADD COLUMN hint VARCHAR(200) DEFAULT ""'))
+
+    # Create new tables if they don't exist
+    if 'shop_items' not in inspector.get_table_names():
+        db.create_all()
+    if 'user_owned_items' not in inspector.get_table_names():
+        db.create_all()
+
+    db.session.commit()
+
+
 def seed_data():
     """Seed database with subjects, quizzes, shop items, and questions."""
-    from models import Subject, Quiz, Question, ShopItem
-    from datetime import datetime
-
     if Subject.query.first():
         return
 
@@ -325,3 +357,8 @@ def seed_data():
     add_questions(u3.id, qu3)
 
     print("✅ Database seeded successfully!")
+
+
+if __name__ == '__main__':
+    app = create_app()
+    app.run(debug=True, host='0.0.0.0', port=5000)
