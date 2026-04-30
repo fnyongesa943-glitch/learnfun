@@ -20,6 +20,7 @@
         <ul class="navbar-nav">
             <li><a href="{{ url_for('main.index') }}" class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}"><span class="icon">🏠</span> Home</a></li>
             <li><a href="{{ url_for('main.subjects') }}" class="nav-link {% if 'subject' in request.endpoint %}active{% endif %}"><span class="icon">📖</span> Subjects</a></li>
+            <li><a href="{{ url_for('main.phonics') }}" class="nav-link {% if request.endpoint == 'main.phonics' %}active{% endif %}"><span class="icon">🔤</span> Phonics</a></li>
             {% if current_user %}
             <li><a href="{{ url_for('progress.dashboard') }}" class="nav-link {% if request.endpoint == 'progress.dashboard' %}active{% endif %}"><span class="icon">📊</span> Progress</a></li>
             <li><a href="{{ url_for('shop.index') }}" class="nav-link {% if request.endpoint == 'shop.index' %}active{% endif %}"><span class="icon">🛍️</span> Shop</a></li>

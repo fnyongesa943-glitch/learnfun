@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}ABC Phonics - LearnFun{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center">🔤 ABC Phonics Chart</h1>
+    <p class="text-center" style="color: var(--text-secondary); font-size: 1.2rem; margin-bottom: 2rem;">
+        Click on any letter to hear its sound! 🎵
+    </p>
+
+    <!-- Phonics Grid -->
+    <div class="phonics-grid" id="phonicsGrid">
+        {% for p in phonics %}
+        <div class="phonics-card" onclick="showPhonic('{{ p.letter }}', '{{ p.sound }}', '{{ p.word }}', '{{ p.emoji }}')">
+            <div class="phonics-letter">{{ p.letter }}</div>
+            <div class="phonics-sound">says "{{ p.sound }}"</div>
+            <div class="phonics-emoji">{{ p.emoji }}</div>
+            <div class="phonics-word">{{ p.word }}</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Detail Modal -->
+    <div class="phonics-modal" id="phonicsModal" onclick="closeModal()">
+        <div class="phonics-modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal()">✖</button>
+            <div class="modal-letter" id="modalLetter">A</div>
+            <div class="modal-sound">says "<span id="modalSound">ah</span>"</div>
+            <div class="modal-emoji" id="modalEmoji">🍎</div>
+            <div class="modal-word" id="modalWord">Apple</div>
+            <button class="btn btn-primary btn-lg" onclick="playSound()">
+                🔊 Hear the Sound!
+            </button>
+        </div>
+    </div>
+
+    <!-- Ollie's Tip -->
+    <div class="mascot mt-4">
+        <div class="mascot-avatar">🦉</div>
+        <div class="mascot-speech">
+            <p><span class="mascot-name">Ollie says:</span> "Try clicking each letter! First learn the sound, then try saying the whole word. You're doing great!"</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.phonics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+.phonics-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    border: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.phonics-card:hover {
+    transform: translateY(-6px) scale(1.03);
+    border-color: var(--primary-light);
+    box-shadow: var(--shadow-lg);
+}
+
+.phonics-letter {
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: var(--primary);
+    line-height: 1;
+    margin-bottom: 0.3rem;
+}
+
+.phonics-sound {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.phonics-emoji {
+    font-size: 2.5rem;
+    margin: 0.5rem 0;
+}
+
+.phonics-word {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+/* Modal */
+.phonics-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+}
+
+.phonics-modal.active {
+    display: flex;
+}
+
+.phonics-modal-content {
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    padding: 3rem;
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: var(--shadow-xl);
+    animation: starPop 0.3s ease;
+    position: relative;
+}
+
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+}
+
+.modal-letter {
+    font-size: 6rem;
+    font-weight: 900;
+    color: var(--primary);
+    line-height: 1;
+}
+
+.modal-sound {
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin: 1rem 0;
+}
+
+.modal-sound span {
+    color: var(--success);
+    font-weight: 800;
+}
+
+.modal-emoji {
+    font-size: 5rem;
+    margin: 1rem 0;
+}
+
+.modal-word {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 600px) {
+    .phonics-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+    }
+    .phonics-letter { font-size: 2.5rem; }
+    .phonics-emoji { font-size: 1.5rem; }
+    .phonics-word { font-size: 0.8rem; }
+    .phonics-modal-content { padding: 2rem; }
+    .modal-letter { font-size: 4rem; }
+    .modal-emoji { font-size: 3rem; }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentSound = '';
+
+function showPhonic(letter, sound, word, emoji) {
+    document.getElementById('modalLetter').textContent = letter;
+    document.getElementById('modalSound').textContent = sound;
+    document.getElementById('modalWord').textContent = word;
+    document.getElementById('modalEmoji').textContent = emoji;
+    currentSound = sound;
+    document.getElementById('phonicsModal').classList.add('active');
+    
+    // Auto play the sound
+    setTimeout(() => playSound(), 300);
+}
+
+function closeModal() {
+    document.getElementById('phonicsModal').classList.remove('active');
+}
+
+function playSound() {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    // Create a pleasant tone
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(440, ctx.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
+    
+    gainNode.gain.setValueAtTime(0.2, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+    
+    oscillator.start(ctx.currentTime);
+    oscillator.stop(ctx.currentTime + 0.5);
+}
+
+// Close on escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModal();
+});
+</script>
+{% endblock %}
