@@ -16,7 +16,7 @@
     --warning-light: #FBBF24;
     --info: #3B82F6;
 
-    --bg-main: #F8FAFC;
+    --bg-main: #FFF9E6;
     --bg-card: #FFFFFF;
     --text-primary: #1E293B;
     --text-secondary: #64748B;
@@ -40,6 +40,22 @@
     --font-main: 'Nunito', 'Comic Sans MS', system-ui, sans-serif;
 }
 
+/* ---- Dark Mode Variables ---- */
+.dark-mode {
+    --primary: #818CF8;
+    --primary-light: #A5B4FC;
+    --primary-dark: #6366F1;
+    --bg-main: #0F172A;
+    --bg-card: #1E293B;
+    --text-primary: #F1F5F9;
+    --text-secondary: #94A3B8;
+    --text-light: #64748B;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.6);
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -53,9 +69,10 @@ body {
     line-height: 1.6;
     min-height: 100vh;
     overflow-x: hidden;
+    transition: background 0.4s ease, color 0.4s ease;
 }
 
-/* ---- Background Pattern ---- */
+/* ---- SpongeBob Bikini Bottom Background ---- */
 body::before {
     content: '';
     position: fixed;
@@ -63,12 +80,52 @@ body::before {
     left: 0;
     right: 0;
     bottom: 0;
-    background:
-        radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.05) 0%, transparent 20%),
-        radial-gradient(circle at 90% 80%, rgba(124, 58, 237, 0.05) 0%, transparent 20%),
-        radial-gradient(circle at 50% 50%, rgba(5, 150, 105, 0.03) 0%, transparent 30%);
     pointer-events: none;
     z-index: -1;
+    background:
+        /* SpongeBob flower clouds */
+        radial-gradient(circle 20px at 10% 20%, rgba(255, 200, 50, 0.3) 0%, transparent 100%),
+        radial-gradient(circle 15px at 80% 10%, rgba(135, 206, 235, 0.4) 0%, transparent 100%),
+        radial-gradient(circle 18px at 50% 60%, rgba(255, 150, 100, 0.3) 0%, transparent 100%),
+        radial-gradient(circle 22px at 20% 80%, rgba(100, 200, 255, 0.3) 0%, transparent 100%),
+        radial-gradient(circle 16px at 90% 70%, rgba(255, 200, 50, 0.35) 0%, transparent 100%),
+        radial-gradient(circle 12px at 60% 30%, rgba(200, 150, 255, 0.3) 0%, transparent 100%),
+        radial-gradient(circle 14px at 30% 40%, rgba(255, 180, 80, 0.3) 0%, transparent 100%),
+        radial-gradient(circle 25px at 70% 90%, rgba(135, 206, 235, 0.35) 0%, transparent 100%),
+        /* SpongeBob yellow tint */
+        linear-gradient(180deg, #FFFDE7 0%, #FFF8E1 40%, #E8F4FD 100%);
+    opacity: 0.7;
+    transition: opacity 0.4s ease;
+}
+
+.dark-mode body::before {
+    background:
+        /* Dark ocean version */
+        radial-gradient(circle 20px at 10% 20%, rgba(255, 200, 50, 0.1) 0%, transparent 100%),
+        radial-gradient(circle 15px at 80% 10%, rgba(135, 206, 235, 0.1) 0%, transparent 100%),
+        radial-gradient(circle 18px at 50% 60%, rgba(255, 150, 100, 0.1) 0%, transparent 100%),
+        radial-gradient(circle 22px at 20% 80%, rgba(100, 200, 255, 0.1) 0%, transparent 100%),
+        radial-gradient(circle 16px at 90% 70%, rgba(255, 200, 50, 0.1) 0%, transparent 100%),
+        radial-gradient(circle 12px at 60% 30%, rgba(200, 150, 255, 0.1) 0%, transparent 100%),
+        linear-gradient(180deg, #1E293B 0%, #0F172A 40%, #1E3A5F 100%);
+}
+
+/* SpongeBob pineapple house icon in corner */
+body::after {
+    content: '🏡';
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    font-size: 3rem;
+    opacity: 0.2;
+    pointer-events: none;
+    z-index: 1000;
+    animation: float 4s ease-in-out infinite;
+    transition: opacity 0.4s ease;
+}
+
+.dark-mode body::after {
+    opacity: 0.1;
 }
 
 /* ---- Typography ---- */
@@ -110,6 +167,7 @@ a:hover {
     align-items: center;
     flex-wrap: wrap;
     gap: 1rem;
+    transition: background 0.4s ease, box-shadow 0.4s ease;
 }
 
 .navbar-brand {
@@ -187,6 +245,34 @@ a:hover {
     box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
 }
 
+/* Dark Mode Toggle Button */
+.dark-mode-toggle {
+    background: var(--bg-card);
+    border: 2px solid var(--text-light);
+    border-radius: var(--radius-full);
+    padding: 0.5rem;
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+}
+
+.dark-mode-toggle:hover {
+    transform: scale(1.1) rotate(15deg);
+    border-color: var(--warning);
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+}
+
+.dark-mode .dark-mode-toggle {
+    background: #1E293B;
+    border-color: #818CF8;
+}
+
 /* ---- Container & Layout ---- */
 .container {
     max-width: 1200px;
@@ -210,6 +296,7 @@ a:hover {
     margin-bottom: 2rem;
     position: relative;
     overflow: hidden;
+    transition: background 0.4s ease;
 }
 
 .hero::before {
@@ -247,6 +334,7 @@ a:hover {
     box-shadow: var(--shadow-md);
     margin: 2rem 0;
     border: 3px solid var(--primary-light);
+    transition: background 0.4s ease, border-color 0.4s ease;
 }
 
 .mascot-avatar {
@@ -276,7 +364,7 @@ a:hover {
     border-radius: var(--radius-lg);
     padding: 1.5rem;
     box-shadow: var(--shadow-md);
-    transition: all 0.3s ease;
+    transition: all 0.4s ease;
     border: 2px solid transparent;
 }
 
@@ -428,6 +516,7 @@ a:hover {
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
     margin-bottom: 2rem;
+    transition: background 0.4s ease;
 }
 
 .quiz-progress {
@@ -443,6 +532,10 @@ a:hover {
     background: #E2E8F0;
     border-radius: var(--radius-full);
     overflow: hidden;
+}
+
+.dark-mode .progress-bar-container {
+    background: #334155;
 }
 
 .progress-bar-fill {
@@ -466,7 +559,7 @@ a:hover {
     box-shadow: var(--shadow-md);
     margin-bottom: 1.5rem;
     border: 3px solid transparent;
-    transition: all 0.3s ease;
+    transition: all 0.4s ease;
 }
 
 .question-card.correct {
@@ -474,9 +567,19 @@ a:hover {
     background: #ECFDF5;
 }
 
+.dark-mode .question-card.correct {
+    background: #065F46;
+    border-color: var(--success);
+}
+
 .question-card.incorrect {
     border-color: var(--danger);
     background: #FEF2F2;
+}
+
+.dark-mode .question-card.incorrect {
+    background: #7F1D1D;
+    border-color: var(--danger);
 }
 
 .question-number {
@@ -519,10 +622,19 @@ a:hover {
     text-align: left;
 }
 
+.dark-mode .option-btn {
+    border-color: #475569;
+    background: #1E293B;
+}
+
 .option-btn:hover {
     border-color: var(--primary-light);
     background: #EEF2FF;
     transform: scale(1.02);
+}
+
+.dark-mode .option-btn:hover {
+    background: #334155;
 }
 
 .option-btn.selected {
@@ -537,10 +649,22 @@ a:hover {
     color: var(--success);
 }
 
+.dark-mode .option-btn.correct-answer {
+    background: #065F46;
+    border-color: var(--success);
+    color: #34D399;
+}
+
 .option-btn.wrong-answer {
     border-color: var(--danger);
     background: #FEE2E2;
     color: var(--danger);
+}
+
+.dark-mode .option-btn.wrong-answer {
+    background: #7F1D1D;
+    border-color: var(--danger);
+    color: #F87171;
 }
 
 .option-label {
@@ -571,6 +695,12 @@ a:hover {
     border-radius: var(--radius-md);
     border-left: 4px solid var(--info);
     font-size: 1rem;
+}
+
+.dark-mode .explanation {
+    background: #1E3A5F;
+    border-color: var(--info);
+    color: #E0F2FE;
 }
 
 .explanation strong {
@@ -672,6 +802,7 @@ a:hover {
     background: var(--bg-card);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
+    transition: background 0.4s ease;
 }
 
 .stat-icon {
@@ -698,6 +829,7 @@ a:hover {
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
     margin: 2rem 0;
+    transition: background 0.4s ease;
 }
 
 .level-header {
@@ -725,6 +857,10 @@ a:hover {
     overflow: hidden;
 }
 
+.dark-mode .level-bar {
+    background: #334155;
+}
+
 .level-bar-fill {
     height: 100%;
     background: linear-gradient(90deg, var(--warning), var(--success));
@@ -749,6 +885,7 @@ a:hover {
     width: 100%;
     max-width: 450px;
     text-align: center;
+    transition: background 0.4s ease;
 }
 
 .auth-card h2 {
@@ -781,6 +918,12 @@ a:hover {
     font-family: var(--font-main);
     transition: all 0.3s ease;
     background: var(--bg-main);
+    color: var(--text-primary);
+}
+
+.dark-mode .form-control {
+    border-color: #475569;
+    background: #1E293B;
 }
 
 .form-control:focus {
@@ -884,6 +1027,10 @@ a:hover {
 
 .activity-item:hover {
     background: #EEF2FF;
+}
+
+.dark-mode .activity-item:hover {
+    background: #334155;
 }
 
 .activity-icon {
@@ -1063,14 +1210,8 @@ a:hover {
 }
 
 @keyframes slideIn {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
 }
 
 @keyframes fadeOut {
@@ -1079,14 +1220,8 @@ a:hover {
 }
 
 @keyframes confettiFall {
-    0% {
-        transform: translateY(-100px) rotate(0deg);
-        opacity: 1;
-    }
-    100% {
-        transform: translateY(100vh) rotate(720deg);
-        opacity: 0;
-    }
+    0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
 }
 
 @keyframes pulse {
@@ -1125,86 +1260,27 @@ a:hover {
 
 /* ---- Responsive Design ---- */
 @media (max-width: 768px) {
-    .navbar {
-        padding: 0.75rem 1rem;
-    }
-
-    .navbar-nav {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .container, .container-sm {
-        padding: 1rem;
-    }
-
+    .navbar { padding: 0.75rem 1rem; }
+    .navbar-nav { width: 100%; justify-content: center; }
+    .container, .container-sm { padding: 1rem; }
     h1 { font-size: 2rem; }
     h2 { font-size: 1.5rem; }
-
-    .hero {
-        padding: 2rem 1rem;
-    }
-
-    .hero h1 {
-        font-size: 2rem;
-    }
-
-    .hero p {
-        font-size: 1.1rem;
-    }
-
-    .options-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .card-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .badge-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .result-score {
-        font-size: 4rem;
-    }
-
-    .quiz-item {
-        flex-direction: column;
-        text-align: center;
-        gap: 1rem;
-    }
-
-    .quiz-info {
-        flex-direction: column;
-    }
-
-    .activity-item {
-        flex-direction: column;
-        text-align: center;
-    }
+    .hero { padding: 2rem 1rem; }
+    .hero h1 { font-size: 2rem; }
+    .hero p { font-size: 1.1rem; }
+    .options-grid { grid-template-columns: 1fr; }
+    .card-grid { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .badge-grid { grid-template-columns: repeat(2, 1fr); }
+    .result-score { font-size: 4rem; }
+    .quiz-item { flex-direction: column; text-align: center; gap: 1rem; }
+    .quiz-info { flex-direction: column; }
+    .activity-item { flex-direction: column; text-align: center; }
 }
 
 @media (max-width: 480px) {
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .badge-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .avatar-selection {
-        gap: 0.5rem;
-    }
-
-    .avatar-option {
-        width: 50px;
-        height: 50px;
-        font-size: 1.5rem;
-    }
+    .stats-grid { grid-template-columns: 1fr; }
+    .badge-grid { grid-template-columns: repeat(2, 1fr); }
+    .avatar-selection { gap: 0.5rem; }
+    .avatar-option { width: 50px; height: 50px; font-size: 1.5rem; }
 }

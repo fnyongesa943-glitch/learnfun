@@ -41,6 +41,10 @@
             {% else %}
             <li><a href="{{ url_for('parent.login') }}" class="nav-link"><span class="icon">🔒</span> Parent</a></li>
             {% endif %}
+            <!-- Dark Mode Toggle -->
+            <li>
+                <button class="dark-mode-toggle" id="darkModeToggle" title="Toggle Dark Mode">🌙</button>
+            </li>
         </ul>
     </nav>
 

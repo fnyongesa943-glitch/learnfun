@@ -301,8 +301,30 @@ function animateValue(element, start, end, duration) {
     requestAnimationFrame(update);
 }
 
+// ---- Dark Mode Toggle ----
+function initDarkMode() {
+    const toggle = document.getElementById('darkModeToggle');
+    if (!toggle) return;
+
+    // Check saved preference
+    const saved = localStorage.getItem('darkMode');
+    if (saved === 'true') {
+        document.body.classList.add('dark-mode');
+        toggle.textContent = '☀️';
+    }
+
+    toggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        toggle.textContent = isDark ? '☀️' : '🌙';
+        localStorage.setItem('darkMode', isDark);
+        SoundFX.playClick();
+    });
+}
+
 // ---- Initialize on DOM Ready ----
 document.addEventListener('DOMContentLoaded', () => {
+    initDarkMode();
     initAvatarSelection();
     initQuiz();
     initQuizResult();
