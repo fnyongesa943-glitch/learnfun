@@ -3,6 +3,7 @@ Parent Dashboard Blueprint - Protected analytics and settings.
 """
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from models import db, User, Score, Quiz, Subject, UserBadge
+from datetime import datetime, timedelta
 
 parent_bp = Blueprint('parent', __name__)
 
@@ -38,11 +39,12 @@ def dashboard():
     # Global stats
     total_users = User.query.count()
     total_quizzes = Score.query.count()
-    active_today = Score.query.filter(
-        Score.completed_at >= db.func.date_sub(db.func.now(), interval=1)
-    ).count() if hasattr(db.func, 'date_sub') else 0
+    
+    # Active in last 24 hours (SQLite compatible)
+    yesterday = datetime.utcnow() - timedelta(days=1)
+    active_today = Score.query.filter(Score.completed_at >= yesterday).count()
 
-    # Top subjects
+    # Subject stats
     subject_stats = []
     subjects = Subject.query.all()
     for sub in subjects:
