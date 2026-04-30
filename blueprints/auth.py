@@ -9,7 +9,6 @@ auth_bp = Blueprint('auth', __name__)
 
 
 def login_required(f):
-    """Decorator to require login for certain routes."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
@@ -21,14 +20,12 @@ def login_required(f):
 
 @auth_bp.route('/signup', methods=['GET', 'POST'])
 def signup():
-    """Handle user registration."""
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         email = request.form.get('email', '').strip()
         password = request.form.get('password', '')
         avatar = request.form.get('avatar', 'bear')
 
-        # Validate input
         if not username or not email or not password:
             flash('Please fill in all fields!', 'error')
             return render_template('signup.html')
@@ -37,24 +34,21 @@ def signup():
             flash('Password must be at least 4 characters!', 'error')
             return render_template('signup.html')
 
-        # Check if username or email already exists
         if User.query.filter_by(username=username).first():
-            flash('Username already taken! Try another one.', 'error')
+            flash('Username already taken!', 'error')
             return render_template('signup.html')
 
         if User.query.filter_by(email=email).first():
-            flash('Email already registered! Try logging in.', 'error')
+            flash('Email already registered!', 'error')
             return render_template('signup.html')
 
-        # Create new user
-        new_user = User(username=username, email=email, avatar=avatar)
+        new_user = User(username=username, email=email, avatar=avatar, coins=10)  # Welcome bonus
         new_user.set_password(password)
         db.session.add(new_user)
         db.session.commit()
 
-        # Auto login after signup
         session['user_id'] = new_user.id
-        flash(f'Welcome, {username}! Let\'s start learning! 🎉', 'success')
+        flash(f'Welcome, {username}! You got 10 bonus coins! 🎉', 'success')
         return redirect(url_for('main.index'))
 
     return render_template('signup.html')
@@ -62,30 +56,26 @@ def signup():
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    """Handle user login."""
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '')
-
-        # Find user by username or email
-        user = User.query.filter(
-            (User.username == username) | (User.email == username)
-        ).first()
+        user = User.query.filter((User.username == username) | (User.email == username)).first()
 
         if user and user.check_password(password):
             session['user_id'] = user.id
             session.permanent = True
-            flash(f'Welcome back, {user.username}! 🌟', 'success')
+            user.update_streak()  # Update streak on login
+            db.session.commit()
+            flash(f'Welcome back, {user.username}! 🔥 {user.streak_days} day streak!', 'success')
             return redirect(url_for('main.index'))
         else:
-            flash('Wrong username or password. Try again!', 'error')
+            flash('Wrong username or password.', 'error')
 
     return render_template('login.html')
 
 
 @auth_bp.route('/logout')
 def logout():
-    """Handle user logout."""
     session.pop('user_id', None)
-    flash('See you next time! Keep learning! 👋', 'info')
+    flash('See you next time!', 'info')
     return redirect(url_for('main.index'))

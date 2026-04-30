@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
+import random
 
 db = SQLAlchemy()
 
@@ -13,96 +14,104 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
-    avatar = db.Column(db.String(20), default='bear')  # Avatar type
+    avatar = db.Column(db.String(20), default='bear')
+    avatar_frame = db.Column(db.String(20), default='none')
     total_points = db.Column(db.Integer, default=0)
+    coins = db.Column(db.Integer, default=0)
     level = db.Column(db.Integer, default=1)
+    streak_days = db.Column(db.Integer, default=0)
+    last_active = db.Column(db.DateTime, default=datetime.utcnow)
+    parent_pin = db.Column(db.String(4), default='0000')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # Relationships
     scores = db.relationship('Score', backref='user', lazy=True, cascade='all, delete-orphan')
     badges = db.relationship('UserBadge', backref='user', lazy=True, cascade='all, delete-orphan')
+    owned_items = db.relationship('UserOwnedItem', backref='user', lazy=True, cascade='all, delete-orphan')
 
     def set_password(self, password):
-        """Hash and store the password."""
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
-        """Verify password against stored hash."""
         return check_password_hash(self.password_hash, password)
 
+    def update_streak(self):
+        today = datetime.utcnow().date()
+        if self.last_active:
+            last = self.last_active.date()
+            if last == today:
+                return False
+            elif (today - last).days == 1:
+                self.streak_days += 1
+                self.coins += self.streak_days  # Bonus coins for streak
+                return True
+            else:
+                self.streak_days = 1
+                self.coins += 1
+                return True
+        else:
+            self.streak_days = 1
+            self.coins += 1
+            return True
+
     def add_points(self, points):
-        """Add points and check for level up."""
         self.total_points += points
-        # Level up every 100 points
+        self.coins += int(points / 2)  # Earn coins based on points
         new_level = (self.total_points // 100) + 1
         if new_level > self.level:
             self.level = new_level
-            return True  # Level up occurred
+            return True
         return False
 
     def to_dict(self):
-        """Convert user to dictionary for API responses."""
         return {
             'id': self.id,
             'username': self.username,
             'email': self.email,
             'avatar': self.avatar,
             'total_points': self.total_points,
+            'coins': self.coins,
             'level': self.level,
+            'streak_days': self.streak_days,
             'created_at': self.created_at.isoformat()
         }
 
 
 class Subject(db.Model):
-    """Subject model for different learning categories."""
     __tablename__ = 'subjects'
-
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True, nullable=False)
-    icon = db.Column(db.String(20), nullable=False)  # Emoji icon
-    color = db.Column(db.String(20), nullable=False)  # Primary color
+    icon = db.Column(db.String(20), nullable=False)
+    color = db.Column(db.String(20), nullable=False)
     description = db.Column(db.String(200), default='')
     quizzes = db.relationship('Quiz', backref='subject', lazy=True)
 
     def to_dict(self):
-        """Convert subject to dictionary."""
         return {
-            'id': self.id,
-            'name': self.name,
-            'icon': self.icon,
-            'color': self.color,
-            'description': self.description,
+            'id': self.id, 'name': self.name, 'icon': self.icon,
+            'color': self.color, 'description': self.description,
             'quiz_count': len(self.quizzes)
         }
 
 
 class Quiz(db.Model):
-    """Quiz model for storing quiz information."""
     __tablename__ = 'quizzes'
-
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     subject_id = db.Column(db.Integer, db.ForeignKey('subjects.id'), nullable=False)
-    difficulty = db.Column(db.String(20), default='easy')  # easy, medium, hard
+    difficulty = db.Column(db.String(20), default='easy')
     description = db.Column(db.String(200), default='')
     questions = db.relationship('Question', backref='quiz', lazy=True, cascade='all, delete-orphan')
 
     def to_dict(self):
-        """Convert quiz to dictionary."""
         return {
-            'id': self.id,
-            'title': self.title,
-            'subject_id': self.subject_id,
-            'difficulty': self.difficulty,
-            'description': self.description,
+            'id': self.id, 'title': self.title, 'subject_id': self.subject_id,
+            'difficulty': self.difficulty, 'description': self.description,
             'question_count': len(self.questions)
         }
 
 
 class Question(db.Model):
-    """Question model for quiz questions."""
     __tablename__ = 'questions'
-
     id = db.Column(db.Integer, primary_key=True)
     quiz_id = db.Column(db.Integer, db.ForeignKey('quizzes.id'), nullable=False)
     text = db.Column(db.String(300), nullable=False)
@@ -110,54 +119,37 @@ class Question(db.Model):
     option_b = db.Column(db.String(100), nullable=False)
     option_c = db.Column(db.String(100), nullable=False)
     option_d = db.Column(db.String(100), nullable=False)
-    correct_answer = db.Column(db.String(1), nullable=False)  # 'A', 'B', 'C', or 'D'
+    correct_answer = db.Column(db.String(1), nullable=False)
     explanation = db.Column(db.String(200), default='')
+    hint = db.Column(db.String(200), default='')
     points = db.Column(db.Integer, default=10)
 
     def to_dict(self):
-        """Convert question to dictionary (excludes correct answer for security)."""
         return {
-            'id': self.id,
-            'text': self.text,
-            'option_a': self.option_a,
-            'option_b': self.option_b,
-            'option_c': self.option_c,
-            'option_d': self.option_d,
-            'explanation': self.explanation,
-            'points': self.points
+            'id': self.id, 'text': self.text, 'option_a': self.option_a,
+            'option_b': self.option_b, 'option_c': self.option_c,
+            'option_d': self.option_d, 'explanation': self.explanation,
+            'hint': self.hint, 'points': self.points
         }
 
 
 class Score(db.Model):
-    """Score model for tracking quiz attempts."""
     __tablename__ = 'scores'
-
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     quiz_id = db.Column(db.Integer, db.ForeignKey('quizzes.id'), nullable=False)
-    score = db.Column(db.Integer, nullable=False)  # Percentage (0-100)
+    score = db.Column(db.Integer, nullable=False)
     points_earned = db.Column(db.Integer, default=0)
     completed_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    # Relationship to quiz
     quiz = db.relationship('Quiz', backref='scores')
 
     def to_dict(self):
-        """Convert score to dictionary."""
-        return {
-            'id': self.id,
-            'user_id': self.user_id,
-            'quiz_id': self.quiz_id,
-            'score': self.score,
-            'points_earned': self.points_earned,
-            'completed_at': self.completed_at.isoformat()
-        }
+        return {'id': self.id, 'user_id': self.user_id, 'quiz_id': self.quiz_id,
+                'score': self.score, 'points_earned': self.points_earned, 'completed_at': self.completed_at.isoformat()}
 
 
 class UserBadge(db.Model):
-    """UserBadge model for tracking earned badges."""
     __tablename__ = 'user_badges'
-
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     badge_name = db.Column(db.String(50), nullable=False)
@@ -166,24 +158,47 @@ class UserBadge(db.Model):
     earned_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def to_dict(self):
-        """Convert badge to dictionary."""
-        return {
-            'id': self.id,
-            'badge_name': self.badge_name,
-            'badge_icon': self.badge_icon,
-            'badge_description': self.badge_description,
-            'earned_at': self.earned_at.isoformat()
-        }
+        return {'id': self.id, 'badge_name': self.badge_name, 'badge_icon': self.badge_icon,
+                'badge_description': self.badge_description, 'earned_at': self.earned_at.isoformat()}
 
 
-# Badge definitions - available badges users can earn
+class ShopItem(db.Model):
+    """Items kids can buy with coins."""
+    __tablename__ = 'shop_items'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    icon = db.Column(db.String(20), nullable=False)
+    item_type = db.Column(db.String(20), nullable=False)  # 'frame', 'background', etc.
+    price = db.Column(db.Integer, default=50)
+    description = db.Column(db.String(100), default='')
+
+    def to_dict(self):
+        return {'id': self.id, 'name': self.name, 'icon': self.icon,
+                'item_type': self.item_type, 'price': self.price, 'description': self.description}
+
+
+class UserOwnedItem(db.Model):
+    """Track which items users have bought."""
+    __tablename__ = 'user_owned_items'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    item_id = db.Column(db.Integer, db.ForeignKey('shop_items.id'), nullable=False)
+    purchased_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_active = db.Column(db.Boolean, default=False)
+
+    item = db.relationship('ShopItem', backref='owners')
+
+
 BADGE_DEFINITIONS = {
     'first_quiz': {'icon': '🌟', 'name': 'First Steps', 'description': 'Complete your first quiz'},
     'perfect_score': {'icon': '💯', 'name': 'Perfect Score', 'description': 'Get 100% on any quiz'},
     'math_star': {'icon': '🔢', 'name': 'Math Star', 'description': 'Complete 3 math quizzes'},
     'reading_pro': {'icon': '📚', 'name': 'Reading Pro', 'description': 'Complete 3 reading quizzes'},
     'science_wiz': {'icon': '🔬', 'name': 'Science Wizard', 'description': 'Complete 3 science quizzes'},
+    'geo_explorer': {'icon': '🌍', 'name': 'Geo Explorer', 'description': 'Complete 3 geography quizzes'},
     'five_quiz': {'icon': '🎯', 'name': 'Quiz Master', 'description': 'Complete 5 quizzes'},
     'ten_quiz': {'icon': '🏆', 'name': 'Champion', 'description': 'Complete 10 quizzes'},
     'level_5': {'icon': '🚀', 'name': 'Rocket Learner', 'description': 'Reach level 5'},
+    'streak_3': {'icon': '🔥', 'name': 'On Fire', 'description': 'Maintain a 3-day streak'},
+    'streak_7': {'icon': '💎', 'name': 'Dedicated', 'description': 'Maintain a 7-day streak'},
 }

@@ -48,15 +48,30 @@
                 </button>
             </div>
 
-            <!-- Hidden radio inputs for form submission -->
-            <input type="hidden" name="q{{ question.id }}" value="">
+            <!-- Hint Button -->
+            {% if question.hint %}
+            <div class="mt-2" style="text-align: center;">
+                <button type="button" class="btn btn-warning btn-sm hint-btn" onclick="toggleHint(this)">
+                    💡 Need a Hint? (-2 coins)
+                </button>
+                <input type="hidden" name="q{{ question.id }}_hint_used" value="false">
+            </div>
+            {% endif %}
 
-            <!-- Explanation (hidden initially) -->
+            <!-- Hint Box -->
+            <div class="explanation hint-box" style="display: none; background: #FEF3C7; border-color: #F59E0B; margin-top: 1rem;">
+                <strong>🦉 Ollie's Hint:</strong> {{ question.hint }}
+            </div>
+
+            <!-- Explanation (shown after answer) -->
             <div class="explanation" style="display: none;">
                 <strong>💡 Learn more:</strong> {{ question.explanation }}
             </div>
 
-            <!-- Next button (hidden initially) -->
+            <!-- Hidden radio inputs for form submission -->
+            <input type="hidden" name="q{{ question.id }}" value="">
+
+            <!-- Next button -->
             <div style="text-align: center; margin-top: 1.5rem;">
                 {% if loop.last %}
                 <button type="submit" class="btn btn-success btn-lg next-btn" style="display: none;">
@@ -96,5 +111,19 @@ document.querySelectorAll('.option-btn').forEach(btn => {
         }
     });
 });
+
+// Toggle Hint
+function toggleHint(btn) {
+    const card = btn.closest('.question-card');
+    const hintBox = card.querySelector('.hint-box');
+    const hintInput = card.querySelector('input[name$="_hint_used"]');
+    
+    if (hintBox.style.display === 'none') {
+        hintBox.style.display = 'block';
+        btn.textContent = '💡 Hint Shown';
+        btn.disabled = true;
+        hintInput.value = 'true';
+    }
+}
 </script>
 {% endblock %}

@@ -7,13 +7,15 @@
     <!-- User Header -->
     <div class="card mb-4" style="background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white;">
         <div class="flex-center gap-3" style="flex-wrap: wrap;">
-            <div style="width: 80px; height: 80px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 3rem;">
-                {% set avatars = {'bear': '🐻', 'cat': '🐱', 'dog': '🐶', 'fox': '🦊', 'penguin': '🐧', 'lion': '🦁', 'panda': '🐼', 'rabbit': '🐰'} %}
-                {{ avatars.get(user.avatar, '🐻') }}
+            <div style="width: 80px; height: 80px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 3rem; position: relative;">
+                {{ user.avatar }}
+                {% if user.avatar_frame != 'none' %}
+                <span style="position: absolute; top: -10px; right: -10px; font-size: 1.5rem;">{{ user.avatar_frame }}</span>
+                {% endif %}
             </div>
             <div>
                 <h1 style="margin: 0; color: white;">{{ user.username }}</h1>
-                <p style="margin: 0; opacity: 0.9;">Member since {{ user.created_at.strftime('%B %Y') }}</p>
+                <p style="margin: 0; opacity: 0.9;">Level {{ user.level }} • 🔥 {{ user.streak_days }} day streak</p>
             </div>
         </div>
     </div>
@@ -21,10 +23,8 @@
     <!-- Level Progress -->
     <div class="level-progress">
         <div class="level-header">
-            <div class="level-badge">
-                ⭐ Level {{ user.level }}
-            </div>
-            <span style="font-weight: 700;">{{ current_level_points }}/100 points to Level {{ user.level + 1 }}</span>
+            <div class="level-badge">⭐ Level {{ user.level }}</div>
+            <span style="font-weight: 700;">{{ user.coins }} 🪙 Coins</span>
         </div>
         <div class="level-bar">
             <div class="level-bar-fill" style="width: {{ progress_to_next }}%;"></div>
@@ -40,9 +40,9 @@
             <div class="stat-label">Quizzes Done</div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon">⭐</div>
-            <div class="stat-value">{{ user.total_points }}</div>
-            <div class="stat-label">Total Points</div>
+            <div class="stat-icon">🔥</div>
+            <div class="stat-value">{{ user.streak_days }}</div>
+            <div class="stat-label">Day Streak</div>
         </div>
         <div class="stat-card">
             <div class="stat-icon">🎯</div>
@@ -79,6 +79,28 @@
         {% endfor %}
     </div>
 
+    <!-- Leaderboard -->
+    <h2 class="mt-4">🏅 Leaderboard</h2>
+    <div class="card">
+        <ul class="activity-list">
+            {% for rank, top_user in leaderboard %}
+            <li class="activity-item">
+                <div class="activity-icon" style="background: {{ '#FEF3C7' if rank == 1 else ('#F1F5F9' if rank == 2 else '#FEE2E2') }}; font-size: 1.5rem; font-weight: 900; color: {{ '#F59E0B' if rank == 1 else '#94A3B8' if rank == 2 else '#EF4444' }};">
+                    {{ rank }}
+                </div>
+                <div class="activity-icon" style="background: #EEF2FF;">
+                    {{ top_user.avatar }}
+                </div>
+                <div class="activity-details">
+                    <div class="activity-title">{{ top_user.username }}</div>
+                    <div class="activity-meta">Level {{ top_user.level }} • 🔥 {{ top_user.streak_days }} day streak</div>
+                </div>
+                <div class="activity-score high">⭐ {{ top_user.total_points }} pts</div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
     <!-- Badges Collection -->
     <h2 class="mt-4">🏆 Badge Collection</h2>
     {% set badge_defs = {
@@ -87,9 +109,12 @@
         'Math Star': {'icon': '🔢', 'description': 'Complete 3 math quizzes'},
         'Reading Pro': {'icon': '📚', 'description': 'Complete 3 reading quizzes'},
         'Science Wizard': {'icon': '🔬', 'description': 'Complete 3 science quizzes'},
+        'Geo Explorer': {'icon': '🌍', 'description': 'Complete 3 geography quizzes'},
         'Quiz Master': {'icon': '🎯', 'description': 'Complete 5 quizzes'},
         'Champion': {'icon': '🏆', 'description': 'Complete 10 quizzes'},
         'Rocket Learner': {'icon': '🚀', 'description': 'Reach level 5'},
+        'On Fire': {'icon': '🔥', 'description': 'Maintain a 3-day streak'},
+        'Dedicated': {'icon': '💎', 'description': 'Maintain a 7-day streak'},
     } %}
 
     <div class="badge-grid">
@@ -137,9 +162,7 @@
         <div style="font-size: 3rem; margin-bottom: 1rem;">📝</div>
         <h3>No quizzes taken yet!</h3>
         <p style="color: var(--text-secondary);">Start your learning journey by taking your first quiz!</p>
-        <a href="{{ url_for('main.subjects') }}" class="btn btn-primary mt-2">
-            🚀 Start Learning
-        </a>
+        <a href="{{ url_for('main.subjects') }}" class="btn btn-primary mt-2">🚀 Start Learning</a>
     </div>
     {% endif %}
 </div>

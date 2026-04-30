@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Parent Dashboard - LearnFun{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="flex-center gap-2" style="justify-content: space-between; flex-wrap: wrap; margin-bottom: 2rem;">
+        <h1>📊 Parent Dashboard</h1>
+        <div class="flex-center gap-2">
+            <span class="level-badge">🔒 Protected Area</span>
+            <a href="{{ url_for('parent.logout') }}" class="btn btn-outline btn-sm">Log Out</a>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">👨‍👩‍👧</div>
+            <div class="stat-value">{{ total_users }}</div>
+            <div class="stat-label">Total Learners</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📝</div>
+            <div class="stat-value">{{ total_quizzes }}</div>
+            <div class="stat-label">Quizzes Taken</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🔥</div>
+            <div class="stat-value">{{ active_today }}</div>
+            <div class="stat-label">Active Today</div>
+        </div>
+    </div>
+
+    <!-- Subject Popularity -->
+    <h2 class="mt-4">📚 Subject Popularity</h2>
+    <div class="card-grid">
+        {% for stat in subject_stats %}
+        <div class="card" style="border-left: 5px solid {{ stat.color }};">
+            <div class="flex-center gap-2">
+                <span style="font-size: 2rem;">{{ stat.icon }}</span>
+                <div>
+                    <h3 style="margin: 0; color: {{ stat.color }};">{{ stat.name }}</h3>
+                    <span style="font-weight: 700;">{{ stat.count }} quizzes taken</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Recent Learners -->
+    <h2 class="mt-4">👋 Recent Learners</h2>
+    <div class="card">
+        <ul class="activity-list">
+            {% for user in recent_users %}
+            <li class="activity-item">
+                <div class="activity-icon" style="background: #EEF2FF;">
+                    {{ user.avatar }}
+                </div>
+                <div class="activity-details">
+                    <div class="activity-title">{{ user.username }}</div>
+                    <div class="activity-meta">Level {{ user.level }} • {{ user.streak_days }} day streak</div>
+                </div>
+                <div class="activity-score high">⭐ {{ user.total_points }} pts</div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

@@ -22,12 +22,24 @@
             <li><a href="{{ url_for('main.subjects') }}" class="nav-link {% if 'subject' in request.endpoint %}active{% endif %}"><span class="icon">📖</span> Subjects</a></li>
             {% if current_user %}
             <li><a href="{{ url_for('progress.dashboard') }}" class="nav-link {% if request.endpoint == 'progress.dashboard' %}active{% endif %}"><span class="icon">📊</span> Progress</a></li>
+            <li><a href="{{ url_for('shop.index') }}" class="nav-link {% if request.endpoint == 'shop.index' %}active{% endif %}"><span class="icon">🛍️</span> Shop</a></li>
             <li>
                 <div class="nav-user">
-                    <div class="user-points">⭐ {{ current_user.total_points }}</div>
+                    {% if current_user.streak_days > 0 %}
+                    <div class="user-points" style="background: linear-gradient(135deg, #EF4444, #F87171);">🔥 {{ current_user.streak_days }}</div>
+                    {% endif %}
+                    <div class="user-points">⭐ {{ current_user.coins }}</div>
+                    <div class="user-avatar" style="position: relative;">
+                        {{ current_user.avatar }}
+                        {% if current_user.avatar_frame != 'none' %}
+                        <span style="position: absolute; top: -5px; right: -5px; font-size: 1rem;">{{ current_user.avatar_frame }}</span>
+                        {% endif %}
+                    </div>
                     <a href="{{ url_for('auth.logout') }}" class="nav-link"><span class="icon">👋</span></a>
                 </div>
             </li>
+            {% else %}
+            <li><a href="{{ url_for('parent.login') }}" class="nav-link"><span class="icon">🔒</span> Parent</a></li>
             {% endif %}
         </ul>
     </nav>
@@ -51,6 +63,9 @@
     <!-- Footer -->
     <footer class="footer">
         <p>🌈 LearnFun - Making Learning Fun for Kids! 🎉</p>
+        {% if not current_user %}
+        <a href="{{ url_for('parent.login') }}" style="color: var(--text-secondary); font-size: 0.9rem;">Parent Dashboard</a>
+        {% endif %}
     </footer>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>

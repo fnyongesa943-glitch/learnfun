@@ -8,20 +8,14 @@
     <section class="hero">
         {% if current_user %}
         <h1>Welcome back, {{ current_user.username }}! 🎉</h1>
-        <p>You're doing amazing! Keep learning and earning stars!</p>
-        <a href="{{ url_for('main.subjects') }}" class="btn btn-lg btn-warning">
-            🚀 Continue Learning
-        </a>
+        <p>You're doing amazing! 🔥 {{ current_user.streak_days }} day streak | ⭐ {{ current_user.coins }} coins</p>
+        <a href="{{ url_for('main.subjects') }}" class="btn btn-lg btn-warning">🚀 Continue Learning</a>
         {% else %}
         <h1>Learn, Play & Grow! 🌟</h1>
-        <p>Join thousands of kids having fun while learning Math, Reading, and Science!</p>
+        <p>Join thousands of kids having fun while learning Math, Reading, Science and more!</p>
         <div class="flex-center gap-2" style="flex-wrap: wrap;">
-            <a href="{{ url_for('auth.signup') }}" class="btn btn-lg btn-warning">
-                🎮 Start Learning Free!
-            </a>
-            <a href="{{ url_for('auth.login') }}" class="btn btn-lg btn-outline" style="border-color: white; color: white;">
-                🔑 Already Have Account
-            </a>
+            <a href="{{ url_for('auth.signup') }}" class="btn btn-lg btn-warning">🎮 Start Learning Free!</a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-lg btn-outline" style="border-color: white; color: white;">🔑 Already Have Account</a>
         </div>
         {% endif %}
     </section>
@@ -32,51 +26,25 @@
         <div class="mascot-speech">
             <p><span class="mascot-name">Ollie the Owl says:</span>
             {% if current_user %}
-                "Hi {{ current_user.username }}! Ready to learn something new today? Pick a subject and let's go!"
+                "Hi {{ current_user.username }}! Ready for more? Try a new subject or visit the Shop to spend your coins!"
             {% else %}
-                "Hi there! I'm Ollie, your learning buddy! Sign up to join me on a fun learning adventure with games and quizzes!"
+                "Hi there! I'm Ollie! Sign up to join me on a fun adventure with 7 subjects, quizzes, and a Shop!"
             {% endif %}
             </p>
         </div>
     </div>
 
     <!-- Subjects Overview -->
-    <h2 class="text-center">📚 Pick a Subject</h2>
-    <p class="text-center" style="color: var(--text-secondary); margin-bottom: 2rem;">Choose what you want to learn today!</p>
-
+    <h2 class="text-center">📚 7 Subjects to Explore</h2>
     <div class="card-grid">
         {% for subject in subjects %}
         <a href="{{ url_for('main.subject_detail', subject_id=subject.id) }}" class="card subject-card" style="--card-accent: {{ subject.color }};">
             <span class="subject-icon">{{ subject.icon }}</span>
             <h3 class="subject-name">{{ subject.name }}</h3>
             <p class="subject-desc">{{ subject.description }}</p>
-            <span class="subject-badge" style="background: {{ subject.color }};">
-                {{ subject.quizzes|length }} Quizzes
-            </span>
+            <span class="subject-badge" style="background: {{ subject.color }};">{{ subject.quizzes|length }} Quizzes</span>
         </a>
         {% endfor %}
     </div>
-
-    <!-- Features Section -->
-    <section class="mt-4">
-        <h2 class="text-center">✨ Why Kids Love LearnFun</h2>
-        <div class="card-grid">
-            <div class="card text-center">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">🎮</div>
-                <h3>Fun Quizzes</h3>
-                <p style="color: var(--text-secondary);">Interactive quizzes with instant feedback and explanations!</p>
-            </div>
-            <div class="card text-center">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">🏆</div>
-                <h3>Earn Badges</h3>
-                <p style="color: var(--text-secondary);">Collect stars and badges as you learn new things!</p>
-            </div>
-            <div class="card text-center">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">📈</div>
-                <h3>Track Progress</h3>
-                <p style="color: var(--text-secondary);">Watch yourself grow and level up as you learn!</p>
-            </div>
-        </div>
-    </section>
 </div>
 {% endblock %}
