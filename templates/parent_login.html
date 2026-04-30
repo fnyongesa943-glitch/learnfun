@@ -9,7 +9,7 @@
         <h2>Parent Access</h2>
         <p>Enter PIN to view child progress and settings.</p>
 
-        <form method="POST" action="{{ url_for('parent.check') }}">
+        <form method="POST" action="{{ url_for('parent.check_pin') }}">
             <div class="form-group">
                 <label for="pin">4-Digit PIN</label>
                 <input type="password" id="pin" name="pin" class="form-control" placeholder="1234" maxlength="4" required>
