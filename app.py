@@ -213,7 +213,7 @@ def seed_data():
     ph4 = add_quiz_if_missing('Phonics U-Z', 'ABC', 'easy', 'Last sounds!')
     if ph4:
         add_questions_if_missing(ph4, [
-            Question(quiz_id=ph4.id, text='What sound does U make?', option_a='ah', option_b='uh', option_c='eh', option_c='ih', correct_answer='B', explanation='U says "uh" like Umbrella!', hint='☂️ uh-mbrella.', points=5),
+            Question(quiz_id=ph4.id, text='What sound does U make?', option_a='ah', option_b='uh', option_c='eh', option_d='ih', correct_answer='B', explanation='U says "uh" like Umbrella!', hint='☂️ uh-mbrella.', points=5),
             Question(quiz_id=ph4.id, text='What sound does V make?', option_a='fff', option_b='www', option_c='vvv', option_d='zzz', correct_answer='C', explanation='V says "vvv" like Violin!', hint='🎻 vvv-iolin.', points=5),
             Question(quiz_id=ph4.id, text='What sound does W make?', option_a='www', option_b='vvv', option_c='yyy', option_d='rrr', correct_answer='A', explanation='W says "www" like Water!', hint='💧 www-ater.', points=5),
             Question(quiz_id=ph4.id, text='What sound does X make?', option_a='ks', option_b='ss', option_c='tt', option_d='gg', correct_answer='A', explanation='X says "ks" like Box!', hint='📦 bo-ks.', points=5),
