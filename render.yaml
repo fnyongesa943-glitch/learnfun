@@ -2,21 +2,11 @@ services:
   - type: web
     name: learnfun
     env: python
-    region: oregon
-    plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn wsgi:app
+    startCommand: gunicorn wsgi:application --bind 0.0.0.0:$PORT
+    plan: free
     envVars:
       - key: PYTHON_VERSION
-        value: 3.12.0
+        value: 3.11.0
       - key: SECRET_KEY
-        generateValue: true
-      - key: DATABASE_URL
-        fromDatabase:
-          name: learnfun-db
-          property: connectionString
-
-databases:
-  - name: learnfun-db
-    databaseName: learnfun
-    plan: free
+        value: learnfun-production-secret-key-2024

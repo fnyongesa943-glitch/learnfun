@@ -1,9 +1,10 @@
-"""
-WSGI entry point for production deployment (Render, Heroku, etc.)
-"""
+# WSGI entry point for production
+import os
+import sys
+
+# Ensure app directory is in path
+sys.path.insert(0, os.path.dirname(__file__))
+
 from app import create_app
 
-app = create_app()
-
-if __name__ == '__main__':
-    app.run()
+application = create_app()
