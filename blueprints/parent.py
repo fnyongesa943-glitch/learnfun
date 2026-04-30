@@ -14,33 +14,42 @@ PARENT_PIN = '1234'
 @parent_bp.route('/')
 def login():
     """Parent login page (PIN protected)."""
+    # Allow direct access via ?pin=1234
+    pin_param = request.args.get('pin', '')
+    if pin_param == PARENT_PIN:
+        session['is_parent'] = True
+        return redirect(url_for('parent.dashboard'))
     return render_template('parent_login.html')
 
 
 @parent_bp.route('/check', methods=['POST'])
 def check_pin():
     """Verify parent PIN."""
-    pin = request.form.get('pin', '')
+    pin = request.form.get('pin', '').strip()
     if pin == PARENT_PIN:
         session['is_parent'] = True
         return redirect(url_for('parent.dashboard'))
     else:
-        flash('Wrong PIN!', 'error')
+        flash('Wrong PIN! Try 1234.', 'error')
         return redirect(url_for('parent.login'))
 
 
 @parent_bp.route('/dashboard')
 def dashboard():
     """Parent analytics dashboard."""
-    if not session.get('is_parent'):
+    # Allow bypass if ?pin=1234 is in URL
+    pin_param = request.args.get('pin', '')
+    if pin_param != PARENT_PIN and not session.get('is_parent'):
         flash('Please enter PIN first.', 'warning')
         return redirect(url_for('parent.login'))
+    
+    session['is_parent'] = True
 
     # Global stats
     total_users = User.query.count()
     total_quizzes = Score.query.count()
     
-    # Active in last 24 hours (SQLite compatible)
+    # Active in last 24 hours
     yesterday = datetime.utcnow() - timedelta(days=1)
     active_today = Score.query.filter(Score.completed_at >= yesterday).count()
 
