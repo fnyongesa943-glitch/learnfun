@@ -176,10 +176,284 @@ body::after {
 }
 
 /* ---- Typography ---- */
-h1, h2, h3, h4 {
+h1, h2, h3, h4, h5, h6 {
     font-weight: 800;
     line-height: 1.3;
     margin-bottom: var(--space-md);
+    letter-spacing: -0.02em;
+}
+
+h1 { 
+    font-size: var(--font-size-4xl); 
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+h2 { 
+    font-size: var(--font-size-3xl); 
+    color: var(--text-primary);
+}
+h3 { 
+    font-size: var(--font-size-2xl); 
+    color: var(--text-primary);
+}
+h4 { 
+    font-size: var(--font-size-xl); 
+    color: var(--text-secondary);
+}
+
+p {
+    margin-bottom: var(--space-md);
+    color: var(--text-secondary);
+    font-size: var(--font-size-lg);
+    line-height: 1.8;
+}
+
+/* Story Text - Optimized for Reading */
+.story-content {
+    font-size: var(--font-size-lg);
+    line-height: 2;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+    font-family: var(--font-main);
+    padding: var(--space-xl);
+    background: var(--bg-main);
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--border-light);
+    column-width: 60ch;
+    text-align: justify;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    -ms-hyphens: auto;
+}
+
+/* Drop Cap for Stories */
+.story-content::first-letter {
+    font-size: 3.5em;
+    font-weight: 900;
+    float: left;
+    line-height: 0.8;
+    margin-right: 0.1em;
+    margin-top: 0.1em;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: dropCapBounce 1s ease;
+}
+
+@keyframes dropCapBounce {
+    0% { transform: translateY(-20px); opacity: 0; }
+    60% { transform: translateY(5px); }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+/* Improved Link Styling */
+a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+    position: relative;
+}
+
+a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--primary-gradient);
+    transition: width var(--transition-base);
+}
+
+a:hover::after {
+    width: 100%;
+}
+
+a:hover {
+    color: var(--primary-dark);
+}
+
+/* Card Title Glow Effect */
+.subject-name {
+    font-size: var(--font-size-xl);
+    font-weight: 800;
+    margin-bottom: var(--space-sm);
+    color: var(--text-primary);
+    transition: all var(--transition-base);
+}
+
+.card:hover .subject-name {
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Button Text Enhancement */
+.btn {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    letter-spacing: 0.02em;
+}
+
+.btn-primary {
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Mascot Speech - Better Readability */
+.mascot-speech {
+    background: var(--primary-gradient);
+    color: var(--text-white);
+    padding: var(--space-md) var(--space-xl);
+    border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) 0;
+    font-size: var(--font-size-base);
+    line-height: 1.8;
+    box-shadow: var(--shadow-md);
+    position: relative;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.mascot-speech::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 20px;
+    border: 10px solid transparent;
+    border-right-color: var(--primary);
+    border-left: none;
+}
+
+.mascot-name {
+    font-weight: 800;
+    display: block;
+    margin-bottom: var(--space-xs);
+    font-size: var(--font-size-lg);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Quiz Option Text */
+.quiz-option {
+    font-size: var(--font-size-lg);
+    line-height: 1.6;
+    color: var(--text-primary);
+}
+
+.quiz-option::before {
+    content: attr(data-option);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: var(--primary-gradient);
+    color: var(--text-white);
+    border-radius: var(--radius-full);
+    font-weight: 800;
+    font-size: var(--font-size-base);
+    flex-shrink: 0;
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-spring);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Badge Text */
+.badge {
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+/* Flash Message Text */
+.flash {
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    line-height: 1.6;
+}
+
+/* Story Meta Text */
+.story-meta {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+}
+
+.story-type-badge {
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+/* Navigation Text */
+.nav-link {
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+/* Points Display */
+.user-points {
+    font-size: var(--font-size-sm);
+    font-weight: 800;
+    letter-spacing: 0.05em;
+}
+
+/* Footer Text */
+.footer p {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Selection Color */
+::selection {
+    background: var(--primary-lighter);
+    color: var(--primary-dark);
+}
+
+/* Improved Readability for Dark Mode */
+.dark-mode .story-content {
+    background: rgba(15, 23, 42, 0.6);
+    color: var(--text-primary);
+}
+
+.dark-mode h1 {
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Text Animation for Headers */
+@keyframes titleGlow {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.2); }
+}
+
+.container > h1:first-child {
+    animation: titleGlow 3s ease-in-out infinite;
+}
+
+/* Responsive Typography */
+@media (max-width: 768px) {
+    h1 { font-size: var(--font-size-3xl); }
+    h2 { font-size: var(--font-size-2xl); }
+    h3 { font-size: var(--font-size-xl); }
+    
+    .story-content {
+        column-width: auto;
+        padding: var(--space-lg);
+        font-size: var(--font-size-base);
+    }
+    
+    .stories-content::first-letter {
+        font-size: 2.5em;
+    }
 }
 
 h1 { font-size: 2.5rem; }
