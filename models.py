@@ -189,6 +189,48 @@ class UserOwnedItem(db.Model):
     item = db.relationship('ShopItem', backref='owners')
 
 
+class Story(db.Model):
+    """Children's stories across various genres."""
+    __tablename__ = 'stories'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    story_type = db.Column(db.String(50), nullable=False)  # folktale, moral, funny, educational, adventure, imagination
+    age_range = db.Column(db.String(20), default='6-12')
+    reading_time = db.Column(db.Integer, default=5)  # Minutes
+    related_subject_id = db.Column(db.Integer, db.ForeignKey('subjects.id'), nullable=True)
+    points_earned = db.Column(db.Integer, default=15)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    related_subject = db.relationship('Subject', backref='stories')
+
+    def to_dict(self):
+        return {
+            'id': self.id, 'title': self.title, 'story_type': self.story_type,
+            'age_range': self.age_range, 'reading_time': self.reading_time,
+            'points_earned': self.points_earned, 'related_subject_id': self.related_subject_id
+        }
+
+
+class UserStoryRead(db.Model):
+    """Track stories read by users and points awarded."""
+    __tablename__ = 'user_story_reads'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    story_id = db.Column(db.Integer, db.ForeignKey('stories.id'), nullable=False)
+    read_at = db.Column(db.DateTime, default=datetime.utcnow)
+    points_awarded = db.Column(db.Boolean, default=False)
+
+    user = db.relationship('User', backref='read_stories')
+    story = db.relationship('Story', backref='read_by')
+
+    def to_dict(self):
+        return {
+            'id': self.id, 'user_id': self.user_id, 'story_id': self.story_id,
+            'read_at': self.read_at.isoformat(), 'points_awarded': self.points_awarded
+        }
+
+
 BADGE_DEFINITIONS = {
     'first_quiz': {'icon': '🌟', 'name': 'First Steps', 'description': 'Complete your first quiz'},
     'perfect_score': {'icon': '💯', 'name': 'Perfect Score', 'description': 'Get 100% on any quiz'},
@@ -201,4 +243,7 @@ BADGE_DEFINITIONS = {
     'level_5': {'icon': '🚀', 'name': 'Rocket Learner', 'description': 'Reach level 5'},
     'streak_3': {'icon': '🔥', 'name': 'On Fire', 'description': 'Maintain a 3-day streak'},
     'streak_7': {'icon': '💎', 'name': 'Dedicated', 'description': 'Maintain a 7-day streak'},
+    'story_lover': {'icon': '📖', 'name': 'Story Lover', 'description': 'Read 5 stories'},
+    'story_master': {'icon': '📚', 'name': 'Story Master', 'description': 'Read 15 stories'},
+    'imagination_king': {'icon': '🦄', 'name': 'Imagination King', 'description': 'Read 5 imagination stories'},
 }

@@ -1,10 +1,10 @@
 """
 Kids Learning App - Main Application Entry Point
-Updated with new subjects, shop, and enhanced features.
+Updated with new subjects, shop, stories, and enhanced features.
 """
 import os
 from flask import Flask, session
-from models import db, User, Subject, Quiz, Question, Score, UserBadge, ShopItem, UserOwnedItem
+from models import db, User, Subject, Quiz, Question, Score, UserBadge, ShopItem, UserOwnedItem, Story, UserStoryRead
 from config import Config
 
 
@@ -26,6 +26,7 @@ def create_app():
     from blueprints.progress import progress_bp
     from blueprints.shop import shop_bp
     from blueprints.parent import parent_bp
+    from blueprints.stories import stories_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -33,6 +34,7 @@ def create_app():
     app.register_blueprint(progress_bp, url_prefix='/progress')
     app.register_blueprint(shop_bp, url_prefix='/shop')
     app.register_blueprint(parent_bp, url_prefix='/parent')
+    app.register_blueprint(stories_bp, url_prefix='/stories')
 
     @app.context_processor
     def inject_user():
@@ -48,40 +50,44 @@ def run_migrations():
     """Add missing columns to existing SQLite tables safely."""
     from sqlalchemy import inspect, text
     inspector = inspect(db.engine)
-    
+
     # Check User table
     if 'users' in inspector.get_table_names():
         cols = {c['name']: c for c in inspector.get_columns('users')}
-        
+
         if 'avatar_frame' not in cols:
-            db.session.execute(text('ALTER TABLE users ADD COLUMN avatar_frame VARCHAR(20) DEFAULT "none"'))
+            db.session.execute(text("ALTER TABLE users ADD COLUMN avatar_frame VARCHAR(20) DEFAULT 'none'"))
         if 'coins' not in cols:
-            db.session.execute(text('ALTER TABLE users ADD COLUMN coins INTEGER DEFAULT 0'))
+            db.session.execute(text("ALTER TABLE users ADD COLUMN coins INTEGER DEFAULT 0"))
         if 'streak_days' not in cols:
-            db.session.execute(text('ALTER TABLE users ADD COLUMN streak_days INTEGER DEFAULT 0'))
+            db.session.execute(text("ALTER TABLE users ADD COLUMN streak_days INTEGER DEFAULT 0"))
         if 'last_active' not in cols:
-            db.session.execute(text('ALTER TABLE users ADD COLUMN last_active DATETIME'))
+            db.session.execute(text("ALTER TABLE users ADD COLUMN last_active DATETIME"))
         if 'parent_pin' not in cols:
-            db.session.execute(text('ALTER TABLE users ADD COLUMN parent_pin VARCHAR(4) DEFAULT "0000"'))
+            db.session.execute(text("ALTER TABLE users ADD COLUMN parent_pin VARCHAR(4) DEFAULT '0000'"))
 
     # Check questions table
     if 'questions' in inspector.get_table_names():
         cols = {c['name']: c for c in inspector.get_columns('questions')}
         if 'hint' not in cols:
-            db.session.execute(text('ALTER TABLE questions ADD COLUMN hint VARCHAR(200) DEFAULT ""'))
+            db.session.execute(text("ALTER TABLE questions ADD COLUMN hint VARCHAR(200) DEFAULT ''"))
 
     # Create new tables if they don't exist
     if 'shop_items' not in inspector.get_table_names():
         db.create_all()
     if 'user_owned_items' not in inspector.get_table_names():
         db.create_all()
+    if 'stories' not in inspector.get_table_names():
+        db.create_all()
+    if 'user_story_reads' not in inspector.get_table_names():
+        db.create_all()
 
     db.session.commit()
 
 
 def seed_data():
-    """Seed database with subjects, quizzes, shop items, and questions."""
-    from models import ShopItem
+    """Seed database with subjects, quizzes, shop items, stories, and questions."""
+    from models import ShopItem, Story
 
     # Add shop items if not seeded
     if not ShopItem.query.first():
@@ -113,7 +119,7 @@ def seed_data():
         Subject(name='ABC', icon='🔤', color='#EC4899', description='Learn the alphabet A-Z!'),
         Subject(name='123', icon='🔢', color='#14B8A6', description='Count from 1 to 100!'),
     ]
-    
+
     new_subjects = [s for s in subjects if s.name not in existing_names]
     if new_subjects:
         db.session.add_all(new_subjects)
@@ -262,42 +268,6 @@ def seed_data():
             Question(quiz_id=num4.id, text='Count: 88, 89, __?', option_a='91', option_b='87', option_c='90', option_d='92', correct_answer='C', explanation='90!', hint='After eighty-nine.', points=5),
         ])
 
-    # 1. Subjects
-    subjects = [
-        Subject(name='Math', icon='🔢', color='#4F46E5', description='Addition, subtraction, multiplication!'),
-        Subject(name='Reading', icon='📚', color='#7C3AED', description='Word puzzles and stories!'),
-        Subject(name='Science', icon='🔬', color='#059669', description='Animals, weather, and space!'),
-        Subject(name='Geography', icon='🌍', color='#D97706', description='Countries, maps, and landmarks!'),
-        Subject(name='Art', icon='🎨', color='#EC4899', description='Colors, shapes, and famous artists!'),
-        Subject(name='Coding', icon='💻', color='#3B82F6', description='Logic puzzles and algorithms!'),
-        Subject(name='Music', icon='🎵', color='#8B5CF6', description='Instruments and rhythms!'),
-        Subject(name='ABC', icon='🔤', color='#EC4899', description='Learn the alphabet A-Z!'),
-        Subject(name='123', icon='🔢', color='#14B8A6', description='Count from 1 to 100!'),
-    ]
-    db.session.add_all(subjects)
-    db.session.commit()
-
-    # 2. Shop Items
-    shop_items = [
-        ShopItem(name='Star Frame', icon='⭐', item_type='frame', price=50, description='A shiny star border!'),
-        ShopItem(name='Rainbow Frame', icon='🌈', item_type='frame', price=100, description='Colorful rainbow frame!'),
-        ShopItem(name='Gold Trophy', icon='🏆', item_type='badge', price=150, description='Show off your gold trophy!'),
-        ShopItem(name='Wizard Hat', icon='🧙', item_type='hat', price=200, description='Become a learning wizard!'),
-        ShopItem(name='Crown', icon='👑', item_type='hat', price=300, description='Fit for a king or queen!'),
-        ShopItem(name='Rocket', icon='🚀', item_type='badge', price=250, description='Ready for liftoff!'),
-        ShopItem(name='Diamond Badge', icon='💎', item_type='badge', price=500, description='Rare and sparkling!'),
-        ShopItem(name='Unicorn', icon='🦄', item_type='avatar', price=400, description='Magical and majestic!'),
-        ShopItem(name='Dino', icon='🦖', item_type='avatar', price=400, description='Rawr!'),
-        ShopItem(name='Astronaut', icon='🧑‍🚀', item_type='avatar', price=600, description='To the moon!'),
-    ]
-    db.session.add_all(shop_items)
-    db.session.commit()
-
-    # Helper to add questions
-    def add_questions(quiz_id, qs):
-        db.session.add_all(qs)
-        db.session.commit()
-
     # --- MATH QUIZZES ---
     m1 = Quiz(title='Addition Fun', subject_id=1, difficulty='easy', description='Practice adding numbers!')
     m2 = Quiz(title='Subtraction Pro', subject_id=1, difficulty='easy', description='Subtract with ease!')
@@ -312,7 +282,8 @@ def seed_data():
         Question(quiz_id=m1.id, text='9 + 5 = ?', option_a='13', option_b='14', option_c='15', option_d='12', correct_answer='B', explanation='9 + 5 = 14!', hint='Take 1 from 5 to make 10, then add 4.', points=10),
         Question(quiz_id=m1.id, text='8 + 7 = ?', option_a='14', option_b='15', option_c='16', option_d='13', correct_answer='B', explanation='8 + 7 = 15!', hint='Start at 8 and count up 7.', points=10),
     ]
-    add_questions(m1.id, q1)
+    db.session.add_all(q1)
+    db.session.commit()
 
     q2 = [
         Question(quiz_id=m2.id, text='8 - 3 = ?', option_a='4', option_b='5', option_c='6', option_d='3', correct_answer='B', explanation='8 - 3 = 5!', hint='If you have 8 candies and eat 3...', points=10),
@@ -321,7 +292,8 @@ def seed_data():
         Question(quiz_id=m2.id, text='12 - 5 = ?', option_a='6', option_b='8', option_c='7', option_d='5', correct_answer='C', explanation='12 - 5 = 7!', hint='Start at 12 and count back 5.', points=10),
         Question(quiz_id=m2.id, text='20 - 9 = ?', option_a='10', option_b='12', option_c='11', option_d='9', correct_answer='C', explanation='20 - 9 = 11!', hint='20 - 10 is 10, so 20 - 9 is one more.', points=10),
     ]
-    add_questions(m2.id, q2)
+    db.session.add_all(q2)
+    db.session.commit()
 
     q3 = [
         Question(quiz_id=m3.id, text='3 x 4 = ?', option_a='10', option_b='11', option_c='12', option_d='14', correct_answer='C', explanation='3 x 4 = 12!', hint='3 groups of 4.', points=15),
@@ -330,7 +302,8 @@ def seed_data():
         Question(quiz_id=m3.id, text='4 x 4 = ?', option_a='14', option_b='16', option_c='18', option_d='12', correct_answer='B', explanation='4 x 4 = 16!', hint='Four groups of 4.', points=15),
         Question(quiz_id=m3.id, text='7 x 2 = ?', option_a='12', option_b='16', option_c='14', option_d='15', correct_answer='C', explanation='7 x 2 = 14!', hint='7 + 7 = ?', points=15),
     ]
-    add_questions(m3.id, q3)
+    db.session.add_all(q3)
+    db.session.commit()
 
     # --- READING QUIZZES ---
     r1 = Quiz(title='Word Puzzles', subject_id=2, difficulty='easy', description='Find the right word!')
@@ -346,7 +319,8 @@ def seed_data():
         Question(quiz_id=r1.id, text='The sun is ____.', option_a='blue', option_b='bright', option_c='cold', option_d='soft', correct_answer='B', explanation='The sun is bright!', hint='It gives light.', points=10),
         Question(quiz_id=r1.id, text='3 letters?', option_a='apple', option_b='sun', option_c='flower', option_d='fly', correct_answer='B', explanation='Sun has 3 letters.', hint='S-U-N.', points=10),
     ]
-    add_questions(r1.id, qr1)
+    db.session.add_all(qr1)
+    db.session.commit()
 
     qr2 = [
         Question(quiz_id=r2.id, text='Tom has a red ball. Color?', option_a='blue', option_b='green', option_c='red', option_d='yellow', correct_answer='C', explanation='It says "red ball"!', hint='Check the story.', points=10),
@@ -355,7 +329,8 @@ def seed_data():
         Question(quiz_id=r2.id, text='Max has 2 dogs, 1 cat. Pets?', option_a='1', option_b='2', option_c='3', option_d='4', correct_answer='C', explanation='2+1=3 pets.', hint='Add them up.', points=10),
         Question(quiz_id=r2.id, text='Raining. Lily opens ___', option_a='book', option_b='umbrella', option_c='toy', option_d='shoes', correct_answer='B', explanation='Umbrella!', hint='Keeps dry.', points=10),
     ]
-    add_questions(r2.id, qr2)
+    db.session.add_all(qr2)
+    db.session.commit()
 
     qr3 = [
         Question(quiz_id=r3.id, text='"Enormous" means?', option_a='small', option_b='big', option_c='fast', option_d='slow', correct_answer='B', explanation='Huge!', hint='Like an elephant.', points=10),
@@ -364,7 +339,8 @@ def seed_data():
         Question(quiz_id=r3.id, text='"Habitat" is?', option_a='food', option_b='home', option_c='school', option_d='game', correct_answer='B', explanation='Where animals live.', hint='Bear lives in forest.', points=10),
         Question(quiz_id=r3.id, text='"Predict" means?', option_a='look back', option_b='guess future', option_c='remember', option_d='write', correct_answer='B', explanation='Guess what will happen.', hint='Before it happens.', points=10),
     ]
-    add_questions(r3.id, qr3)
+    db.session.add_all(qr3)
+    db.session.commit()
 
     # --- SCIENCE QUIZZES ---
     s1 = Quiz(title='Animal Kingdom', subject_id=3, difficulty='easy', description='Amazing animals!')
@@ -380,7 +356,8 @@ def seed_data():
         Question(quiz_id=s1.id, text='Fish live in?', option_a='trees', option_b='water', option_c='sky', option_d='sand', correct_answer='B', explanation='Water!', hint='Swim!', points=10),
         Question(quiz_id=s1.id, text='Gives milk?', option_a='chicken', option_b='cow', option_c='dog', option_d='frog', correct_answer='B', explanation='Cow!', hint='Moo!', points=10),
     ]
-    add_questions(s1.id, qs1)
+    db.session.add_all(qs1)
+    db.session.commit()
 
     qs2 = [
         Question(quiz_id=s2.id, text='Cold sky falls as?', option_a='rain', option_b='sun', option_c='snow', option_d='wind', correct_answer='C', explanation='Snow!', hint='Winter flakes.', points=10),
@@ -389,7 +366,8 @@ def seed_data():
         Question(quiz_id=s2.id, text='Day light from?', option_a='moon', option_b='stars', option_c='sun', option_d='lamp', correct_answer='C', explanation='Sun!', hint='Shines bright.', points=10),
         Question(quiz_id=s2.id, text='Wind is?', option_a='trees', option_b='moving air', option_c='clouds', option_d='birds', correct_answer='B', explanation='Moving air!', hint='Invisible push.', points=10),
     ]
-    add_questions(s2.id, qs2)
+    db.session.add_all(qs2)
+    db.session.commit()
 
     qs3 = [
         Question(quiz_id=s3.id, text='Closest star?', option_a='Moon', option_b='Mars', option_c='Sun', option_d='Venus', correct_answer='C', explanation='Sun!', hint='In the sky.', points=15),
@@ -398,7 +376,8 @@ def seed_data():
         Question(quiz_id=s3.id, text='Goes around Earth?', option_a='Sun', option_b='Mars', option_c='Moon', option_d='Stars', correct_answer='C', explanation='Moon!', hint='Night light.', points=15),
         Question(quiz_id=s3.id, text='Red Planet?', option_a='Venus', option_b='Mars', option_c='Jupiter', option_d='Saturn', correct_answer='B', explanation='Mars!', hint='Looks red.', points=15),
     ]
-    add_questions(s3.id, qs3)
+    db.session.add_all(qs3)
+    db.session.commit()
 
     # --- GEOGRAPHY QUIZZES ---
     g1 = Quiz(title='Continents', subject_id=4, difficulty='easy', description='Big lands!')
@@ -414,7 +393,8 @@ def seed_data():
         Question(quiz_id=g1.id, text='Africa has the?', option_a='Sahara', option_b='Amazon', option_c='Alps', option_d='Everest', correct_answer='A', explanation='Sahara Desert!', hint='Very sandy.', points=10),
         Question(quiz_id=g1.id, text='Smallest continent?', option_a='Australia', option_b='Europe', option_c='Antarctica', option_d='Asia', correct_answer='A', explanation='Australia!', hint='Kangaroos.', points=10),
     ]
-    add_questions(g1.id, qg1)
+    db.session.add_all(qg1)
+    db.session.commit()
 
     qg2 = [
         Question(quiz_id=g2.id, text='Largest ocean?', option_a='Atlantic', option_b='Pacific', option_c='Indian', option_d='Arctic', correct_answer='B', explanation='Pacific!', hint='Peaceful.', points=10),
@@ -423,7 +403,8 @@ def seed_data():
         Question(quiz_id=g2.id, text='Salt water or fresh?', option_a='Salt', option_b='Fresh', option_c='Sweet', option_d='Sour', correct_answer='A', explanation='Salt!', hint='Sea.', points=10),
         Question(quiz_id=g2.id, text='Where rivers end?', option_a='Mountain', option_b='Sea', option_c='Sky', option_d='Forest', correct_answer='B', explanation='Sea!', hint='Ocean.', points=10),
     ]
-    add_questions(g2.id, qg2)
+    db.session.add_all(qg2)
+    db.session.commit()
 
     qg3 = [
         Question(quiz_id=g3.id, text='Great Wall is in?', option_a='India', option_b='China', option_c='Japan', option_d='Russia', correct_answer='B', explanation='China!', hint='Long wall.', points=15),
@@ -432,7 +413,8 @@ def seed_data():
         Question(quiz_id=g3.id, text='Taj Mahal is?', option_a='Palace', option_b='Tomb', option_c='School', option_d='Mall', correct_answer='B', explanation='A tomb!', hint='In India.', points=15),
         Question(quiz_id=g3.id, text='Statue of Liberty is?', option_a='USA', option_b='UK', option_c='France', option_d='Italy', correct_answer='A', explanation='USA!', hint='New York.', points=15),
     ]
-    add_questions(g3.id, qg3)
+    db.session.add_all(qg3)
+    db.session.commit()
 
     # --- ART QUIZZES ---
     a1 = Quiz(title='Colors', subject_id=5, difficulty='easy', description='Mix and match!')
@@ -448,7 +430,8 @@ def seed_data():
         Question(quiz_id=a1.id, text='Sky is usually?', option_a='Red', option_b='Yellow', option_c='Blue', option_d='Purple', correct_answer='C', explanation='Blue!', hint='Look up.', points=10),
         Question(quiz_id=a1.id, text='Grass is?', option_a='Red', option_b='Green', option_c='Blue', option_d='Orange', correct_answer='B', explanation='Green!', hint='Trees too.', points=10),
     ]
-    add_questions(a1.id, qa1)
+    db.session.add_all(qa1)
+    db.session.commit()
 
     qa2 = [
         Question(quiz_id=a2.id, text='Mona Lisa painter?', option_a='Van Gogh', option_b='Da Vinci', option_c='Picasso', option_d='Monet', correct_answer='B', explanation='Leonardo da Vinci!', hint='Also inventor.', points=15),
@@ -457,7 +440,8 @@ def seed_data():
         Question(quiz_id=a2.id, text='Sculpture is?', option_a='Drawing', option_b='Carving', option_c='Photo', option_d='Music', correct_answer='B', explanation='Carving!', hint='3D art.', points=15),
         Question(quiz_id=a2.id, text='Canvas is for?', option_a='Painting', option_b='Singing', option_c='Dancing', option_d='Running', correct_answer='A', explanation='Painting!', hint='Holds paint.', points=15),
     ]
-    add_questions(a2.id, qa2)
+    db.session.add_all(qa2)
+    db.session.commit()
 
     qa3 = [
         Question(quiz_id=a3.id, text='String instrument?', option_a='Drum', option_b='Violin', option_c='Flute', option_d='Trumpet', correct_answer='B', explanation='Violin!', hint='4 strings, bow.', points=15),
@@ -466,7 +450,8 @@ def seed_data():
         Question(quiz_id=a3.id, text='Drums are?', option_a='String', option_b='Wind', option_c='Percussion', option_d='Brass', correct_answer='C', explanation='Percussion!', hint='Hit them.', points=15),
         Question(quiz_id=a3.id, text='Flute is?', option_a='Woodwind', option_b='Brass', option_c='String', option_d='Percussion', correct_answer='A', explanation='Woodwind!', hint='Blow across.', points=15),
     ]
-    add_questions(a3.id, qa3)
+    db.session.add_all(qa3)
+    db.session.commit()
 
     # --- CODING QUIZZES ---
     c1 = Quiz(title='Logic Puzzles', subject_id=6, difficulty='easy', description='Think like a computer!')
@@ -482,7 +467,8 @@ def seed_data():
         Question(quiz_id=c1.id, text='Input device?', option_a='Screen', option_b='Keyboard', option_c='Speaker', option_d='Printer', correct_answer='B', explanation='Keyboard!', hint='Type on it.', points=10),
         Question(quiz_id=c1.id, text='Output device?', option_a='Mouse', option_b='Keyboard', option_c='Screen', option_d='Webcam', correct_answer='C', explanation='Screen!', hint='Shows results.', points=10),
     ]
-    add_questions(c1.id, qc1)
+    db.session.add_all(qc1)
+    db.session.commit()
 
     qc2 = [
         Question(quiz_id=c2.id, text='Algorithm is?', option_a='Steps', option_b='Food', option_c='Game', option_d='Song', correct_answer='A', explanation='Steps!', hint='Recipe for code.', points=15),
@@ -491,7 +477,8 @@ def seed_data():
         Question(quiz_id=c2.id, text='Debug means?', option_a='Create', option_b='Delete', option_c='Fix', option_d='Run', correct_answer='C', explanation='Fix!', hint='Remove bugs.', points=15),
         Question(quiz_id=c2.id, text='Start of program?', option_a='End', option_b='Start', option_c='Middle', option_d='Loop', correct_answer='B', explanation='Start!', hint='Beginning.', points=15),
     ]
-    add_questions(c2.id, qc2)
+    db.session.add_all(qc2)
+    db.session.commit()
 
     qc3 = [
         Question(quiz_id=c3.id, text='Binary uses?', option_a='1-10', option_b='A-Z', option_c='0-1', option_d='!@#', correct_answer='C', explanation='0 and 1!', hint='Yes/No.', points=15),
@@ -500,7 +487,8 @@ def seed_data():
         Question(quiz_id=c3.id, text='Byte has bits?', option_a='4', option_b='8', option_c='16', option_d='32', correct_answer='B', explanation='8 bits!', hint='Half dozen + 2.', points=15),
         Question(quiz_id=c3.id, text='1111 in decimal?', option_a='10', option_b='12', option_c='15', option_d='14', correct_answer='C', explanation='15!', hint='8+4+2+1.', points=15),
     ]
-    add_questions(c3.id, qc3)
+    db.session.add_all(qc3)
+    db.session.commit()
 
     # --- MUSIC QUIZZES ---
     u1 = Quiz(title='Basics', subject_id=7, difficulty='easy', description='Notes and rhythm!')
@@ -516,7 +504,8 @@ def seed_data():
         Question(quiz_id=u1.id, text='Fast music is?', option_a='Adagio', option_b='Allegro', option_c='Largo', option_d='Slow', correct_answer='B', explanation='Allegro!', hint='Quickly.', points=10),
         Question(quiz_id=u1.id, text='Slow music is?', option_a='Allegro', option_b='Presto', option_c='Largo', option_d='Fast', correct_answer='C', explanation='Largo!', hint='Slowly.', points=10),
     ]
-    add_questions(u1.id, qu1)
+    db.session.add_all(qu1)
+    db.session.commit()
 
     qu2 = [
         Question(quiz_id=u2.id, text='Guitar strings?', option_a='4', option_b='5', option_c='6', option_d='7', correct_answer='C', explanation='6!', hint='Standard guitar.', points=10),
@@ -525,7 +514,8 @@ def seed_data():
         Question(quiz_id=u2.id, text='Saxophone is?', option_a='Woodwind', option_b='Brass', option_c='String', option_d='Percussion', correct_answer='A', explanation='Woodwind!', hint='Uses reed.', points=10),
         Question(quiz_id=u2.id, text='Cymbals family?', option_a='String', option_b='Percussion', option_c='Brass', option_d='Woodwind', correct_answer='B', explanation='Percussion!', hint='Clash them.', points=10),
     ]
-    add_questions(u2.id, qu2)
+    db.session.add_all(qu2)
+    db.session.commit()
 
     qu3 = [
         Question(quiz_id=u3.id, text='Beethoven was?', option_a='Singer', option_b='Composer', option_c='Dancer', option_d='Painter', correct_answer='B', explanation='Composer!', hint='Classical music.', points=15),
@@ -534,9 +524,138 @@ def seed_data():
         Question(quiz_id=u3.id, text='National Anthem?', option_a='Lullaby', option_b='Patriotic', option_c='Dance', option_d='Pop', correct_answer='B', explanation='Patriotic!', hint='Country song.', points=15),
         Question(quiz_id=u3.id, text='Happy Birthday is?', option_a='Rock', option_b='Celebration', option_c='Sad', option_d='Fast', correct_answer='B', explanation='Celebration!', hint='Cakes.', points=15),
     ]
-    add_questions(u3.id, qu3)
+    db.session.add_all(qu3)
+    db.session.commit()
 
-    print("✅ Database seeded successfully!")
+    # --- STORIES ---
+    seed_stories()
+
+    print("Database seeded successfully!")
+
+
+def seed_stories():
+    """Seed database with children's stories across various genres."""
+    from models import Story
+
+    # Check if stories already seeded
+    if Story.query.first():
+        return
+
+    stories = [
+        # FOLKTALES
+        Story(
+            title="The Tortoise and the Hare",
+            content="Once upon a time, there was a very fast Hare who bragged about how fast he could run. He laughed at the slow Tortoise and said, 'You are as slow as a snail!'\n\nThe Tortoise replied calmly, 'I may be slow, but I can beat you in a race.'\n\nThe Hare laughed so hard he almost fell over. 'A race? You want to race ME? This will be the easiest win ever!'\n\nAll the forest animals gathered to watch. The Fox marked the starting line and the finish line far across the meadow.\n\n'Ready, set, GO!'\n\nThe Hare zoomed ahead and was soon far in front. He looked back and couldn't even see the Tortoise. 'This is too easy,' he thought. 'I have time for a little nap.'\n\nSo the Hare curled up under a shady tree and fell fast asleep. Meanwhile, the Tortoise kept plodding along, slow and steady, never stopping, never giving up.\n\nWhen the Hare finally woke up, he looked around in panic. He could see the Tortoise near the finish line! The Hare sprinted as fast as he could, but it was too late. The Tortoise crossed the finish line first!\n\nAll the animals cheered for the Tortoise. The Hare learned an important lesson that day: slow and steady wins the race.",
+            story_type="folktale",
+            age_range="6-10",
+            reading_time=5,
+            points_earned=15
+        ),
+        Story(
+            title="Anansi and the Wisdom Pot",
+            content="Long ago in West Africa, the sky god Nyame had a pot full of all the wisdom in the world. He kept it locked away because he didn't want anyone else to be wise.\n\nAnansi the Spider wanted that wisdom. He went to Nyame and said, 'Great Sky God, please give me the pot of wisdom.'\n\nNyame laughed. 'It is too heavy for you, little spider. But if you can capture these three creatures: the python, the leopard, and the hornet, I will give it to you.'\n\nAnansi was clever. First, he caught the leopard by digging a deep pit and covering it with sticks and leaves. The leopard fell in! Then Anansi offered to help him out - if the leopard promised to be his prisoner.\n\nNext, Anansi caught the python by convincing him to stretch out straight so they could see who was longer. Then he tied the python to a bamboo stick!\n\nFor the hornets, Anansi filled a calabash with water and poured it over the nest, shouting, 'It's raining! Get in this dry gourd!' The hornets flew inside to stay dry, and Anansi quickly covered it.\n\nNyame was impressed! He gave Anansi the wisdom pot. But as Anansi climbed the tall tree to take it home, he thought, 'Why should I share this wisdom? I want it all for myself!'\n\nHe tied the pot to his chest and climbed. But it kept bumping his belly, making it hard to climb. A little bird flying by said, 'Why don't you tie it to your back instead?'\n\nAnansi was so surprised that someone so small could give him advice that he dropped the pot. It shattered on the ground, and all the wisdom spilled out, soaking into the earth for everyone to share.\n\nAnd that's why today, wisdom belongs to everyone - not just one person.",
+            story_type="folktale",
+            age_range="8-12",
+            reading_time=7,
+            points_earned=20
+        ),
+
+        # MORAL STORIES
+        Story(
+            title="The Boy Who Cried Wolf",
+            content="There was once a young shepherd boy who looked after a flock of sheep. He lived in a village near a forest and would take the sheep to graze on the hillside every day.\n\nOne day, the boy felt bored. He thought, 'I'll play a trick on the villagers. I'll shout that a wolf is coming!'\n\nSo he cupped his hands around his mouth and shouted, 'WOLF! WOLF! A wolf is attacking the sheep!'\n\nThe villagers heard his cries and rushed up the hill with sticks and tools to chase the wolf away. When they arrived, they found... no wolf. The sheep were peacefully grazing, and the boy was rolling on the ground laughing.\n\n'You tricked us!' the villagers said angrily. 'That was NOT funny!'\n\nThe boy just laughed. A few days later, he was bored again. 'WOLF! WOLF!' he shouted. 'A big wolf is eating the sheep!'\n\nAgain, the villagers dropped their work and ran up the hill. Again, there was no wolf. The boy laughed even harder this time.\n\n'That boy is a liar,' the villagers grumbled. 'We won't believe him anymore.'\n\nOne day, a REAL wolf came to the hillside. It snuck into the flock and grabbed a sheep! The boy screamed at the top of his lungs, 'WOLF! WOLF! HELP! A REAL WOLF!'\n\nBut the villagers heard him and said, 'He's tricking us again. Let him cry.'\n\nNobody came to help. The wolf ate several sheep before it ran away. The boy cried and cried, but it was too late.\n\nHe learned the hard way: nobody believes a liar, even when they tell the truth.",
+            story_type="moral",
+            age_range="6-10",
+            reading_time=5,
+            points_earned=15
+        ),
+        Story(
+            title="The Giving Tree",
+            content="Once there was a tree, and she loved a little boy. Every day the boy would come and gather her leaves to make crowns, climb her trunk, swing from her branches, and eat her apples.\n\nThe tree was happy. But as the boy grew older, he didn't come as often. One day he came and the tree said, 'Come play with me!' But the boy said, 'I'm too big to climb trees. I want money. Can you give me some money?'\n\n'I have no money,' said the tree. 'But take my apples, sell them in the city, and you'll have money.'\n\nThe boy took all the apples and left. The tree was happy. But the boy didn't come back for a long time. When he finally returned, he said, 'I'm a man now. I need a house. Can you give me a house?'\n\n'Cut down my branches and build a house,' said the tree. The boy cut off all her branches and carried them away. The tree was happy, but not really.\n\nYears later, the boy came back, now an old man. 'I'm tired,' he said. 'I need a boat to sail far away.'\n\n'Cut down my trunk and make a boat,' said the tree. So the boy cut down her trunk. Now the tree was just a stump, and she was sad.\n\nMany years passed. The old man returned one last time. 'I'm sorry,' he said. 'I have nothing left to give you.'\n\n'I don't need much,' said the old man. 'Just a quiet place to sit.'\n\n'Good!' said the tree, now just a stump. 'An old stump is a good place to sit.'\n\nAnd the old man sat down. And the tree was happy.",
+            story_type="moral",
+            age_range="8-12",
+            reading_time=6,
+            points_earned=20
+        ),
+
+        # FUNNY STORIES
+        Story(
+            title="The Day the Crayons Quit",
+            content="One morning, Duncan went to his desk to color. But when he opened his crayon box, there was a stack of letters instead of crayons!\n\nThe Red Crayon wrote: 'Dear Duncan, You use me too much! I need a break. Your friend, Red (who is very tired)'\n\nThe Green Crayon wrote: 'Dear Duncan, My brother and I are happy. But stop coloring outside the lines! It makes us look messy. Green'\n\nThe Yellow Crayon wrote: 'Dear Duncan, Orange and I are in a fight. He says he's the color of the sun. I say I'M the color of the sun. Can you decide? Yellow'\n\nThe Blue Crayon wrote: 'Dear Duncan, Remember when you colored the whole ocean blue? My tip is worn down to nothing! I need a vacation. Blue'\n\nThe Pink Crayon wrote: 'Dear Duncan, You never use me! I sit here all day while you use Red and Purple. I want to color something pretty! Pink'\n\nThe Black Crayon wrote: 'Dear Duncan, I am NOT just for outlining! I want to color inside too! Black (feeling gloomy)'\n\nDuncan read all the letters and felt bad. So he got a big piece of paper and made a picture using ALL the crayons the way they wanted:\n- Red colored a fire truck and stop sign\n- Green colored inside the lines\n- Yellow and Orange both colored the sun together\n- Blue colored a small pond (not the whole ocean!)\n- Pink colored a beautiful butterfly\n- Black colored a big, dark night sky\n\nThe crayons were so happy! They all went back in the box, ready to color again. And Duncan learned to share his crayons equally.",
+            story_type="funny",
+            age_range="6-10",
+            reading_time=5,
+            points_earned=15
+        ),
+        Story(
+            title="The Mixed-Up Animal Birthday",
+            content="It was Benny's birthday, and all the animals were coming to his party. But Benny's mom mixed up the invitations!\n\nFirst, the Elephant arrived wearing swimming goggles. 'I heard it's a pool party!' he said.\n\n'No,' said Benny. 'It's a birthday party. But you can still come!'\n\nThen the Fish arrived wearing a winter coat and boots. 'Brrr! I heard it's a ski party!'\n\n'No,' laughed Benny. 'It's my birthday party!'\n\nNext came the Bird wearing a hard hat and carrying a hammer. 'I heard we're building a house!'\n\n'No!' said Benny, giggling. 'It's my BIRTHDAY party!'\n\nThen the Giraffe arrived wearing a scuba tank. 'Ready to dive!' he said.\n\nThe Monkey arrived with a tennis racket. The Penguin came with a sunscreen bottle. The Kangaroo came with ice skates!\n\nBenny's mom came out and saw all the confused animals. 'Oh my!' she said. 'I sent the wrong invitations!'\n\nEveryone laughed. They took off their silly outfits and put on birthday hats instead. They ate cake, played games, and had the mixed-up birthday party ever!\n\nAnd from that day on, Benny's mom double-checked her invitations.",
+            story_type="funny",
+            age_range="6-9",
+            reading_time=4,
+            points_earned=15
+        ),
+
+        # EDUCATIONAL STORIES
+        Story(
+            title="The Journey of a Little Seed",
+            content="Once there was a tiny seed named Sam. Sam lived in a beautiful apple with his brothers and sisters. But one day, a bird ate the apple!\n\nSam felt himself going down, down, down into the bird's tummy. 'This is scary!' he thought. But soon, the bird flew far away and... plop! Sam came out in a new place with dirt all around.\n\n'Hello?' Sam called out. 'Where am I?'\n\nThe Earth said, 'You're in the soil, little seed. Drink the water, feel the sun, and you'll grow!'\n\nSam drank rainwater. He felt the warm sunshine. Something amazing happened - his shell cracked open!\n\nFirst came a tiny root, reaching down into the darkness. 'I'm looking for water!' the root said. Then came a green sprout, pushing up toward the light. 'I'm looking for the sun!'\n\nDays passed. The sprout became a stem. Leaves unfurled like little green flags. 'We catch sunlight!' the leaves said. 'We make food for the plant!'\n\nMonths passed. Sam was now a small tree. His leaves made food. His roots drank water. He grew taller and stronger.\n\nOne spring, something special happened. Pink blossoms appeared all over Sam! Bees came to visit, carrying pollen from flower to flower.\n\nAfter the flowers fell off, tiny green balls appeared. They grew bigger and bigger. They turned red. They became apples!\n\nAnd inside those apples? New little seeds, just like Sam. Ready to start their own journey someday.",
+            story_type="educational",
+            age_range="7-11",
+            reading_time=6,
+            points_earned=20,
+            related_subject_id=3  # Science
+        ),
+        Story(
+            title="The Number Adventure",
+            content="Once upon a time, in the Land of Math, lived numbers 1, 2, 3, 4, and 5. They were best friends and loved to play together.\n\nOne day, 1 said, 'Let's make a bigger number!'\n\n'How?' asked 2.\n\n'Watch!' said 1. He stood next to 2. 'Now we are 12!'\n\nBut 3 shook his head. 'That's just putting numbers together. Let me show you real math!'\n\n3 found 2 more friends hiding behind a tree. '1, 2, come out!' he called. Two little 1s came out.\n\n'Now,' said 3, 'watch this magic: 3 plus 1 plus 1 equals... 5!'\n\nThe numbers cheered! 'Again, again!'\n\nThis time, 5 wanted to try. 'I have 5 apples,' he said. 'If I give 2 to 3, how many do I have left?'\n\n5 closed his eyes and thought: '5 take away 2... that leaves 3!'\n\n'Correct!' cheered the others.\n\nThen they tried multiplication. 2 brought his twin brother. Now there were two 2s.\n\n'Two groups of two,' said 2. 'That's 2 times 2. And the answer is... 4!'\n\nThe numbers danced with joy. They learned that day that math isn't just about numbers - it's about the amazing things numbers can do when they work together!\n\nAnd if you listen carefully in the Land of Math, you can still hear them singing: '1, 2, 3, 4, 5 - math is fun and math is alive!'",
+            story_type="educational",
+            age_range="6-10",
+            reading_time=5,
+            points_earned=20,
+            related_subject_id=1  # Math
+        ),
+
+        # ADVENTURE STORIES
+        Story(
+            title="The Secret of the Hidden Cave",
+            content="Maya and her dog Rocky were exploring the beach during their summer vacation. The tide was low, revealing rocks and pools they had never seen before.\n\n'Look, Rocky!' Maya pointed to a dark opening between two big rocks. 'It's a cave!'\n\nRocky wagged his tail and sniffed the entrance. Maya grabbed her flashlight and ducked inside. The cave was cool and smelled like salt and seaweed.\n\nThey walked deeper. Suddenly, Rocky started barking. 'What is it, boy?'\n\nThere, on the cave wall, was a message written in old, faded paint: 'X marks the spot where the treasure sits.'\n\nMaya's heart raced. She shined her light around. There was a big X painted on the ground! She and Rocky dug with their hands. Sand flew everywhere!\n\nClink! Rocky's paw hit something hard. They dug faster and pulled out... an old tin box!\n\nMaya opened it with shaking hands. Inside were shells - hundreds of beautiful seashells in every color! There were also drawings on the box lid showing the cave and the beach from long ago.\n\n'Someone left these shells for people to find,' Maya whispered. She took one beautiful purple shell for herself and left the rest for other explorers to find.\n\nAs they walked back to the beach, the tide was coming in. The cave entrance slowly disappeared under the waves.\n\nMaya smiled. It was their secret adventure, and she had a purple shell to prove it really happened!",
+            story_type="adventure",
+            age_range="7-12",
+            reading_time=6,
+            points_earned=20
+        ),
+        Story(
+            title="The Mysterious Map in the Attic",
+            content="Sam was helping his grandmother clean the attic when he found an old wooden chest covered in dust. Inside was a yellowed map with strange symbols and a big red X.\n\n'Grandma, what's this?' Sam asked.\n\nGrandma's eyes lit up. 'That's the map your grandfather made when he was your age! He always said there was a secret in the old oak tree in the backyard.'\n\nSam raced to the backyard with the map. The old oak tree was enormous, with branches that reached like arms into the sky. He studied the map - it showed a hollow in the third branch from the left.\n\nSam climbed carefully. The branch creaked but held strong. He reached into the hollow... and pulled out a rusty tin can!\n\nInside was a notebook filled with his grandfather's handwriting. 'Dear finder,' it began. 'If you're reading this, you're as curious as I was!'\n\nThe notebook was filled with drawings of birds, insects, and plants his grandfather had seen in the backyard. On the last page, it said: 'The real treasure is curiosity. Keep exploring!'\n\nSam smiled. He grabbed his own notebook and started drawing the birds he could see right now. His grandfather was right - curiosity was the greatest adventure of all.",
+            story_type="adventure",
+            age_range="8-12",
+            reading_time=6,
+            points_earned=20
+        ),
+
+        # IMAGINATION STORIES
+        Story(
+            title="The Cloud Castle",
+            content="Lily was lying on the grass, watching the clouds float by, when she saw a very special one. It looked exactly like a castle with towers and a drawbridge!\n\n'Wait for me!' she called. She closed her eyes and imagined herself floating up, up, up into the sky.\n\nWhen she opened her eyes, she was standing on a fluffy white drawbridge. The Cloud Castle was even more beautiful up close. The walls were made of wispy clouds, and the towers touched the sun!\n\nA cloud dragon flew down to greet her. He was made entirely of white mist, and when he breathed, little cloud puffs came out. 'Welcome, Lily! I'm Misty. Come meet the Cloud People!'\n\nInside the castle, everything was soft and bouncy. The chairs were cloud cushions. The tables were flat clouds. And the Cloud People were the friendliest people Lily had ever met!\n\nThey showed her the Cloud Garden where cloud flowers grew - dandelions that floated, roses that rained petals, and sunflowers that followed you around!\n\nThen they went to the Rainbow Room. 'This is where rainbows are made,' said the Cloud Queen. She mixed colors in cloud bowls: red, orange, yellow, green, blue, indigo, violet - and threw them into the sky!\n\nA beautiful rainbow arched across the world below. Lily could see her house! It looked like a tiny dollhouse.\n\n'Time to go home,' said Misty the dragon. He gave Lily a ride on his back, soaring through the sunset colors.\n\nLily opened her eyes. She was back on the grass. But in her hand was a soft, wispy cloud petal that proved her adventure was real!",
+            story_type="imagination",
+            age_range="6-10",
+            reading_time=6,
+            points_earned=20
+        ),
+        Story(
+            title="The Door to Nowhere",
+            content="Timmy found an old door leaning against the wall in his basement. It had no frame, no hinges, no handle - just a plain wooden door with a sign that said: 'KNOCK THREE TIMES.'\n\nTimmy knocked: knock, knock, knock.\n\nThe door slowly creaked open... and behind it was nothing. Just a swirling purple mist.\n\nTimmy stepped through - and landed on a giant floating marshmallow! He was in a world where everything was made of candy and sweets.\n\nThe trees had chocolate bark and gummy leaves. The river flowed with strawberry milkshake. The grass was made of green cotton candy that tasted like mint!\n\nA unicorn made of spun sugar trotted over. 'Welcome to Sweet World! I'm Sprinkles. Come meet the Candy King!'\n\nThey walked to a castle made of gingerbread. The walls were decorated with colorful candy gems. The Candy King sat on a throne of lollipops.\n\n'We have a problem,' said the King. 'The Sour Troll has been turning our sweet rivers into sour lemon juice!'\n\nTimmy wanted to help. He remembered his grandma's secret - honey makes everything sweet again! He had a jar of honey in his pocket (he always carried snacks).\n\nTimmy poured honey into the river. Slowly, the sour juice turned back into sweet strawberry milkshake!\n\nThe Candy King cheered. 'You saved us! Here's a gift.' He gave Timmy a seed that grew candy canes when you planted it.\n\nTimmy stepped back through the door and found himself in his basement. In his hand was a candy cane growing from a tiny seed. The door had disappeared.\n\nBut every time Timmy eats a candy cane now, he remembers his sweet adventure!",
+            story_type="imagination",
+            age_range="6-11",
+            reading_time=7,
+            points_earned=20
+        ),
+    ]
+
+    db.session.add_all(stories)
+    db.session.commit()
+    print("✅ Stories seeded successfully!")
 
 
 if __name__ == '__main__':

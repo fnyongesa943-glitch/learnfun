@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Stories - LearnFun{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center">📚 Children's Stories</h1>
+    <p class="text-center" style="color: var(--text-secondary); font-size: 1.2rem; margin-bottom: 2rem;">Read fun stories and earn points!</p>
+
+    <!-- Filters -->
+    <div class="filters" style="background: var(--bg-card); padding: 1.5rem; border-radius: 16px; margin-bottom: 2rem; display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-weight: 600;">Type:</span>
+            <a href="{{ url_for('stories.story_list', type='all', age=current_age) }}" class="btn btn-sm {% if current_type == 'all' %}btn-primary{% else %}btn-secondary{% endif %}">All</a>
+            <a href="{{ url_for('stories.story_list', type='folktale', age=current_age) }}" class="btn btn-sm {% if current_type == 'folktale' %}btn-primary{% else %}btn-secondary{% endif %}">🏺 Folktales</a>
+            <a href="{{ url_for('stories.story_list', type='moral', age=current_age) }}" class="btn btn-sm {% if current_type == 'moral' %}btn-primary{% else %}btn-secondary{% endif %}">💡 Moral</a>
+            <a href="{{ url_for('stories.story_list', type='funny', age=current_age) }}" class="btn btn-sm {% if current_type == 'funny' %}btn-primary{% else %}btn-secondary{% endif %}">😂 Funny</a>
+            <a href="{{ url_for('stories.story_list', type='educational', age=current_age) }}" class="btn btn-sm {% if current_type == 'educational' %}btn-primary{% else %}btn-secondary{% endif %}">📖 Educational</a>
+            <a href="{{ url_for('stories.story_list', type='adventure', age=current_age) }}" class="btn btn-sm {% if current_type == 'adventure' %}btn-primary{% else %}btn-secondary{% endif %}">⚔️ Adventure</a>
+            <a href="{{ url_for('stories.story_list', type='imagination', age=current_age) }}" class="btn btn-sm {% if current_type == 'imagination' %}btn-primary{% else %}btn-secondary{% endif %}">🦄 Imagination</a>
+        </div>
+    </div>
+
+    <!-- Story Grid -->
+    <div class="card-grid">
+        {% for story in stories %}
+        <div class="card story-card" style="--card-accent: #8B5CF6; position: relative;">
+            {% if story.id in read_story_ids %}
+            <div style="position: absolute; top: 10px; right: 10px; background: #10B981; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem;">✓ Read</div>
+            {% endif %}
+            <span class="subject-icon">
+                {% if story.story_type == 'folktale' %}🏺
+                {% elif story.story_type == 'moral' %}💡
+                {% elif story.story_type == 'funny' %}😂
+                {% elif story.story_type == 'educational' %}📖
+                {% elif story.story_type == 'adventure' %}⚔️
+                {% elif story.story_type == 'imagination' %}🦄
+                {% endif %}
+            </span>
+            <h3 class="subject-name">{{ story.title }}</h3>
+            <p class="subject-desc">{{ story.story_type.title() }} • {{ story.reading_time }} min read</p>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                <span class="subject-badge" style="background: #8B5CF6;">+{{ story.points_earned }} pts</span>
+                <a href="{{ url_for('stories.story_detail', story_id=story.id) }}" class="btn btn-primary btn-sm">Read Story</a>
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center" style="grid-column: 1/-1;">
+            <p style="color: var(--text-secondary); font-size: 1.2rem;">No stories found. Check back soon!</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Ollie's Tip -->
+    <div class="mascot mt-4">
+        <div class="mascot-avatar">🦉</div>
+        <div class="mascot-speech">
+            <p><span class="mascot-name">Ollie the Owl says:</span> "Reading stories helps you learn new words and ideas! Each story you read earns you points. Collect them all!"</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

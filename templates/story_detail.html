@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}{{ story.title }} - LearnFun Stories{% endblock %}
+
+{% block extra_css %}
+<style>
+    .story-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: var(--bg-card);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .story-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 3px dashed var(--border-color);
+    }
+    .story-type-badge {
+        display: inline-block;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        background: #8B5CF6;
+        color: white;
+    }
+    .story-content {
+        font-size: 1.2rem;
+        line-height: 1.8;
+        color: var(--text-primary);
+        white-space: pre-wrap;
+        font-family: 'Nunito', sans-serif;
+    }
+    .story-meta {
+        display: flex;
+        gap: 1.5rem;
+        justify-content: center;
+        margin-top: 1rem;
+        color: var(--text-secondary);
+        flex-wrap: wrap;
+    }
+    .story-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 3px dashed var(--border-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="story-container">
+        <div class="story-header">
+            <div class="story-type-badge">
+                {% if story.story_type == 'folktale' %}🏺 Folktale
+                {% elif story.story_type == 'moral' %}💡 Moral Story
+                {% elif story.story_type == 'funny' %}😂 Funny Story
+                {% elif story.story_type == 'educational' %}📖 Educational
+                {% elif story.story_type == 'adventure' %}⚔️ Adventure
+                {% elif story.story_type == 'imagination' %}🦄 Imagination
+                {% endif %}
+            </div>
+            <h1 style="font-size: 2rem; color: var(--text-primary); margin: 0.5rem 0;">{{ story.title }}</h1>
+            <div class="story-meta">
+                <span>📖 {{ story.reading_time }} min read</span>
+                <span>🎯 Ages {{ story.age_range }}</span>
+                <span>⭐ {{ story.points_earned }} points</span>
+                {% if has_read %}<span style="color: #10B981;">✓ Read</span>{% endif %}
+            </div>
+        </div>
+
+        <div class="story-content">{{ story.content }}</div>
+
+        <div class="story-actions">
+            <a href="{{ url_for('stories.story_list') }}" class="btn btn-secondary">← Back to Stories</a>
+            {% if current_user %}
+                {% if not has_read %}
+                <form method="POST" action="{{ url_for('stories.mark_as_read', story_id=story.id) }}" style="display: inline;">
+                    <button type="submit" class="btn btn-primary">📖 Mark as Read (+{{ story.points_earned }} pts)</button>
+                </form>
+                {% else %}
+                    {% if earned_points %}
+                    <div style="background: #D1FAE5; color: #065F46; padding: 8px 16px; border-radius: 8px; font-weight: 600;">✓ Points Earned!</div>
+                    {% else %}
+                    <div style="background: #FEF3C7; color: #92400E; padding: 8px 16px; border-radius: 8px;">Already read - points awarded</div>
+                    {% endif %}
+                {% endif %}
+            {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Login to Earn Points</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Ollie's Tip -->
+    <div class="mascot mt-4">
+        <div class="mascot-avatar">🦉</div>
+        <div class="mascot-speech">
+            <p><span class="mascot-name">Ollie the Owl says:</span> "Great choice! Reading stories helps you discover new worlds and learn amazing things. Don't forget to mark it as read to earn points!"</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
