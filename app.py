@@ -272,7 +272,12 @@ def seed_data():
     m1 = Quiz(title='Addition Fun', subject_id=1, difficulty='easy', description='Practice adding numbers!')
     m2 = Quiz(title='Subtraction Pro', subject_id=1, difficulty='easy', description='Subtract with ease!')
     m3 = Quiz(title='Multiplication Magic', subject_id=1, difficulty='medium', description='Multiply and conquer!')
-    db.session.add_all([m1, m2, m3])
+    m4 = Quiz(title='Division Debut', subject_id=1, difficulty='medium', description='Learn to divide!')
+    m5 = Quiz(title='Fraction Fun', subject_id=1, difficulty='medium', description='Understand fractions!')
+    m6 = Quiz(title='Mixed Operations', subject_id=1, difficulty='hard', description='Mix math operations!')
+    m7 = Quiz(title='Multiplication Master', subject_id=1, difficulty='hard', description='Advanced multiplication!')
+    m8 = Quiz(title='Division Challenge', subject_id=1, difficulty='hard', description='Tougher division problems!')
+    db.session.add_all([m1, m2, m3, m4, m5, m6, m7, m8])
     db.session.commit()
 
     q1 = [
@@ -303,6 +308,56 @@ def seed_data():
         Question(quiz_id=m3.id, text='7 x 2 = ?', option_a='12', option_b='16', option_c='14', option_d='15', correct_answer='C', explanation='7 x 2 = 14!', hint='7 + 7 = ?', points=15),
     ]
     db.session.add_all(q3)
+    db.session.commit()
+
+    q4 = [
+        Question(quiz_id=m4.id, text='10 ÷ 2 = ?', option_a='4', option_b='5', option_c='6', option_d='3', correct_answer='B', explanation='10 ÷ 2 = 5!', hint='Split 10 into 2 equal groups.', points=15),
+        Question(quiz_id=m4.id, text='12 ÷ 3 = ?', option_a='3', option_b='4', option_c='5', option_d='6', correct_answer='B', explanation='12 ÷ 3 = 4!', hint='3 groups of 4 = 12.', points=15),
+        Question(quiz_id=m4.id, text='8 ÷ 4 = ?', option_a='1', option_b='3', option_c='2', option_d='4', correct_answer='C', explanation='8 ÷ 4 = 2!', hint='4 groups of 2 = 8.', points=15),
+        Question(quiz_id=m4.id, text='15 ÷ 5 = ?', option_a='2', option_b='4', option_c='3', option_d='5', correct_answer='C', explanation='15 ÷ 5 = 3!', hint='5 groups of 3 = 15.', points=15),
+        Question(quiz_id=m4.id, text='20 ÷ 4 = ?', option_a='4', option_b='6', option_c='5', option_d='7', correct_answer='C', explanation='20 ÷ 4 = 5!', hint='4 groups of 5 = 20.', points=15),
+    ]
+    db.session.add_all(q4)
+    db.session.commit()
+
+    q5 = [
+        Question(quiz_id=m5.id, text='Half of 10 is?', option_a='3', option_b='5', option_c='7', option_d='4', correct_answer='B', explanation='1/2 of 10 = 5!', hint='Split 10 in half.', points=15),
+        Question(quiz_id=m5.id, text='1/4 of 12 = ?', option_a='2', option_b='4', option_c='3', option_d='6', correct_answer='C', explanation='1/4 of 12 = 3!', hint='Split 12 into 4 equal parts.', points=15),
+        Question(quiz_id=m5.id, text='Which is bigger: 1/2 or 1/4?', option_a='1/2', option_b='1/4', option_c='Same', option_d='Unknown', correct_answer='A', explanation='1/2 is bigger!', hint='Half a pizza vs quarter.', points=15),
+        Question(quiz_id=m5.id, text='1/3 of 9 = ?', option_a='2', option_b='4', option_c='3', option_d='6', correct_answer='C', explanation='1/3 of 9 = 3!', hint='Split 9 into 3 equal parts.', points=15),
+        Question(quiz_id=m5.id, text='2/4 is the same as?', option_a='1/4', option_b='3/4', option_c='1/2', option_d='1/3', correct_answer='C', explanation='2/4 = 1/2!', hint='Simplify the fraction.', points=15),
+    ]
+    db.session.add_all(q5)
+    db.session.commit()
+
+    q6 = [
+        Question(quiz_id=m6.id, text='3 + 4 x 2 = ?', option_a='14', option_b='11', option_c='10', option_d='7', correct_answer='B', explanation='3 + (4 x 2) = 3 + 8 = 11!', hint='Multiply first, then add.', points=20),
+        Question(quiz_id=m6.id, text='10 - 2 x 3 = ?', option_a='4', option_b='24', option_c='6', option_d='8', correct_answer='A', explanation='10 - (2 x 3) = 10 - 6 = 4!', hint='Multiply first, then subtract.', points=20),
+        Question(quiz_id=m6.id, text='5 x 2 + 3 = ?', option_a='13', option_b='25', option_c='16', option_d='10', correct_answer='A', explanation='(5 x 2) + 3 = 10 + 3 = 13!', hint='Multiply first, then add.', points=20),
+        Question(quiz_id=m6.id, text='12 ÷ 3 + 2 = ?', option_a='6', option_b='4', option_c='8', option_d='3', correct_answer='A', explanation='(12 ÷ 3) + 2 = 4 + 2 = 6!', hint='Divide first, then add.', points=20),
+        Question(quiz_id=m6.id, text='4 + 6 ÷ 2 = ?', option_a='7', option_b='5', option_c='8', option_d='9', correct_answer='A', explanation='4 + (6 ÷ 2) = 4 + 3 = 7!', hint='Divide first, then add.', points=20),
+    ]
+    db.session.add_all(q6)
+    db.session.commit()
+
+    q7 = [
+        Question(quiz_id=m7.id, text='8 x 7 = ?', option_a='54', option_b='56', option_c='64', option_d='48', correct_answer='B', explanation='8 x 7 = 56!', hint='8 groups of 7.', points=20),
+        Question(quiz_id=m7.id, text='9 x 6 = ?', option_a='54', option_b='56', option_c='45', option_d='63', correct_answer='A', explanation='9 x 6 = 54!', hint='9 groups of 6.', points=20),
+        Question(quiz_id=m7.id, text='12 x 5 = ?', option_a='60', option_b='50', option_c='70', option_d='55', correct_answer='A', explanation='12 x 5 = 60!', hint='10 x 5 = 50, plus 2 x 5 = 10.', points=20),
+        Question(quiz_id=m7.id, text='11 x 8 = ?', option_a='88', option_b='80', option_c='96', option_d='72', correct_answer='A', explanation='11 x 8 = 88!', hint='10 x 8 = 80, plus 1 x 8 = 8.', points=20),
+        Question(quiz_id=m7.id, text='15 x 4 = ?', option_a='50', option_b='60', option_c='55', option_d='65', correct_answer='B', explanation='15 x 4 = 60!', hint='10 x 4 = 40, plus 5 x 4 = 20.', points=20),
+    ]
+    db.session.add_all(q7)
+    db.session.commit()
+
+    q8 = [
+        Question(quiz_id=m8.id, text='36 ÷ 6 = ?', option_a='5', option_b='6', option_c='7', option_d='8', correct_answer='B', explanation='36 ÷ 6 = 6!', hint='6 groups of 6 = 36.', points=20),
+        Question(quiz_id=m8.id, text='45 ÷ 9 = ?', option_a='4', option_b='6', option_c='5', option_d='7', correct_answer='C', explanation='45 ÷ 9 = 5!', hint='9 groups of 5 = 45.', points=20),
+        Question(quiz_id=m8.id, text='64 ÷ 8 = ?', option_a='7', option_b='9', option_c='8', option_d='6', correct_answer='C', explanation='64 ÷ 8 = 8!', hint='8 groups of 8 = 64.', points=20),
+        Question(quiz_id=m8.id, text='72 ÷ 9 = ?', option_a='7', option_b='9', option_c='8', option_d='6', correct_answer='C', explanation='72 ÷ 9 = 8!', hint='9 groups of 8 = 72.', points=20),
+        Question(quiz_id=m8.id, text='100 ÷ 10 = ?', option_a='100', option_b='1000', option_c='10', option_d='5', correct_answer='C', explanation='100 ÷ 10 = 10!', hint='10 groups of 10 = 100.', points=20),
+    ]
+    db.session.add_all(q8)
     db.session.commit()
 
     # --- READING QUIZZES ---
