@@ -56,12 +56,13 @@ def index():
         if 'user_id' in session:
             from models import User
             user = User.query.get(session['user_id'])
-            completed = UserLessonProgress.query.filter_by(user_id=user.id, completed=True).count()
-            stats = {'lessons_completed': completed}
-            recent_progress = UserLessonProgress.query.filter_by(
-                user_id=user.id, completed=True
-            ).order_by(UserLessonProgress.completed_at.desc()).limit(3).all()
-            recent_lessons = [p.lesson for p in recent_progress if p.lesson and p.lesson.topic]
+            if user is not None:
+                completed = UserLessonProgress.query.filter_by(user_id=user.id, completed=True).count()
+                stats = {'lessons_completed': completed}
+                recent_progress = UserLessonProgress.query.filter_by(
+                    user_id=user.id, completed=True
+                ).order_by(UserLessonProgress.completed_at.desc()).limit(3).all()
+                recent_lessons = [p.lesson for p in recent_progress if p.lesson and p.lesson.topic]
 
         return render_template('index.html',
                                subjects=subjects,
