@@ -38,53 +38,61 @@ PHONICS_DATA = [
 
 @main_bp.route('/')
 def index():
-    subjects = Subject.query.all()
-    grades = Grade.query.order_by(Grade.sort_order).all()
+    import traceback
+    try:
+        subjects = Subject.query.all()
+        grades = Grade.query.order_by(Grade.sort_order).all()
 
-    # Group grades by category
-    grades_by_category = {}
-    for g in grades:
-        if g.category not in grades_by_category:
-            grades_by_category[g.category] = []
-        grades_by_category[g.category].append(g)
+        grades_by_category = {}
+        for g in grades:
+            if g.category not in grades_by_category:
+                grades_by_category[g.category] = []
+            grades_by_category[g.category].append(g)
 
-    # Sample lessons for homepage
-    sample_lessons = Lesson.query.order_by(Lesson.id).limit(6).all()
+        sample_lessons = Lesson.query.order_by(Lesson.id).limit(6).all()
 
-    # Stats and recent lessons for logged-in user
-    stats = None
-    recent_lessons = []
-    if 'user_id' in session:
-        from models import User
-        user = User.query.get(session['user_id'])
-        completed = UserLessonProgress.query.filter_by(user_id=user.id, completed=True).count()
-        stats = {'lessons_completed': completed}
+        stats = None
+        recent_lessons = []
+        if 'user_id' in session:
+            from models import User
+            user = User.query.get(session['user_id'])
+            completed = UserLessonProgress.query.filter_by(user_id=user.id, completed=True).count()
+            stats = {'lessons_completed': completed}
+            recent_progress = UserLessonProgress.query.filter_by(
+                user_id=user.id, completed=True
+            ).order_by(UserLessonProgress.completed_at.desc()).limit(3).all()
+            recent_lessons = [p.lesson for p in recent_progress if p.lesson and p.lesson.topic]
 
-        # Get recent completed lessons
-        recent_progress = UserLessonProgress.query.filter_by(
-            user_id=user.id, completed=True
-        ).order_by(UserLessonProgress.completed_at.desc()).limit(3).all()
-        recent_lessons = [p.lesson for p in recent_progress]
-
-    return render_template('index.html',
-                           subjects=subjects,
-                           grades_by_category=grades_by_category,
-                           sample_lessons=sample_lessons,
-                           stats=stats,
-                           recent_lessons=recent_lessons)
+        return render_template('index.html',
+                               subjects=subjects,
+                               grades_by_category=grades_by_category,
+                               sample_lessons=sample_lessons,
+                               stats=stats,
+                               recent_lessons=recent_lessons)
+    except Exception as e:
+        print(f"ERROR in index route: {e}")
+        traceback.print_exc()
+        return f"<h1>Internal Error</h1><pre>{traceback.format_exc()}</pre>", 500
 
 
 @main_bp.route('/subjects')
 def subjects():
-    subjects = Subject.query.all()
-    subject_data = []
-    for subject in subjects:
-        subject_data.append({
-            'id': subject.id, 'name': subject.name, 'icon': subject.icon,
-            'color': subject.color, 'description': subject.description,
-            'category': subject.category, 'quiz_count': len(subject.quizzes)
-        })
-    return render_template('subjects.html', subjects=subject_data)
+    import traceback
+    try:
+        subjects = Subject.query.all()
+        subject_data = []
+        for subject in subjects:
+            subject_data.append({
+                'id': subject.id, 'name': subject.name, 'icon': subject.icon,
+                'color': subject.color, 'description': subject.description,
+                'category': getattr(subject, 'category', 'Core'),
+                'quiz_count': len(subject.quizzes)
+            })
+        return render_template('subjects.html', subjects=subject_data)
+    except Exception as e:
+        print(f"ERROR in subjects route: {e}")
+        traceback.print_exc()
+        return f"<h1>Internal Error</h1><pre>{traceback.format_exc()}</pre>", 500
 
 
 @main_bp.route('/subjects/<int:subject_id>')
@@ -104,6 +112,25 @@ def subject_detail(subject_id):
     return render_template('subject_detail.html',
                            subject=subject, quizzes=quizzes,
                            topics_by_grade=topics_by_grade)
+
+
+@main_bp.route('/debug')
+def debug():
+    import sys
+    info = [f"Python: {sys.version}"]
+    info.append(f"DB URL: {__import__('os').environ.get('DATABASE_URL', 'sqlite:///local')[:40]}...")
+    try:
+        from sqlalchemy import inspect
+        from models import db
+        inspector = inspect(db.engine)
+        info.append(f"Tables: {inspector.get_table_names()}")
+        info.append(f"Grades: {Grade.query.count()}")
+        info.append(f"Subjects: {Subject.query.count()}")
+        info.append(f"Topics: {Topic.query.count()}")
+        info.append(f"Lessons: {Lesson.query.count()}")
+    except Exception as e:
+        info.append(f"DB Error: {e}")
+    return "<pre>" + "\n".join(info) + "</pre>"
 
 
 @main_bp.route('/phonics')

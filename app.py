@@ -49,7 +49,10 @@ def create_app():
     def inject_user():
         user = None
         if 'user_id' in session:
-            user = User.query.get(session['user_id'])
+            try:
+                user = User.query.get(session['user_id'])
+            except Exception:
+                session.pop('user_id', None)
         return {'current_user': user}
 
     return app
@@ -856,15 +859,15 @@ def seed_cbc_data():
     except Exception:
         db.session.rollback()
 
-    if Grade.query.first():
-        print("  CBC content already exists, skipping.")
-        return
-
     try:
         cbc.seed_grades(db, Grade)
         cbc.seed_subjects(db, Subject)
-        cbc.seed_cbc_content(db, Grade, Subject, Topic, Lesson)
-        print("✅ CBC curriculum seeded!")
+        # Only skip content if topics already exist (grades/subjects may exist but content missing)
+        if Topic.query.first():
+            print("  CBC topics already exist, skipping content.")
+        else:
+            cbc.seed_cbc_content(db, Grade, Subject, Topic, Lesson)
+            print("✅ CBC curriculum content seeded!")
     except Exception as e:
         print(f"  CBC seeding warning: {e}")
         db.session.rollback()
