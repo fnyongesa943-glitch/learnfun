@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}{{ topic.title }} - LearnFun CBC{% endblock %}
+
+{% block content %}
+<div class="container-sm">
+    <a href="{{ url_for('lessons.grade_subjects', grade_id=topic.grade_id) }}" class="btn btn-outline btn-sm" style="margin-bottom: 16px;">
+        ← {{ topic.grade.name }}
+    </a>
+
+    <div class="topic-header-card card">
+        <div class="topic-header-icon" style="background: {{ topic.subject.color }}15;">
+            <span style="font-size: 2.5rem;">{{ topic.icon }}</span>
+        </div>
+        <div class="topic-header-info">
+            <span class="badge" style="background: {{ topic.subject.color }}20; color: {{ topic.subject.color }}; font-weight: 700;">
+                {{ topic.subject.icon }} {{ topic.subject.name }}
+            </span>
+            <h1>{{ topic.title }}</h1>
+            <p>{{ topic.subtitle }}</p>
+            <div class="topic-header-meta">
+                <span class="difficulty-badge difficulty-{{ topic.difficulty }}">{{ topic.difficulty }}</span>
+                <span>{{ lessons|length }} lessons</span>
+                <span>~{{ topic.estimated_minutes * (lessons|length) }} min total</span>
+            </div>
+        </div>
+        <div class="topic-progress-circle" style="text-align: center;">
+            <div style="font-size: 2rem; font-weight: 900; color: var(--primary);">{{ progress_pct }}%</div>
+            <small>Complete</small>
+            <div class="topic-progress-bar" style="width: 80px; margin: 4px auto 0;">
+                <div class="topic-progress-fill" style="width: {{ progress_pct }}%; background: var(--primary);"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="lesson-list">
+        {% for lesson in lessons %}
+        {% set is_done = lesson.id in completed_lessons %}
+        <a href="{{ url_for('lessons.view_lesson', lesson_id=lesson.id) }}" class="card lesson-list-item {% if is_done %}lesson-completed{% endif %}">
+            <div class="lesson-number {% if is_done %}done{% endif %}">
+                {% if is_done %}✅{% else %}{{ lesson.image_emoji }}{% endif %}
+            </div>
+            <div class="lesson-info">
+                <div class="lesson-title-row">
+                    <h4>{{ lesson.title }}</h4>
+                    {% if is_done %}<span class="badge badge-completed">Done</span>{% endif %}
+                </div>
+            </div>
+            <div class="lesson-points">+{{ lesson.points_earned }} pts</div>
+            <span class="lesson-arrow">→</span>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

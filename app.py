@@ -4,7 +4,8 @@ Updated with new subjects, shop, stories, and enhanced features.
 """
 import os
 from flask import Flask, session
-from models import db, User, Subject, Quiz, Question, Score, UserBadge, ShopItem, UserOwnedItem, Story, UserStoryRead
+from seed_cbc import seed_cbc_content
+from models import db, User, Subject, Quiz, Question, Score, UserBadge, ShopItem, UserOwnedItem, Story, UserStoryRead, Grade, Topic, Lesson, UserLessonProgress
 from config import Config
 
 
@@ -19,6 +20,7 @@ def create_app():
         db.create_all()
         run_migrations()
         seed_data()
+        seed_cbc_data()
 
     from blueprints.main import main_bp
     from blueprints.auth import auth_bp
@@ -27,6 +29,7 @@ def create_app():
     from blueprints.shop import shop_bp
     from blueprints.parent import parent_bp
     from blueprints.stories import stories_bp
+    from blueprints.lessons import lessons_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -35,6 +38,7 @@ def create_app():
     app.register_blueprint(shop_bp, url_prefix='/shop')
     app.register_blueprint(parent_bp, url_prefix='/parent')
     app.register_blueprint(stories_bp, url_prefix='/stories')
+    app.register_blueprint(lessons_bp, url_prefix='/lessons')
 
     @app.context_processor
     def inject_user():
@@ -803,6 +807,28 @@ def seed_stories():
     db.session.add_all(all_stories)
     db.session.commit()
     print("✅ Stories seeded successfully!")
+
+
+def seed_cbc_data():
+    """Seed CBC curriculum content (grades, topics, lessons)."""
+    import seed_cbc as cbc
+
+    print("🌱 Seeding CBC curriculum content...")
+
+    if Grade.query.first():
+        print("  CBC content already exists, skipping.")
+        return
+
+    cbc.seed_grades(db, Grade)
+    cbc.seed_subjects(db, Subject)
+
+    subject_categories = {s['name']: s['category'] for s in cbc.SUBJECTS}
+    for subj in Subject.query.all():
+        if subj.name in subject_categories:
+            subj.category = subject_categories[subj.name]
+
+    cbc.seed_cbc_content(db, Grade, Subject, Topic, Lesson)
+    print("✅ CBC curriculum seeded!")
 
 
 if __name__ == '__main__':

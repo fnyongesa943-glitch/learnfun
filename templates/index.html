@@ -1,93 +1,131 @@
 {% extends "base.html" %}
 
-{% block title %}LearnFun - Home{% endblock %}
+{% block title %}LearnFun CBC - Home{% endblock %}
 
 {% block content %}
 <div class="container">
     {% if current_user %}
     <div class="dashboard-header">
-        <h1>Welcome back, {{ current_user.username }}! &#127881;</h1>
-        <p>You're on a roll! Keep up the great work.</p>
+        <h1>Welcome back, {{ current_user.username }}! 📚</h1>
+        <p>Continue your CBC learning journey</p>
     </div>
 
     <div class="stats-row">
         <div class="stat-card">
-            <div class="stat-icon-wrap blue">&#128221;</div>
+            <div class="stat-icon-wrap blue">📖</div>
             <div class="stat-info">
-                <div class="stat-value">{{ total_quizzes if total_quizzes is defined else subjects|length }}</div>
-                <div class="stat-label">Subjects</div>
+                <div class="stat-value">{{ stats.lessons_completed if stats else 0 }}</div>
+                <div class="stat-label">Lessons Done</div>
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon-wrap green">&#9989;</div>
+            <div class="stat-icon-wrap green">⭐</div>
             <div class="stat-info">
-                <div class="stat-value">{{ current_user.coins }}</div>
-                <div class="stat-label">Points Earned</div>
+                <div class="stat-value">{{ current_user.total_points }}</div>
+                <div class="stat-label">Total Points</div>
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon-wrap yellow">&#128293;</div>
+            <div class="stat-icon-wrap yellow">🔥</div>
             <div class="stat-info">
                 <div class="stat-value">{{ current_user.streak_days }}</div>
                 <div class="stat-label">Day Streak</div>
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon-wrap pink">&#127942;</div>
+            <div class="stat-icon-wrap pink">🏆</div>
             <div class="stat-info">
-                <div class="stat-value">{{ badges_count if badges_count is defined else 0 }}</div>
-                <div class="stat-label">Badges</div>
+                <div class="stat-value">{{ current_user.level }}</div>
+                <div class="stat-label">Level</div>
             </div>
         </div>
     </div>
+
+    {% if recent_lessons %}
+    <div class="section-header">
+        <h2>📖 Continue Learning</h2>
+        <a href="{{ url_for('lessons.grade_select') }}">All grades →</a>
+    </div>
+    <div class="card-grid-3">
+        {% for lesson in recent_lessons[:3] %}
+        <a href="{{ url_for('lessons.view_lesson', lesson_id=lesson.id) }}" class="card continue-card" style="text-decoration: none;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 2rem;">{{ lesson.image_emoji }}</span>
+                <div>
+                    <small style="color: var(--text-secondary)">{{ lesson.topic.subject.name }} · {{ lesson.topic.grade.name }}</small>
+                    <h4 style="margin: 0;">{{ lesson.title }}</h4>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     {% else %}
     <div class="dashboard-header" style="padding: 40px 32px; text-align: center;">
-        <h1 style="font-size: 2rem;">Learn, Play &amp; Grow! &#127775;</h1>
-        <p style="font-size: 1rem; margin-bottom: 20px;">Join thousands of kids having fun while learning Math, Reading, Science and more!</p>
+        <h1 style="font-size: 2rem;">📚 Kenyan CBC Learning Platform</h1>
+        <p style="font-size: 1rem; margin-bottom: 20px;">Complete lessons, take quizzes, earn points. The fun way to learn the CBC curriculum!</p>
         <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-            <a href="{{ url_for('auth.signup') }}" class="btn btn-lg" style="background: white; color: var(--primary); font-weight: 800;">&#127918; Start Learning Free</a>
-            <a href="{{ url_for('auth.login') }}" class="btn btn-lg" style="background: rgba(255,255,255,0.15); color: white; border: 2px solid rgba(255,255,255,0.3);">&#128273; I Have an Account</a>
+            <a href="{{ url_for('auth.signup') }}" class="btn btn-lg" style="background: white; color: var(--primary); font-weight: 800;">🚀 Start Learning Free</a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-lg" style="background: rgba(255,255,255,0.15); color: white; border: 2px solid rgba(255,255,255,0.3);">🔑 I Have an Account</a>
         </div>
     </div>
     {% endif %}
 
-    <div class="mascot">
-        <div class="mascot-avatar">&#129425;</div>
-        <div class="mascot-speech">
-            <p><span class="mascot-name">Ollie the Owl says:</span>
-            {% if current_user %}
-                "Hi {{ current_user.username }}! Ready for more? Try a new subject or visit the Shop to spend your coins!"
-            {% else %}
-                "Hi there! I'm Ollie! Sign up to join me on a fun adventure with 7 subjects, quizzes, and a Shop!"
-            {% endif %}
-            </p>
-        </div>
+    <div class="section-header">
+        <h2>📚 CBC Grade Levels</h2>
+        <a href="{{ url_for('lessons.grade_select') }}">Browse all →</a>
     </div>
 
-    <div class="section-header">
-        <h2>&#128218; Explore Subjects</h2>
-        <a href="{{ url_for('main.subjects') }}">View all &rarr;</a>
+    <div class="grade-grid">
+        {% for cat, grades_list in grades_by_category.items() %}
+        <div class="grade-category-card">
+            <h3>{{ cat }}</h3>
+            <div class="grade-mini-list">
+                {% for grade in grades_list %}
+                <a href="{{ url_for('lessons.grade_subjects', grade_id=grade.id) }}" class="grade-chip" style="border-left: 3px solid {{ grade.color }};">
+                    <span>{{ grade.icon }}</span>
+                    <span>{{ grade.name }}</span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="section-header" style="margin-top: 32px;">
+        <h2>📖 Sample Lessons</h2>
     </div>
 
     <div class="card-grid-3">
-        {% for subject in subjects[:6] %}
-        <a href="{{ url_for('main.subject_detail', subject_id=subject.id) }}" class="card subject-card" style="text-decoration: none;">
-            <div class="subject-icon-bubble" style="background: linear-gradient(135deg, {{ subject.color }}22, {{ subject.color }}44);">
-                <span>{{ subject.icon }}</span>
+        {% for lesson in sample_lessons %}
+        <a href="{{ url_for('lessons.view_lesson', lesson_id=lesson.id) }}" class="card subject-card" style="text-decoration: none;">
+            <div class="subject-icon-bubble" style="background: linear-gradient(135deg, {{ lesson.topic.subject.color }}22, {{ lesson.topic.subject.color }}44);">
+                <span>{{ lesson.image_emoji }}</span>
             </div>
-            <h3>{{ subject.name }}</h3>
-            <p>{{ subject.description }}</p>
-            <div class="subject-progress">
-                <div class="subject-progress-fill" style="width: {{ range(1, 100) | random }}%; background: {{ subject.color }};"></div>
-            </div>
+            <h3>{{ lesson.title }}</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">{{ lesson.topic.subject.name }} · {{ lesson.topic.grade.name }}</p>
             <div class="subject-meta">
-                <span class="subject-quiz-count">{{ subject.quizzes|length }} quizzes</span>
+                <span class="subject-quiz-count">+{{ lesson.points_earned }} pts</span>
                 <span class="subject-btn">
-                    <span class="btn btn-primary btn-sm" style="pointer-events: none;">Play Now</span>
+                    <span class="btn btn-primary btn-sm" style="pointer-events: none;">Read →</span>
                 </span>
             </div>
         </a>
         {% endfor %}
+    </div>
+
+    <div class="mascot">
+        <div class="mascot-avatar">🦉</div>
+        <div class="mascot-speech">
+            <p><span class="mascot-name">Ollie the Owl says:</span>
+            {% if current_user %}
+                "Welcome to CBC Learning! Explore lessons by grade level. Complete them all to earn badges!"
+            {% else %}
+                "Hi there! Sign up to learn with CBC lessons, earn points, and become a star learner!"
+            {% endif %}
+            </p>
+        </div>
     </div>
 </div>
 {% endblock %}

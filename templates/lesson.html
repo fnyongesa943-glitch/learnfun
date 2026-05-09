@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}{{ lesson.title }} - LearnFun CBC{% endblock %}
+
+{% block content %}
+<div class="container-sm">
+    <div class="lesson-nav-top">
+        <a href="{{ url_for('lessons.topic_detail', topic_id=topic.id) }}" class="btn btn-outline btn-sm">
+            ← Back to {{ topic.title }}
+        </a>
+        <span class="lesson-position">Lesson {{ lesson_number }} of {{ total_lessons }}</span>
+    </div>
+
+    <div class="lesson-card card">
+        <div class="lesson-card-header">
+            <span class="badge" style="background: {{ topic.subject.color }}15; color: {{ topic.subject.color }};">
+                {{ topic.subject.icon }} {{ topic.subject.name }}
+            </span>
+            <span class="badge" style="background: #FEF3C7; color: #92400E;">{{ topic.grade.name }}</span>
+        </div>
+
+        <div class="lesson-title-section">
+            <span style="font-size: 2.5rem;">{{ lesson.image_emoji }}</span>
+            <h1>{{ lesson.title }}</h1>
+        </div>
+
+        {% if lesson.definition %}
+        <div class="definition-box">
+            <strong>📖 Definition:</strong> {{ lesson.definition }}
+        </div>
+        {% endif %}
+
+        <div class="lesson-content">
+            {{ lesson.content | replace('\n', '<br>') | safe }}
+        </div>
+
+        {% set points = lesson.get_key_points() %}
+        {% if points %}
+        <div class="key-points-box">
+            <h3>📌 Key Points</h3>
+            <ul>
+                {% for point in points %}
+                <li>{{ point }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% set examples = lesson.get_examples() %}
+        {% if examples %}
+        <div class="examples-box">
+            <h3>✏️ Practice Examples</h3>
+            <ul>
+                {% for ex in examples %}
+                <li>{{ ex }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if lesson.did_you_know %}
+        <div class="did-you-know-box">
+            <span class="dyk-icon">💡</span>
+            <div>
+                <strong>Did you know?</strong>
+                <p>{{ lesson.did_you_know }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="lesson-actions">
+            {% if not is_completed and current_user %}
+            <form method="POST" action="{{ url_for('lessons.complete_lesson', lesson_id=lesson.id) }}" style="display: inline;">
+                <button type="submit" class="btn btn-primary btn-lg">✅ Mark as Complete (+{{ lesson.points_earned }} pts)</button>
+            </form>
+            {% elif is_completed %}
+            <div class="completed-badge">✅ You completed this lesson! +{{ lesson.points_earned }} pts earned</div>
+            {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg">🔑 Log in to track progress</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="lesson-nav-bottom">
+        {% if prev_lesson %}
+        <a href="{{ url_for('lessons.view_lesson', lesson_id=prev_lesson.id) }}" class="btn btn-outline">← {{ prev_lesson.title }}</a>
+        {% else %}
+        <div></div>
+        {% endif %}
+        {% if next_lesson %}
+        <a href="{{ url_for('lessons.view_lesson', lesson_id=next_lesson.id) }}" class="btn btn-primary">{{ next_lesson.title }} →</a>
+        {% endif %}
+    </div>
+
+    {% if topic.subject.quizzes %}
+    <div class="card" style="margin-top: 24px; background: linear-gradient(135deg, #EEF2FF, #E0E7FF); border: none;">
+        <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+            <span style="font-size: 2rem;">🎯</span>
+            <div style="flex: 1;">
+                <h3 style="margin: 0;">Test Your Knowledge!</h3>
+                <p style="margin: 2px 0 0; color: var(--text-secondary);">Take a quiz on {{ topic.subject.name }}</p>
+            </div>
+            {% set quiz = topic.subject.quizzes|first %}
+            {% if quiz %}
+            <a href="{{ url_for('quiz.start_quiz', quiz_id=quiz.id) }}" class="btn btn-primary">Start Quiz →</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

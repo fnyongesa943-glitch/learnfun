@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}CBC Learning - LearnFun{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="dashboard-header">
+        <h1>📚 CBC Learning Hub</h1>
+        <p>Select your grade level to start learning Kenyan CBC content</p>
+    </div>
+
+    <div class="grade-categories">
+        {% set categories = ['Pre-Primary', 'Lower Primary', 'Upper Primary', 'Junior Secondary'] %}
+        {% for category in categories %}
+        <div class="category-section">
+            <div class="category-title">
+                <h2>{{ category }}</h2>
+            </div>
+            <div class="card-grid">
+                {% for grade in grades if grade.category == category %}
+                <a href="{{ url_for('lessons.grade_subjects', grade_id=grade.id) }}" class="card grade-card" style="border-left: 4px solid {{ grade.color }};">
+                    <div class="grade-icon">{{ grade.icon }}</div>
+                    <h3>{{ grade.name }}</h3>
+                    <div class="grade-meta">
+                        <span class="grade-count">{{ grade_stats[grade.id].topic_count }} topics</span>
+                        <span class="grade-count">{{ grade_stats[grade.id].subject_count }} subjects</span>
+                    </div>
+                    <span class="btn btn-primary btn-sm" style="margin-top: 8px;">Start Learning →</span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if current_user %}
+    {% set recent = current_user.lesson_progress|selectattr('completed')|list %}
+    {% if recent %}
+    <div class="section-header" style="margin-top: 32px;">
+        <h2>📖 Continue Learning</h2>
+    </div>
+    <div class="card-grid-3">
+        {% for p in recent[:3] %}
+        {% set lesson = p.lesson %}
+        <a href="{{ url_for('lessons.view_lesson', lesson_id=lesson.id) }}" class="card continue-card">
+            <div class="continue-icon">{{ lesson.image_emoji }}</div>
+            <div class="continue-info">
+                <small>{{ lesson.topic.subject.name }} · {{ lesson.topic.grade.name }}</small>
+                <h4>{{ lesson.title }}</h4>
+                <span class="badge badge-completed">✅ Completed</span>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

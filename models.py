@@ -1,15 +1,13 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
-import random
+import json
 
 db = SQLAlchemy()
 
 
 class User(db.Model):
-    """User model for storing account information."""
     __tablename__ = 'users'
-
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -27,6 +25,7 @@ class User(db.Model):
     scores = db.relationship('Score', backref='user', lazy=True, cascade='all, delete-orphan')
     badges = db.relationship('UserBadge', backref='user', lazy=True, cascade='all, delete-orphan')
     owned_items = db.relationship('UserOwnedItem', backref='user', lazy=True, cascade='all, delete-orphan')
+    lesson_progress = db.relationship('UserLessonProgress', backref='user', lazy=True, cascade='all, delete-orphan')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -42,7 +41,7 @@ class User(db.Model):
                 return False
             elif (today - last).days == 1:
                 self.streak_days += 1
-                self.coins += self.streak_days  # Bonus coins for streak
+                self.coins += self.streak_days
                 return True
             else:
                 self.streak_days = 1
@@ -55,7 +54,7 @@ class User(db.Model):
 
     def add_points(self, points):
         self.total_points += points
-        self.coins += int(points / 2)  # Earn coins based on points
+        self.coins += int(points / 2)
         new_level = (self.total_points // 100) + 1
         if new_level > self.level:
             self.level = new_level
@@ -64,15 +63,29 @@ class User(db.Model):
 
     def to_dict(self):
         return {
-            'id': self.id,
-            'username': self.username,
-            'email': self.email,
-            'avatar': self.avatar,
-            'total_points': self.total_points,
-            'coins': self.coins,
-            'level': self.level,
-            'streak_days': self.streak_days,
-            'created_at': self.created_at.isoformat()
+            'id': self.id, 'username': self.username, 'email': self.email,
+            'avatar': self.avatar, 'total_points': self.total_points,
+            'coins': self.coins, 'level': self.level,
+            'streak_days': self.streak_days, 'created_at': self.created_at.isoformat()
+        }
+
+
+class Grade(db.Model):
+    __tablename__ = 'grades'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    level_code = db.Column(db.String(10), unique=True, nullable=False)
+    category = db.Column(db.String(20), nullable=False)
+    icon = db.Column(db.String(20), default='📚')
+    color = db.Column(db.String(20), default='#6366F1')
+    sort_order = db.Column(db.Integer, default=0)
+
+    topics = db.relationship('Topic', backref='grade', lazy=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id, 'name': self.name, 'level_code': self.level_code,
+            'category': self.category, 'icon': self.icon, 'color': self.color
         }
 
 
@@ -83,13 +96,74 @@ class Subject(db.Model):
     icon = db.Column(db.String(20), nullable=False)
     color = db.Column(db.String(20), nullable=False)
     description = db.Column(db.String(200), default='')
+    category = db.Column(db.String(30), default='Core')
     quizzes = db.relationship('Quiz', backref='subject', lazy=True)
+    topics = db.relationship('Topic', backref='subject', lazy=True)
 
     def to_dict(self):
         return {
             'id': self.id, 'name': self.name, 'icon': self.icon,
             'color': self.color, 'description': self.description,
-            'quiz_count': len(self.quizzes)
+            'category': self.category, 'quiz_count': len(self.quizzes)
+        }
+
+
+class Topic(db.Model):
+    __tablename__ = 'topics'
+    id = db.Column(db.Integer, primary_key=True)
+    subject_id = db.Column(db.Integer, db.ForeignKey('subjects.id'), nullable=False)
+    grade_id = db.Column(db.Integer, db.ForeignKey('grades.id'), nullable=False)
+    title = db.Column(db.String(100), nullable=False)
+    subtitle = db.Column(db.String(200), default='')
+    icon = db.Column(db.String(20), default='📖')
+    order_number = db.Column(db.Integer, default=0)
+    difficulty = db.Column(db.String(20), default='easy')
+    estimated_minutes = db.Column(db.Integer, default=10)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    lessons = db.relationship('Lesson', backref='topic', lazy=True, cascade='all, delete-orphan',
+                              order_by='Lesson.order_number')
+
+    def lesson_count(self):
+        return len(self.lessons)
+
+    def total_points(self):
+        return sum(l.points_earned for l in self.lessons)
+
+    def to_dict(self):
+        return {
+            'id': self.id, 'subject_id': self.subject_id, 'grade_id': self.grade_id,
+            'title': self.title, 'subtitle': self.subtitle, 'icon': self.icon,
+            'order_number': self.order_number, 'difficulty': self.difficulty,
+            'lesson_count': self.lesson_count()
+        }
+
+
+class Lesson(db.Model):
+    __tablename__ = 'lessons'
+    id = db.Column(db.Integer, primary_key=True)
+    topic_id = db.Column(db.Integer, db.ForeignKey('topics.id'), nullable=False)
+    title = db.Column(db.String(150), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    key_points = db.Column(db.Text, default='[]')
+    examples = db.Column(db.Text, default='[]')
+    did_you_know = db.Column(db.String(300), default='')
+    definition = db.Column(db.String(200), default='')
+    image_emoji = db.Column(db.String(20), default='📖')
+    order_number = db.Column(db.Integer, default=0)
+    points_earned = db.Column(db.Integer, default=15)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def get_key_points(self):
+        return json.loads(self.key_points) if self.key_points else []
+
+    def get_examples(self):
+        return json.loads(self.examples) if self.examples else []
+
+    def to_dict(self):
+        return {
+            'id': self.id, 'topic_id': self.topic_id, 'title': self.title,
+            'order_number': self.order_number, 'points_earned': self.points_earned
         }
 
 
@@ -100,7 +174,12 @@ class Quiz(db.Model):
     subject_id = db.Column(db.Integer, db.ForeignKey('subjects.id'), nullable=False)
     difficulty = db.Column(db.String(20), default='easy')
     description = db.Column(db.String(200), default='')
+    lesson_id = db.Column(db.Integer, db.ForeignKey('lessons.id'), nullable=True)
+    grade_id = db.Column(db.Integer, db.ForeignKey('grades.id'), nullable=True)
     questions = db.relationship('Question', backref='quiz', lazy=True, cascade='all, delete-orphan')
+
+    lesson = db.relationship('Lesson', backref='quizzes')
+    grade = db.relationship('Grade', backref='quizzes')
 
     def to_dict(self):
         return {
@@ -145,7 +224,27 @@ class Score(db.Model):
 
     def to_dict(self):
         return {'id': self.id, 'user_id': self.user_id, 'quiz_id': self.quiz_id,
-                'score': self.score, 'points_earned': self.points_earned, 'completed_at': self.completed_at.isoformat()}
+                'score': self.score, 'points_earned': self.points_earned,
+                'completed_at': self.completed_at.isoformat()}
+
+
+class UserLessonProgress(db.Model):
+    __tablename__ = 'user_lesson_progress'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    lesson_id = db.Column(db.Integer, db.ForeignKey('lessons.id'), nullable=False)
+    completed = db.Column(db.Boolean, default=False)
+    score = db.Column(db.Integer, default=0)
+    completed_at = db.Column(db.DateTime, nullable=True)
+
+    lesson = db.relationship('Lesson', backref='user_progress')
+
+    def to_dict(self):
+        return {
+            'id': self.id, 'user_id': self.user_id, 'lesson_id': self.lesson_id,
+            'completed': self.completed, 'score': self.score,
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None
+        }
 
 
 class UserBadge(db.Model):
@@ -157,80 +256,51 @@ class UserBadge(db.Model):
     badge_description = db.Column(db.String(100), default='')
     earned_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    def to_dict(self):
-        return {'id': self.id, 'badge_name': self.badge_name, 'badge_icon': self.badge_icon,
-                'badge_description': self.badge_description, 'earned_at': self.earned_at.isoformat()}
-
 
 class ShopItem(db.Model):
-    """Items kids can buy with coins."""
     __tablename__ = 'shop_items'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     icon = db.Column(db.String(20), nullable=False)
-    item_type = db.Column(db.String(20), nullable=False)  # 'frame', 'background', etc.
+    item_type = db.Column(db.String(20), nullable=False)
     price = db.Column(db.Integer, default=50)
     description = db.Column(db.String(100), default='')
 
-    def to_dict(self):
-        return {'id': self.id, 'name': self.name, 'icon': self.icon,
-                'item_type': self.item_type, 'price': self.price, 'description': self.description}
-
 
 class UserOwnedItem(db.Model):
-    """Track which items users have bought."""
     __tablename__ = 'user_owned_items'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     item_id = db.Column(db.Integer, db.ForeignKey('shop_items.id'), nullable=False)
     purchased_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=False)
-
     item = db.relationship('ShopItem', backref='owners')
 
 
 class Story(db.Model):
-    """Children's stories across various genres."""
     __tablename__ = 'stories'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     content = db.Column(db.Text, nullable=False)
-    story_type = db.Column(db.String(50), nullable=False)  # folktale, moral, funny, educational, adventure, imagination
+    story_type = db.Column(db.String(50), nullable=False)
     age_range = db.Column(db.String(20), default='6-12')
-    reading_time = db.Column(db.Integer, default=5)  # Minutes
-    language = db.Column(db.String(10), default='en')  # en, sw
+    reading_time = db.Column(db.Integer, default=5)
+    language = db.Column(db.String(10), default='en')
     related_subject_id = db.Column(db.Integer, db.ForeignKey('subjects.id'), nullable=True)
     points_earned = db.Column(db.Integer, default=15)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
     related_subject = db.relationship('Subject', backref='stories')
-
-    def to_dict(self):
-        return {
-            'id': self.id, 'title': self.title, 'story_type': self.story_type,
-            'age_range': self.age_range, 'reading_time': self.reading_time,
-            'language': self.language,
-            'points_earned': self.points_earned, 'related_subject_id': self.related_subject_id
-        }
 
 
 class UserStoryRead(db.Model):
-    """Track stories read by users and points awarded."""
     __tablename__ = 'user_story_reads'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     story_id = db.Column(db.Integer, db.ForeignKey('stories.id'), nullable=False)
     read_at = db.Column(db.DateTime, default=datetime.utcnow)
     points_awarded = db.Column(db.Boolean, default=False)
-
     user = db.relationship('User', backref='read_stories')
     story = db.relationship('Story', backref='read_by')
-
-    def to_dict(self):
-        return {
-            'id': self.id, 'user_id': self.user_id, 'story_id': self.story_id,
-            'read_at': self.read_at.isoformat(), 'points_awarded': self.points_awarded
-        }
 
 
 BADGE_DEFINITIONS = {
@@ -248,4 +318,7 @@ BADGE_DEFINITIONS = {
     'story_lover': {'icon': '📖', 'name': 'Story Lover', 'description': 'Read 5 stories'},
     'story_master': {'icon': '📚', 'name': 'Story Master', 'description': 'Read 15 stories'},
     'imagination_king': {'icon': '🦄', 'name': 'Imagination King', 'description': 'Read 5 imagination stories'},
+    'first_lesson': {'icon': '📗', 'name': 'First Lesson', 'description': 'Complete your first lesson'},
+    'five_lessons': {'icon': '📚', 'name': 'Eager Learner', 'description': 'Complete 5 lessons'},
+    'topic_master': {'icon': '🏅', 'name': 'Topic Master', 'description': 'Complete all lessons in a topic'},
 }

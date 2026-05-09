@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=6.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=7.0">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -21,6 +21,7 @@
 
         <ul class="sidebar-nav">
             <li><a href="{{ url_for('main.index') }}" class="sidebar-link {% if request.endpoint == 'main.index' %}active{% endif %}"><span class="icon">&#127968;</span> Home</a></li>
+            <li><a href="{{ url_for('lessons.grade_select') }}" class="sidebar-link {% if 'lessons' in request.endpoint %}active{% endif %}"><span class="icon">&#128218;</span> CBC Learning</a></li>
             <li><a href="{{ url_for('main.subjects') }}" class="sidebar-link {% if 'subject' in request.endpoint %}active{% endif %}"><span class="icon">&#128214;</span> Subjects</a></li>
             <li><a href="{{ url_for('stories.story_list') }}" class="sidebar-link {% if 'stories' in request.endpoint %}active{% endif %}"><span class="icon">&#128218;</span> Stories</a></li>
             <li><a href="{{ url_for('main.phonics') }}" class="sidebar-link {% if request.endpoint == 'main.phonics' %}active{% endif %}"><span class="icon">&#128260;</span> Phonics</a></li>

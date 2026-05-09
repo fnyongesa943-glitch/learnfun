@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}{{ grade.name }} - LearnFun CBC{% endblock %}
+
+{% block content %}
+<div class="container-sm">
+    <a href="{{ url_for('lessons.grade_select') }}" class="btn btn-outline btn-sm" style="margin-bottom: 16px;">← All Grades</a>
+
+    <div class="dashboard-header">
+        <h1>{{ grade.icon }} {{ grade.name }}</h1>
+        <p>{{ grade.category }} · CBC Curriculum</p>
+    </div>
+
+    {% for item in grade_subjects %}
+    <div class="subject-group" style="margin-bottom: 28px;">
+        <div class="subject-group-header">
+            <span class="subject-group-icon" style="background: {{ item.subject.color }}22; color: {{ item.subject.color }};">
+                {{ item.subject.icon }}
+            </span>
+            <div>
+                <h3 style="margin: 0;">{{ item.subject.name }}</h3>
+                <small class="text-muted">{{ item.total_lessons }} lessons · {{ item.topics|length }} topics</small>
+            </div>
+            {% if item.total_lessons > 0 %}
+            <div class="topic-progress-bar" style="margin-left: auto; width: 120px;">
+                <div class="topic-progress-fill" style="width: {{ (item.completed_lessons / item.total_lessons * 100)|int }}%; background: {{ item.subject.color }};"></div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="topic-grid">
+            {% for topic in item.topics %}
+            <a href="{{ url_for('lessons.topic_detail', topic_id=topic.id) }}" class="card topic-card">
+                <div class="topic-card-icon">{{ topic.icon }}</div>
+                <h4>{{ topic.title }}</h4>
+                <p class="topic-card-desc">{{ topic.subtitle }}</p>
+                <div class="topic-card-meta">
+                    <span class="badge difficulty-{{ topic.difficulty }}">{{ topic.difficulty }}</span>
+                    <span class="topic-lesson-count">{{ topic.lesson_count() }} lessons</span>
+                </div>
+                <span class="topic-arrow">→</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="card text-center" style="padding: 48px 24px;">
+        <div style="font-size: 3rem; margin-bottom: 16px;">📚</div>
+        <h3>Coming Soon!</h3>
+        <p class="text-muted">Lessons for this grade are being created. Check back soon!</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
