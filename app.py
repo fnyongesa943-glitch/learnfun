@@ -115,6 +115,32 @@ def run_migrations():
             db.session.rollback()
             print(f"  Migration warning ({migration[:60]}): {e}")
 
+    # Fix old phonics quiz sounds (e.g. "ah" → "a", "buh" → "b")
+    try:
+        from models import Question
+        sound_fixes = {
+            'ah': 'a', 'buh': 'b', 'kuh': 'k', 'duh': 'd',
+            'eh': 'e', 'fff': 'f', 'guh': 'g',
+            'hhh': 'h', 'ih': 'i', 'jjj': 'j',
+            'lll': 'l', 'mmm': 'm', 'nnn': 'n',
+            'oh': 'o', 'puh': 'p',
+            'rrr': 'r', 'sss': 's', 'tuh': 't',
+            'uh': 'u', 'vvv': 'v', 'www': 'w',
+            'yyy': 'y', 'zzz': 'z',
+        }
+        for old, new in sound_fixes.items():
+            for col in ['option_a', 'option_b', 'option_c', 'option_d']:
+                kwargs = {col: old}
+                count = Question.query.filter_by(**kwargs).count()
+                if count > 0:
+                    kwargs_update = {col: new}
+                    db.session.query(Question).filter_by(**{col: old}).update(
+                        kwargs_update, synchronize_session=False
+                    )
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
     # Ensure new tables exist
     try:
         db.create_all()
@@ -221,47 +247,47 @@ def seed_data():
     ph1 = add_quiz_if_missing('Phonics A-G', 'ABC', 'easy', 'Letter sounds!')
     if ph1:
         add_questions_if_missing(ph1, [
-            Question(quiz_id=ph1.id, text='What sound does A make?', option_a='ah', option_b='bee', option_c='kuh', option_d='duh', correct_answer='A', explanation='A says "ah" like Apple!', hint='🍎 ah-pple.', points=5),
-            Question(quiz_id=ph1.id, text='What sound does B make?', option_a='sss', option_b='buh', option_c='mmm', option_d='tuh', correct_answer='B', explanation='B says "buh" like Ball!', hint='⚽ buh-all.', points=5),
-            Question(quiz_id=ph1.id, text='What sound does C make?', option_a='kuh', option_b='fff', option_c='rrr', option_d='www', correct_answer='A', explanation='C says "kuh" like Cat!', hint='🐱 kuh-at.', points=5),
-            Question(quiz_id=ph1.id, text='What sound does D make?', option_a='buh', option_b='duh', option_c='puh', option_d='guh', correct_answer='B', explanation='D says "duh" like Dog!', hint='🐶 duh-og.', points=5),
-            Question(quiz_id=ph1.id, text='What sound does E make?', option_a='eh', option_b='ah', option_c='oh', option_d='ih', correct_answer='A', explanation='E says "eh" like Elephant!', hint='🐘 eh-lephant.', points=5),
-            Question(quiz_id=ph1.id, text='What sound does F make?', option_a='fff', option_b='vvv', option_c='thh', option_d='hhh', correct_answer='A', explanation='F says "fff" like Fish!', hint='🐟 fff-ish.', points=5),
-            Question(quiz_id=ph1.id, text='What sound does G make?', option_a='duh', option_b='kuh', option_c='guh', option_d='buh', correct_answer='C', explanation='G says "guh" like Guitar!', hint='🎸 guh-uitar.', points=5),
+            Question(quiz_id=ph1.id, text='What sound does A make?', option_a='a', option_b='b', option_c='k', option_d='d', correct_answer='A', explanation='A says "a" like Apple!', hint='🍎 a-pple.', points=5),
+            Question(quiz_id=ph1.id, text='What sound does B make?', option_a='s', option_b='b', option_c='m', option_d='t', correct_answer='B', explanation='B says "b" like Ball!', hint='⚽ b-all.', points=5),
+            Question(quiz_id=ph1.id, text='What sound does C make?', option_a='k', option_b='f', option_c='r', option_d='w', correct_answer='A', explanation='C says "k" like Cat!', hint='🐱 k-at.', points=5),
+            Question(quiz_id=ph1.id, text='What sound does D make?', option_a='b', option_b='d', option_c='p', option_d='g', correct_answer='B', explanation='D says "d" like Dog!', hint='🐶 d-og.', points=5),
+            Question(quiz_id=ph1.id, text='What sound does E make?', option_a='e', option_b='a', option_c='o', option_d='i', correct_answer='A', explanation='E says "e" like Elephant!', hint='🐘 e-lephant.', points=5),
+            Question(quiz_id=ph1.id, text='What sound does F make?', option_a='f', option_b='v', option_c='th', option_d='h', correct_answer='A', explanation='F says "f" like Fish!', hint='🐟 f-ish.', points=5),
+            Question(quiz_id=ph1.id, text='What sound does G make?', option_a='d', option_b='k', option_c='g', option_d='b', correct_answer='C', explanation='G says "g" like Guitar!', hint='🎸 g-uitar.', points=5),
         ])
 
     ph2 = add_quiz_if_missing('Phonics H-N', 'ABC', 'easy', 'More letter sounds!')
     if ph2:
         add_questions_if_missing(ph2, [
-            Question(quiz_id=ph2.id, text='What sound does H make?', option_a='hhh', option_b='jjj', option_c='kkk', option_d='lll', correct_answer='A', explanation='H says "hhh" like Hat!', hint='🎩 hhh-at.', points=5),
-            Question(quiz_id=ph2.id, text='What sound does I make?', option_a='eh', option_b='ih', option_c='ah', option_d='oh', correct_answer='B', explanation='I says "ih" like Igloo!', hint='🏔️ ih-gloo.', points=5),
-            Question(quiz_id=ph2.id, text='What sound does J make?', option_a='sss', option_b='jjj', option_c='zzz', option_d='vvv', correct_answer='B', explanation='J says "jjj" like Juice!', hint='🧃 jjj-uice.', points=5),
-            Question(quiz_id=ph2.id, text='What sound does K make?', option_a='kuh', option_b='puh', option_c='tuh', option_d='buh', correct_answer='A', explanation='K says "kuh" like Kite!', hint='🪁 kuh-ite.', points=5),
-            Question(quiz_id=ph2.id, text='What sound does L make?', option_a='mmm', option_b='nnn', option_c='lll', option_d='rrr', correct_answer='C', explanation='L says "lll" like Lion!', hint='🦁 lll-ion.', points=5),
-            Question(quiz_id=ph2.id, text='What sound does M make?', option_a='nnn', option_b='mmm', option_c='bbb', option_d='ppp', correct_answer='B', explanation='M says "mmm" like Moon!', hint='🌙 mmm-oon.', points=5),
-            Question(quiz_id=ph2.id, text='What sound does N make?', option_a='mmm', option_b='nnn', option_c='ttt', option_d='kkk', correct_answer='B', explanation='N says "nnn" like Nest!', hint='🐦 nnn-est.', points=5),
+            Question(quiz_id=ph2.id, text='What sound does H make?', option_a='h', option_b='j', option_c='k', option_d='l', correct_answer='A', explanation='H says "h" like Hat!', hint='🎩 h-at.', points=5),
+            Question(quiz_id=ph2.id, text='What sound does I make?', option_a='e', option_b='i', option_c='a', option_d='o', correct_answer='B', explanation='I says "i" like Igloo!', hint='🏔️ i-gloo.', points=5),
+            Question(quiz_id=ph2.id, text='What sound does J make?', option_a='s', option_b='j', option_c='z', option_d='v', correct_answer='B', explanation='J says "j" like Juice!', hint='🧃 j-uice.', points=5),
+            Question(quiz_id=ph2.id, text='What sound does K make?', option_a='k', option_b='p', option_c='t', option_d='b', correct_answer='A', explanation='K says "k" like Kite!', hint='🪁 k-ite.', points=5),
+            Question(quiz_id=ph2.id, text='What sound does L make?', option_a='m', option_b='n', option_c='l', option_d='r', correct_answer='C', explanation='L says "l" like Lion!', hint='🦁 l-ion.', points=5),
+            Question(quiz_id=ph2.id, text='What sound does M make?', option_a='n', option_b='m', option_c='b', option_d='p', correct_answer='B', explanation='M says "m" like Moon!', hint='🌙 m-oon.', points=5),
+            Question(quiz_id=ph2.id, text='What sound does N make?', option_a='m', option_b='n', option_c='t', option_d='k', correct_answer='B', explanation='N says "n" like Nest!', hint='🐦 n-est.', points=5),
         ])
 
     ph3 = add_quiz_if_missing('Phonics O-T', 'ABC', 'easy', 'Keep going!')
     if ph3:
         add_questions_if_missing(ph3, [
-            Question(quiz_id=ph3.id, text='What sound does O make?', option_a='ah', option_b='eh', option_c='oh', option_d='uh', correct_answer='C', explanation='O says "oh" like Octopus!', hint='🐙 oh-ctopus.', points=5),
-            Question(quiz_id=ph3.id, text='What sound does P make?', option_a='buh', option_b='puh', option_c='duh', option_d='guh', correct_answer='B', explanation='P says "puh" like Pig!', hint='🐷 puh-ig.', points=5),
-            Question(quiz_id=ph3.id, text='What sound does Q make?', option_a='kuh', option_b='www', option_c='ttt', option_d='zzz', correct_answer='A', explanation='Q says "kuh" like Queen!', hint='👸 kuh-ueen.', points=5),
-            Question(quiz_id=ph3.id, text='What sound does R make?', option_a='lll', option_b='rrr', option_c='www', option_d='yyy', correct_answer='B', explanation='R says "rrr" like Rain!', hint='🌧️ rrr-ain.', points=5),
-            Question(quiz_id=ph3.id, text='What sound does S make?', option_a='zzz', option_b='sss', option_c='fff', option_d='thh', correct_answer='B', explanation='S says "sss" like Sun!', hint='☀️ sss-un.', points=5),
-            Question(quiz_id=ph3.id, text='What sound does T make?', option_a='duh', option_b='puh', option_c='tuh', option_d='kuh', correct_answer='C', explanation='T says "tuh" like Tree!', hint='🌳 tuh-ree.', points=5),
+            Question(quiz_id=ph3.id, text='What sound does O make?', option_a='a', option_b='e', option_c='o', option_d='u', correct_answer='C', explanation='O says "o" like Octopus!', hint='🐙 o-ctopus.', points=5),
+            Question(quiz_id=ph3.id, text='What sound does P make?', option_a='b', option_b='p', option_c='d', option_d='g', correct_answer='B', explanation='P says "p" like Pig!', hint='🐷 p-ig.', points=5),
+            Question(quiz_id=ph3.id, text='What sound does Q make?', option_a='kw', option_b='w', option_c='t', option_d='z', correct_answer='A', explanation='Q says "kw" like Queen!', hint='👸 kw-ueen.', points=5),
+            Question(quiz_id=ph3.id, text='What sound does R make?', option_a='l', option_b='r', option_c='w', option_d='y', correct_answer='B', explanation='R says "r" like Rain!', hint='🌧️ r-ain.', points=5),
+            Question(quiz_id=ph3.id, text='What sound does S make?', option_a='z', option_b='s', option_c='f', option_d='th', correct_answer='B', explanation='S says "s" like Sun!', hint='☀️ s-un.', points=5),
+            Question(quiz_id=ph3.id, text='What sound does T make?', option_a='d', option_b='p', option_c='t', option_d='k', correct_answer='C', explanation='T says "t" like Tree!', hint='🌳 t-ree.', points=5),
         ])
 
     ph4 = add_quiz_if_missing('Phonics U-Z', 'ABC', 'easy', 'Last sounds!')
     if ph4:
         add_questions_if_missing(ph4, [
-            Question(quiz_id=ph4.id, text='What sound does U make?', option_a='ah', option_b='uh', option_c='eh', option_d='ih', correct_answer='B', explanation='U says "uh" like Umbrella!', hint='☂️ uh-mbrella.', points=5),
-            Question(quiz_id=ph4.id, text='What sound does V make?', option_a='fff', option_b='www', option_c='vvv', option_d='zzz', correct_answer='C', explanation='V says "vvv" like Violin!', hint='🎻 vvv-iolin.', points=5),
-            Question(quiz_id=ph4.id, text='What sound does W make?', option_a='www', option_b='vvv', option_c='yyy', option_d='rrr', correct_answer='A', explanation='W says "www" like Water!', hint='💧 www-ater.', points=5),
-            Question(quiz_id=ph4.id, text='What sound does X make?', option_a='ks', option_b='ss', option_c='tt', option_d='gg', correct_answer='A', explanation='X says "ks" like Box!', hint='📦 bo-ks.', points=5),
-            Question(quiz_id=ph4.id, text='What sound does Y make?', option_a='eee', option_b='yyy', option_c='iii', option_d='aaa', correct_answer='B', explanation='Y says "yyy" like Yellow!', hint='💛 yyy-ellow.', points=5),
-            Question(quiz_id=ph4.id, text='What sound does Z make?', option_a='sss', option_b='vvv', option_c='zzz', option_d='fff', correct_answer='C', explanation='Z says "zzz" like Zebra!', hint='🦓 ze-br-azzz.', points=5),
+            Question(quiz_id=ph4.id, text='What sound does U make?', option_a='a', option_b='u', option_c='e', option_d='i', correct_answer='B', explanation='U says "u" like Umbrella!', hint='☂️ u-mbrella.', points=5),
+            Question(quiz_id=ph4.id, text='What sound does V make?', option_a='f', option_b='w', option_c='v', option_d='z', correct_answer='C', explanation='V says "v" like Violin!', hint='🎻 v-iolin.', points=5),
+            Question(quiz_id=ph4.id, text='What sound does W make?', option_a='w', option_b='v', option_c='y', option_d='r', correct_answer='A', explanation='W says "w" like Water!', hint='💧 w-ater.', points=5),
+            Question(quiz_id=ph4.id, text='What sound does X make?', option_a='ks', option_b='s', option_c='t', option_d='g', correct_answer='A', explanation='X says "ks" like Box!', hint='📦 bo-ks.', points=5),
+            Question(quiz_id=ph4.id, text='What sound does Y make?', option_a='e', option_b='y', option_c='i', option_d='a', correct_answer='B', explanation='Y says "y" like Yellow!', hint='💛 y-ellow.', points=5),
+            Question(quiz_id=ph4.id, text='What sound does Z make?', option_a='s', option_b='v', option_c='z', option_d='f', correct_answer='C', explanation='Z says "z" like Zebra!', hint='🦓 z-ebra.', points=5),
         ])
 
     # --- 123 QUIZZES ---

@@ -24,7 +24,7 @@
         <div class="phonics-modal-content" onclick="event.stopPropagation()">
             <button class="modal-close" onclick="closeModal()">&#10006;</button>
             <div class="modal-letter" id="modalLetter">A</div>
-            <div class="modal-sound">says "<span id="modalSound">ah</span>"</div>
+            <div class="modal-sound">says "<span id="modalSound">a</span>"</div>
             <div class="modal-emoji" id="modalEmoji">&#127822;</div>
             <div class="modal-word" id="modalWord">Apple</div>
             <button class="btn btn-primary btn-lg" onclick="playSound()" style="width: 100%;">
@@ -61,18 +61,15 @@ function closeModal() {
 }
 
 function playSound() {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(440, ctx.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
-    gainNode.gain.setValueAtTime(0.2, ctx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-    oscillator.start(ctx.currentTime);
-    oscillator.stop(ctx.currentTime + 0.5);
+    const letter = document.getElementById('modalLetter').textContent;
+    const word = document.getElementById('modalWord').textContent;
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(letter + ' says ' + word);
+        utter.rate = 0.7;
+        utter.pitch = 1.2;
+        window.speechSynthesis.speak(utter);
+    }
 }
 
 document.addEventListener('keydown', (e) => {
