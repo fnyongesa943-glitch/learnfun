@@ -17,10 +17,15 @@ def create_app():
     db.init_app(app)
 
     with app.app_context():
-        db.create_all()
-        run_migrations()
-        seed_data()
-        seed_cbc_data()
+        try:
+            db.create_all()
+            run_migrations()
+            seed_data()
+            seed_cbc_data()
+        except Exception as e:
+            print(f"⚠️ Startup error (non-fatal): {e}")
+            import traceback
+            traceback.print_exc()
 
     from blueprints.main import main_bp
     from blueprints.auth import auth_bp
@@ -51,59 +56,67 @@ def create_app():
 
 
 def run_migrations():
-    """Add missing columns to existing SQLite tables safely."""
+    """Add missing columns to existing database tables safely."""
     from sqlalchemy import inspect, text
-    inspector = inspect(db.engine)
+    try:
+        inspector = inspect(db.engine)
+    except Exception:
+        return  # Can't inspect, skip migrations
 
-    # Check User table
-    if 'users' in inspector.get_table_names():
-        cols = {c['name']: c for c in inspector.get_columns('users')}
-
-        if 'avatar_frame' not in cols:
-            db.session.execute(text("ALTER TABLE users ADD COLUMN avatar_frame VARCHAR(20) DEFAULT 'none'"))
-        if 'coins' not in cols:
-            db.session.execute(text("ALTER TABLE users ADD COLUMN coins INTEGER DEFAULT 0"))
-        if 'streak_days' not in cols:
-            db.session.execute(text("ALTER TABLE users ADD COLUMN streak_days INTEGER DEFAULT 0"))
-        if 'last_active' not in cols:
-            db.session.execute(text("ALTER TABLE users ADD COLUMN last_active DATETIME"))
-        if 'parent_pin' not in cols:
-            db.session.execute(text("ALTER TABLE users ADD COLUMN parent_pin VARCHAR(4) DEFAULT '0000'"))
+    migrations = []
 
     # Check subjects table for category column
-    if 'subjects' in inspector.get_table_names():
-        cols = {c['name']: c for c in inspector.get_columns('subjects')}
-        if 'category' not in cols:
-            db.session.execute(text("ALTER TABLE subjects ADD COLUMN category VARCHAR(30) DEFAULT 'Core'"))
+    try:
+        if 'subjects' in inspector.get_table_names():
+            cols = {c['name']: c for c in inspector.get_columns('subjects')}
+            if 'category' not in cols:
+                migrations.append("ALTER TABLE subjects ADD COLUMN category VARCHAR(30) DEFAULT 'Core'")
+    except Exception:
+        pass
 
-    # Check questions table
-    if 'questions' in inspector.get_table_names():
-        cols = {c['name']: c for c in inspector.get_columns('questions')}
-        if 'hint' not in cols:
-            db.session.execute(text("ALTER TABLE questions ADD COLUMN hint VARCHAR(200) DEFAULT ''"))
+    # Check questions table for hint column
+    try:
+        if 'questions' in inspector.get_table_names():
+            cols = {c['name']: c for c in inspector.get_columns('questions')}
+            if 'hint' not in cols:
+                migrations.append("ALTER TABLE questions ADD COLUMN hint VARCHAR(200) DEFAULT ''")
+    except Exception:
+        pass
 
     # Check quizzes table for new columns
-    if 'quizzes' in inspector.get_table_names():
-        cols = {c['name']: c for c in inspector.get_columns('quizzes')}
-        if 'lesson_id' not in cols:
-            db.session.execute(text("ALTER TABLE quizzes ADD COLUMN lesson_id INTEGER"))
-        if 'grade_id' not in cols:
-            db.session.execute(text("ALTER TABLE quizzes ADD COLUMN grade_id INTEGER"))
-
-    # Create new tables if they don't exist
-    for table in ['shop_items', 'user_owned_items', 'stories', 'user_story_reads',
-                  'grades', 'topics', 'lessons', 'user_lesson_progress']:
-        if table not in inspector.get_table_names():
-            db.create_all()
-            break
+    try:
+        if 'quizzes' in inspector.get_table_names():
+            cols = {c['name']: c for c in inspector.get_columns('quizzes')}
+            if 'lesson_id' not in cols:
+                migrations.append("ALTER TABLE quizzes ADD COLUMN lesson_id INTEGER")
+            if 'grade_id' not in cols:
+                migrations.append("ALTER TABLE quizzes ADD COLUMN grade_id INTEGER")
+    except Exception:
+        pass
 
     # Check stories for language column
-    if 'stories' in inspector.get_table_names():
-        cols = {c['name']: c for c in inspector.get_columns('stories')}
-        if 'language' not in cols:
-            db.session.execute(text("ALTER TABLE stories ADD COLUMN language VARCHAR(10) DEFAULT 'en'"))
+    try:
+        if 'stories' in inspector.get_table_names():
+            cols = {c['name']: c for c in inspector.get_columns('stories')}
+            if 'language' not in cols:
+                migrations.append("ALTER TABLE stories ADD COLUMN language VARCHAR(10) DEFAULT 'en'")
+    except Exception:
+        pass
 
-    db.session.commit()
+    # Execute migrations
+    for migration in migrations:
+        try:
+            db.session.execute(text(migration))
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print(f"  Migration warning ({migration[:60]}): {e}")
+
+    # Ensure new tables exist
+    try:
+        db.create_all()
+    except Exception:
+        pass
 
 
 def seed_data():
@@ -831,19 +844,30 @@ def seed_cbc_data():
     # Always update subject categories for existing subjects
     subject_categories = {s['name']: s['category'] for s in cbc.SUBJECTS}
     for subj in Subject.query.all():
-        if subj.name in subject_categories and subj.category != subject_categories[subj.name]:
-            subj.category = subject_categories[subj.name]
-            db.session.commit()
+        try:
+            if subj.name in subject_categories:
+                current = getattr(subj, 'category', None)
+                if current != subject_categories[subj.name]:
+                    subj.category = subject_categories[subj.name]
+        except Exception:
+            pass
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
 
     if Grade.query.first():
         print("  CBC content already exists, skipping.")
         return
 
-    cbc.seed_grades(db, Grade)
-    cbc.seed_subjects(db, Subject)
-
-    cbc.seed_cbc_content(db, Grade, Subject, Topic, Lesson)
-    print("✅ CBC curriculum seeded!")
+    try:
+        cbc.seed_grades(db, Grade)
+        cbc.seed_subjects(db, Subject)
+        cbc.seed_cbc_content(db, Grade, Subject, Topic, Lesson)
+        print("✅ CBC curriculum seeded!")
+    except Exception as e:
+        print(f"  CBC seeding warning: {e}")
+        db.session.rollback()
 
 
 if __name__ == '__main__':
