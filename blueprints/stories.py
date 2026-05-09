@@ -10,9 +10,10 @@ stories_bp = Blueprint('stories', __name__)
 
 @stories_bp.route('/')
 def story_list():
-    """Display all stories, filterable by type."""
+    """Display all stories, filterable by type and language."""
     story_type = request.args.get('type', 'all')
     age = request.args.get('age', 'all')
+    lang = request.args.get('lang', 'all')
 
     query = Story.query
 
@@ -20,12 +21,16 @@ def story_list():
         query = query.filter_by(story_type=story_type)
     if age != 'all':
         query = query.filter_by(age_range=age)
+    if lang != 'all':
+        query = query.filter_by(language=lang)
 
     stories = query.order_by(Story.created_at.desc()).all()
 
-    # Get unique story types for filter
+    # Get unique story types and languages for filter
     story_types = db.session.query(Story.story_type).distinct().all()
     story_types = [t[0] for t in story_types]
+    languages = db.session.query(Story.language).distinct().all()
+    languages = [t[0] for t in languages]
 
     # Get user's read stories
     read_story_ids = []
@@ -35,9 +40,11 @@ def story_list():
     return render_template('stories.html',
                            stories=stories,
                            story_types=story_types,
+                           languages=languages,
                            read_story_ids=read_story_ids,
                            current_type=story_type,
-                           current_age=age)
+                           current_age=age,
+                           current_lang=lang)
 
 
 @stories_bp.route('/<int:story_id>')

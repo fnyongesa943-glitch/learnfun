@@ -4,25 +4,25 @@
 
 {% block content %}
 <div class="container-sm">
-    <!-- Subject Header -->
-    <div class="card mb-4" style="border-top: 5px solid {{ subject.color }};">
+    <div class="card" style="margin-bottom: var(--space-lg); border-left: 4px solid {{ subject.color }};">
         <div class="flex-center gap-3" style="flex-wrap: wrap;">
-            <span style="font-size: 4rem;">{{ subject.icon }}</span>
+            <span style="font-size: 3rem;">{{ subject.icon }}</span>
             <div>
-                <h1 style="margin-bottom: 0.3rem; color: {{ subject.color }};">{{ subject.name }}</h1>
+                <h1 style="margin-bottom: 2px; color: {{ subject.color }};">{{ subject.name }}</h1>
                 <p style="color: var(--text-secondary); margin: 0;">{{ subject.description }}</p>
             </div>
         </div>
     </div>
 
-    <a href="{{ url_for('main.subjects') }}" class="btn btn-outline btn-sm mb-3">
-        ← Back to Subjects
+    <a href="{{ url_for('main.subjects') }}" class="btn btn-outline btn-sm mb-3" style="margin-bottom: var(--space-md); display: inline-flex;">
+        &larr; Back to Subjects
     </a>
 
-    <h2>📝 Available Quizzes</h2>
-    <p style="color: var(--text-secondary);">Pick a quiz and start learning!</p>
+    <div class="page-header" style="margin-top: var(--space-lg); margin-bottom: var(--space-md);">
+        <h2>&#128221; Available Quizzes</h2>
+        <p>Pick a quiz and start learning!</p>
+    </div>
 
-    <!-- Quiz List -->
     <div class="quiz-list">
         {% for quiz in quizzes %}
         <div class="quiz-item">
@@ -32,14 +32,14 @@
                 </div>
                 <div>
                     <div class="quiz-title">{{ quiz.title }}</div>
-                    <div class="quiz-desc">{{ quiz.description }} • {{ quiz.questions|length }} questions</div>
+                    <div class="quiz-desc">{{ quiz.description }} &bull; {{ quiz.questions|length }} questions</div>
                 </div>
             </div>
             <div class="flex-center gap-2" style="flex-wrap: wrap;">
                 <span class="difficulty-badge difficulty-{{ quiz.difficulty }}">{{ quiz.difficulty }}</span>
                 {% if current_user %}
                 <a href="{{ url_for('quiz.start_quiz', quiz_id=quiz.id) }}" class="btn btn-primary btn-sm">
-                    Start! 🚀
+                    Play Now &#128640;
                 </a>
                 {% else %}
                 <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-sm">
@@ -52,24 +52,23 @@
     </div>
 
     {% if not quizzes %}
-    <div class="card text-center mt-4">
-        <div style="font-size: 3rem; margin-bottom: 1rem;">🔜</div>
+    <div class="card text-center" style="padding: var(--space-2xl);">
+        <div style="font-size: 3rem; margin-bottom: var(--space-md);">&#128284;</div>
         <h3>Coming Soon!</h3>
         <p style="color: var(--text-secondary);">New quizzes are being created. Check back soon!</p>
     </div>
     {% endif %}
 
-    <!-- Phonics Link for ABC subject -->
     {% if subject.name == 'ABC' %}
-    <div class="card mt-4" style="background: linear-gradient(135deg, #EC4899, #F472B6); color: white;">
+    <div class="card" style="margin-top: var(--space-lg); background: linear-gradient(135deg, #EC4899, #F472B6); color: white; border: none;">
         <div class="text-center">
-            <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔤🎵</div>
-            <h2 style="color: white; margin-bottom: 0.5rem;">ABC Phonics Chart</h2>
-            <p style="color: rgba(255,255,255,0.9); margin-bottom: 1.5rem;">
+            <div style="font-size: 2.5rem; margin-bottom: var(--space-sm);">&#128260;&#127926;</div>
+            <h2 style="color: white; margin-bottom: 4px;">ABC Phonics Chart</h2>
+            <p style="color: rgba(255,255,255,0.9); margin-bottom: var(--space-lg);">
                 Click on each letter to hear its sound and learn new words!
             </p>
             <a href="{{ url_for('main.phonics') }}" class="btn btn-lg" style="background: white; color: #EC4899; font-weight: 800;">
-                🎤 Open Phonics Chart
+                &#127925; Open Phonics Chart
             </a>
         </div>
     </div>

@@ -4,18 +4,18 @@
 
 {% block content %}
 <div class="container-sm">
-    <div class="result-container card">
-        <div style="font-size: 4rem; margin-bottom: 0.5rem;">
+    <div class="card result-container">
+        <div style="font-size: 3.5rem; margin-bottom: var(--space-sm);">
             {% if score >= 80 %}
-            🎉
+            &#127881;
             {% elif score >= 50 %}
-            👍
+            &#128077;
             {% else %}
-            💪
+            &#128170;
             {% endif %}
         </div>
 
-        <h1>{{ quiz.title }} - Results</h1>
+        <h1 style="margin-bottom: 4px;">{{ quiz.title }} - Results</h1>
 
         <div class="result-score {{ 'excellent' if score >= 80 else ('good' if score >= 50 else 'try-again') }}">
             {{ score }}%
@@ -23,61 +23,58 @@
 
         <div class="result-stars">
             {% if score >= 80 %}
-            <span>⭐</span><span>⭐</span><span>⭐</span>
+            <span>&#11088;</span><span>&#11088;</span><span>&#11088;</span>
             {% elif score >= 50 %}
-            <span>⭐</span><span>⭐</span><span style="opacity: 0.2;">⭐</span>
+            <span>&#11088;</span><span>&#11088;</span><span style="opacity: 0.2;">&#11088;</span>
             {% else %}
-            <span>⭐</span><span style="opacity: 0.2;">⭐</span><span style="opacity: 0.2;">⭐</span>
+            <span>&#11088;</span><span style="opacity: 0.2;">&#11088;</span><span style="opacity: 0.2;">&#11088;</span>
             {% endif %}
         </div>
 
         <div class="result-message">
             {% if score == 100 %}
-            PERFECT SCORE! You're amazing! 🌟
+            PERFECT SCORE! You're amazing! &#127775;
             {% elif score >= 80 %}
-            Great job! You did awesome! 🎉
+            Great job! You did awesome! &#127881;
             {% elif score >= 50 %}
-            Good work! Keep practicing! 👍
+            Good work! Keep practicing! &#128077;
             {% else %}
-            Nice try! Practice makes perfect! 💪
+            Nice try! Practice makes perfect! &#128170;
             {% endif %}
         </div>
 
-        <!-- Stats Row -->
-        <div class="stats-grid" style="margin: 2rem 0;">
+        <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-icon">✅</div>
+                <div class="stat-icon">&#10004;&#65039;</div>
                 <div class="stat-value">{{ correct }}</div>
                 <div class="stat-label">Correct</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">❌</div>
+                <div class="stat-icon">&#10060;</div>
                 <div class="stat-value">{{ total - correct }}</div>
                 <div class="stat-label">Incorrect</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">⭐</div>
+                <div class="stat-icon">&#11088;</div>
                 <div class="stat-value">+{{ earned_points }}</div>
                 <div class="stat-label">Points Earned</div>
             </div>
         </div>
 
-        <!-- Level Up Notification -->
         {% if leveled_up %}
-        <div class="card mt-3" style="background: linear-gradient(135deg, #FEF3C7, #FDE68A); border: 3px solid #F59E0B;">
-            <div style="font-size: 3rem; margin-bottom: 0.5rem;">🚀</div>
-            <h2 style="color: #92400E;">LEVEL UP!</h2>
-            <p style="color: #92400E; font-size: 1.2rem;">You reached Level {{ current_user.level }}! Keep going!</p>
+        <div class="card" style="margin-top: var(--space-md); background: #FFFBEB; border: 2px solid var(--accent-yellow);">
+            <div style="font-size: 2.5rem; margin-bottom: 4px;">&#128640;</div>
+            <h2 style="color: #92400E; margin-bottom: 4px;">LEVEL UP!</h2>
+            <p style="color: #92400E; font-weight: 700;">You reached Level {{ current_user.level }}! Keep going!</p>
         </div>
         {% endif %}
 
-        <!-- New Badges -->
         {% if new_badges %}
-        <div class="card mt-3" style="background: linear-gradient(135deg, #EEF2FF, #C7D2FE); border: 3px solid #6366F1;">
-            <h2 style="color: #4F46E5;">🏆 New Badges Earned!</h2>
-            <div class="badge-grid" style="margin: 1rem 0;">
+        <div class="card" style="margin-top: var(--space-md); background: #EEF2FF; border: 2px solid var(--primary);">
+            <h2 style="color: var(--primary); margin-bottom: var(--space-sm);">&#127942; New Badges Earned!</h2>
+            <div class="badge-grid">
                 {% for badge in new_badges %}
-                <div class="badge-card">
+                <div class="badge-card" style="background: white;">
                     <span class="badge-icon">{{ badge.icon }}</span>
                     <div class="badge-name">{{ badge.name }}</div>
                     <div class="badge-desc">{{ badge.description }}</div>
@@ -87,31 +84,27 @@
         </div>
         {% endif %}
 
-        <!-- Action Buttons -->
-        <div class="flex-center gap-2 mt-4" style="flex-wrap: wrap;">
-            <a href="{{ url_for('quiz.start_quiz', quiz_id=quiz.id) }}" class="btn btn-primary">
-                🔄 Try Again
-            </a>
-            <a href="{{ url_for('main.subject_detail', subject_id=quiz.subject_id) }}" class="btn btn-outline">
-                📚 More Quizzes
-            </a>
-            <a href="{{ url_for('progress.dashboard') }}" class="btn btn-success">
-                📊 My Progress
-            </a>
+        <div class="flex-center gap-2" style="flex-wrap: wrap; justify-content: center; margin-top: var(--space-lg);">
+            <a href="{{ url_for('quiz.start_quiz', quiz_id=quiz.id) }}" class="btn btn-primary">&#128260; Try Again</a>
+            <a href="{{ url_for('main.subject_detail', subject_id=quiz.subject_id) }}" class="btn btn-outline">&#128218; More Quizzes</a>
+            <a href="{{ url_for('progress.dashboard') }}" class="btn btn-success">&#128202; My Progress</a>
         </div>
     </div>
 
-    <!-- Detailed Results -->
-    <h2 class="mt-4">📝 Review Your Answers</h2>
+    <div class="page-header" style="margin-top: var(--space-xl);">
+        <h2>&#128221; Review Your Answers</h2>
+    </div>
 
     {% for result in results %}
     <div class="question-card {{ 'correct' if result.is_correct else 'incorrect' }}">
-        <span class="question-number">Question {{ loop.index }}</span>
-        {% if result.is_correct %}
-        <span style="color: var(--success); font-weight: 800; margin-left: 0.5rem;">✅ Correct! +{{ result.points }} pts</span>
-        {% else %}
-        <span style="color: var(--danger); font-weight: 800; margin-left: 0.5rem;">❌ Incorrect</span>
-        {% endif %}
+        <div style="display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap;">
+            <span class="question-number">Question {{ loop.index }}</span>
+            {% if result.is_correct %}
+            <span style="color: var(--accent-green); font-weight: 800; font-size: 0.875rem;">&#10004;&#65039; Correct! +{{ result.points }} pts</span>
+            {% else %}
+            <span style="color: var(--danger); font-weight: 800; font-size: 0.875rem;">&#10060; Incorrect</span>
+            {% endif %}
+        </div>
 
         <p class="question-text">{{ result.text }}</p>
 
@@ -134,8 +127,8 @@
             </div>
         </div>
 
-        <div class="explanation">
-            <strong>💡 Learn more:</strong> {{ result.explanation }}
+        <div class="explanation" style="display: block;">
+            <strong>&#128161; Learn more:</strong> {{ result.explanation }}
         </div>
     </div>
     {% endfor %}

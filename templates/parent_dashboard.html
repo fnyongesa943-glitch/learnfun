@@ -4,51 +4,57 @@
 
 {% block content %}
 <div class="container">
-    <div class="flex-center gap-2" style="justify-content: space-between; flex-wrap: wrap; margin-bottom: 2rem;">
-        <h1>📊 Parent Dashboard</h1>
+    <div class="flex-center" style="justify-content: space-between; flex-wrap: wrap; gap: var(--space-md); margin-bottom: var(--space-lg);">
+        <div class="page-header" style="margin-bottom: 0;">
+            <h1>&#128202; Parent Dashboard</h1>
+            <p>Monitor your child's learning progress</p>
+        </div>
         <div class="flex-center gap-2">
-            <span class="level-badge">🔒 Protected Area</span>
+            <span class="level-badge">&#128274; Protected Area</span>
             <a href="{{ url_for('parent.logout') }}" class="btn btn-outline btn-sm">Log Out</a>
         </div>
     </div>
 
-    <!-- Stats -->
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-icon">👨‍👩‍👧</div>
+            <div class="stat-icon">&#128104;&#8205;&#128103;&#8205;&#128102;</div>
             <div class="stat-value">{{ total_users }}</div>
             <div class="stat-label">Total Learners</div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon">📝</div>
+            <div class="stat-icon">&#128221;</div>
             <div class="stat-value">{{ total_quizzes }}</div>
             <div class="stat-label">Quizzes Taken</div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon">🔥</div>
+            <div class="stat-icon">&#128293;</div>
             <div class="stat-value">{{ active_today }}</div>
             <div class="stat-label">Active Today</div>
         </div>
     </div>
 
-    <!-- Subject Popularity -->
-    <h2 class="mt-4">📚 Subject Popularity</h2>
+    <div class="page-header" style="margin-top: var(--space-xl);">
+        <h2>&#128218; Subject Popularity</h2>
+    </div>
+
     <div class="card-grid">
         {% for stat in subject_stats %}
-        <div class="card" style="border-left: 5px solid {{ stat.color }};">
+        <div class="card" style="border-left: 4px solid {{ stat.color }};">
             <div class="flex-center gap-2">
-                <span style="font-size: 2rem;">{{ stat.icon }}</span>
+                <span style="font-size: 1.5rem;">{{ stat.icon }}</span>
                 <div>
-                    <h3 style="margin: 0; color: {{ stat.color }};">{{ stat.name }}</h3>
-                    <span style="font-weight: 700;">{{ stat.count }} quizzes taken</span>
+                    <h3 style="margin: 0; color: {{ stat.color }}; font-size: 1rem;">{{ stat.name }}</h3>
+                    <span style="font-weight: 700; font-size: 0.875rem;">{{ stat.count }} quizzes taken</span>
                 </div>
             </div>
         </div>
         {% endfor %}
     </div>
 
-    <!-- Recent Learners -->
-    <h2 class="mt-4">👋 Recent Learners</h2>
+    <div class="page-header" style="margin-top: var(--space-xl);">
+        <h2>&#128075; Recent Learners</h2>
+    </div>
+
     <div class="card">
         <ul class="activity-list">
             {% for user in recent_users %}
@@ -58,9 +64,9 @@
                 </div>
                 <div class="activity-details">
                     <div class="activity-title">{{ user.username }}</div>
-                    <div class="activity-meta">Level {{ user.level }} • {{ user.streak_days }} day streak</div>
+                    <div class="activity-meta">Level {{ user.level }} &bull; {{ user.streak_days }} day streak</div>
                 </div>
-                <div class="activity-score high">⭐ {{ user.total_points }} pts</div>
+                <div class="activity-score high">&#11088; {{ user.total_points }} pts</div>
             </li>
             {% endfor %}
         </ul>

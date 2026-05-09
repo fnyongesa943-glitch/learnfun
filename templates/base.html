@@ -3,77 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Kids Learning App{% endblock %}</title>
+    <title>{% block title %}LearnFun - Kids Learning{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=5.0">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <a href="{{ url_for('main.index') }}" class="navbar-brand">
-            <span class="logo">🌈</span>
+    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">&#9776;</button>
+
+    <aside class="sidebar" id="sidebar">
+        <a href="{{ url_for('main.index') }}" class="sidebar-brand">
+            <span class="logo">&#127752;</span>
             <span>LearnFun</span>
         </a>
-        <ul class="navbar-nav">
-            <li><a href="{{ url_for('main.index') }}" class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}"><span class="icon">🏠</span> Home</a></li>
-            <li><a href="{{ url_for('main.subjects') }}" class="nav-link {% if 'subject' in request.endpoint %}active{% endif %}"><span class="icon">📖</span> Subjects</a></li>
-            <li><a href="{{ url_for('stories.story_list') }}" class="nav-link {% if 'stories' in request.endpoint %}active{% endif %}"><span class="icon">📚</span> Stories</a></li>
-            <li><a href="{{ url_for('main.phonics') }}" class="nav-link {% if request.endpoint == 'main.phonics' %}active{% endif %}"><span class="icon">🔤</span> Phonics</a></li>
+
+        <ul class="sidebar-nav">
+            <li><a href="{{ url_for('main.index') }}" class="sidebar-link {% if request.endpoint == 'main.index' %}active{% endif %}"><span class="icon">&#127968;</span> Home</a></li>
+            <li><a href="{{ url_for('main.subjects') }}" class="sidebar-link {% if 'subject' in request.endpoint %}active{% endif %}"><span class="icon">&#128214;</span> Subjects</a></li>
+            <li><a href="{{ url_for('stories.story_list') }}" class="sidebar-link {% if 'stories' in request.endpoint %}active{% endif %}"><span class="icon">&#128218;</span> Stories</a></li>
+            <li><a href="{{ url_for('main.phonics') }}" class="sidebar-link {% if request.endpoint == 'main.phonics' %}active{% endif %}"><span class="icon">&#128260;</span> Phonics</a></li>
             {% if current_user %}
-            <li><a href="{{ url_for('progress.dashboard') }}" class="nav-link {% if request.endpoint == 'progress.dashboard' %}active{% endif %}"><span class="icon">📊</span> Progress</a></li>
-            <li><a href="{{ url_for('shop.index') }}" class="nav-link {% if request.endpoint == 'shop.index' %}active{% endif %}"><span class="icon">🛍️</span> Shop</a></li>
-            <li>
-                <div class="nav-user">
-                    {% if current_user.streak_days > 0 %}
-                    <div class="user-points" style="background: linear-gradient(135deg, #EF4444, #F87171);">🔥 {{ current_user.streak_days }}</div>
-                    {% endif %}
-                    <div class="user-points">⭐ {{ current_user.coins }}</div>
-                    <div class="user-avatar" style="position: relative;">
-                        {{ current_user.avatar }}
-                        {% if current_user.avatar_frame != 'none' %}
-                        <span style="position: absolute; top: -5px; right: -5px; font-size: 1rem;">{{ current_user.avatar_frame }}</span>
-                        {% endif %}
-                    </div>
-                    <a href="{{ url_for('auth.logout') }}" class="nav-link"><span class="icon">👋</span></a>
-                </div>
-            </li>
-            {% else %}
-            <li><a href="{{ url_for('parent.login') }}" class="nav-link"><span class="icon">🔒</span> Parent</a></li>
+            <li><a href="{{ url_for('progress.dashboard') }}" class="sidebar-link {% if request.endpoint == 'progress.dashboard' %}active{% endif %}"><span class="icon">&#128202;</span> Progress</a></li>
+            <li><a href="{{ url_for('shop.index') }}" class="sidebar-link {% if request.endpoint == 'shop.index' %}active{% endif %}"><span class="icon">&#127991;</span> Shop</a></li>
             {% endif %}
-            <!-- Dark Mode Toggle -->
-            <li>
-                <button class="dark-mode-toggle" id="darkModeToggle" title="Toggle Dark Mode">🌙</button>
-            </li>
         </ul>
-    </nav>
 
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    <div class="flash-messages">
-        {% for category, message in messages %}
-        <div class="flash flash-{{ category }}">{{ message }}</div>
-        {% endfor %}
-    </div>
-    {% endif %}
-    {% endwith %}
-
-    <!-- Main Content -->
-    <main>
-        {% block content %}{% endblock %}
-    </main>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <p>🌈 LearnFun - Making Learning Fun for Kids! 🎉</p>
-        {% if not current_user %}
-        <a href="{{ url_for('parent.login') }}" style="color: var(--text-secondary); font-size: 0.9rem;">Parent Dashboard</a>
+        {% if current_user %}
+        <div class="sidebar-user">
+            <div class="sidebar-user-avatar">
+                {{ current_user.avatar }}
+                {% if current_user.avatar_frame != 'none' %}
+                <span style="position: absolute; top: -2px; right: -2px; font-size: 0.6rem;">{{ current_user.avatar_frame }}</span>
+                {% endif %}
+            </div>
+            <div class="sidebar-user-info">
+                <div class="sidebar-user-name">{{ current_user.username }}</div>
+                <div class="sidebar-user-meta">Level {{ current_user.level }}</div>
+            </div>
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-ghost btn-sm" title="Logout">&#128075;</a>
+        </div>
+        {% else %}
+        <div class="sidebar-divider"></div>
+        <a href="{{ url_for('auth.login') }}" class="sidebar-link"><span class="icon">&#128274;</span> Login</a>
+        <a href="{{ url_for('auth.signup') }}" class="btn btn-primary" style="margin: 8px 14px;">Start Free</a>
         {% endif %}
-    </footer>
+    </aside>
 
+    <div class="main-content">
+        <div class="topbar">
+            <div class="topbar-left">
+                <div class="topbar-search">
+                    <span>&#128269;</span>
+                    <input type="text" placeholder="Search subjects, stories..." id="searchInput">
+                </div>
+            </div>
+            <div class="topbar-right">
+                {% if current_user %}
+                {% if current_user.streak_days > 0 %}
+                <span class="topbar-streak">&#128293; {{ current_user.streak_days }}</span>
+                {% endif %}
+                <span class="topbar-points">&#11088; {{ current_user.coins }}</span>
+                {% endif %}
+                <button class="topbar-btn" id="darkModeToggle" title="Toggle dark mode">&#127769;</button>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-messages" style="position: static; transform: none; max-width: 780px; margin: 12px auto 0;">
+            {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="footer">
+            <p>&#127752; LearnFun &mdash; Making Learning Fun for Kids! &#127881;</p>
+        </footer>
+    </div>
+
+    <script>
+    document.getElementById('sidebarToggle')?.addEventListener('click', function() {
+        document.getElementById('sidebar').classList.toggle('open');
+    });
+
+    document.addEventListener('click', function(e) {
+        const sidebar = document.getElementById('sidebar');
+        const toggle = document.getElementById('sidebarToggle');
+        if (window.innerWidth <= 768 && sidebar.classList.contains('open') && !sidebar.contains(e.target) && !toggle.contains(e.target)) {
+            sidebar.classList.remove('open');
+        }
+    });
+    </script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     {% block extra_js %}{% endblock %}
 </body>

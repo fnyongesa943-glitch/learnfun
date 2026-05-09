@@ -79,6 +79,10 @@ def run_migrations():
         db.create_all()
     if 'stories' not in inspector.get_table_names():
         db.create_all()
+    else:
+        cols = {c['name']: c for c in inspector.get_columns('stories')}
+        if 'language' not in cols:
+            db.session.execute(text("ALTER TABLE stories ADD COLUMN language VARCHAR(10) DEFAULT 'en'"))
     if 'user_story_reads' not in inspector.get_table_names():
         db.create_all()
 
@@ -592,11 +596,14 @@ def seed_stories():
     """Seed database with children's stories across various genres."""
     from models import Story
 
-    # Check if stories already seeded
-    if Story.query.first():
+    # Check if Swahili stories already exist
+    if Story.query.filter_by(language='sw').first():
         return
 
-    stories = [
+    stories = []
+    # Only add English stories if none exist yet
+    if not Story.query.first():
+        stories = [
         # FOLKTALES
         Story(
             title="The Tortoise and the Hare",
@@ -708,7 +715,92 @@ def seed_stories():
         ),
     ]
 
-    db.session.add_all(stories)
+    swahili_stories = [
+        # HADITHI ZA KIENYEJI (Folktales)
+        Story(
+            title="Sungura na Kobe",
+            content="Hapo zamani za kale, katika msitu mnene wenye miti mirefu na maua ya rangi mbalimbali, aliishi Sungura aliyejivunia kukimbia kwa kasi. Alikuwa na fahari kubwa na mara nyingi aliwacheka wanyama wengine wenye mwendo wa polepole.\n\n'Wewe ni mwoga kama konokono!' alimtania Kobe, akitikisa masikio yake marefu.\n\nKobe alitabasamu kwa utulivu na kusema: 'Rafiki yangu, si kila kitu ni kasi. Ninaweza kukushinda mbio siku yoyote.'\n\nSungura alicheka kwa sauti: 'WEWE? Wewe unataka kukimbiana na MIMI? Hii itakuwa rahisi kwangu!'\n\nWanyama wote wakakutana - kundi, swala, mbweha, na hata bundi mwenye busara. Mbweha aliweka alama mwanzo na mwisho wa mbio shambani.\n\n'Tayari, weka, ENDA!' Mbweha akaamuru.\n\nNYOOSH! Sungura aliruka mbele kama mwale wa umeme. Alipokuwa mbele sana hakumwona Kobe nyuma yake. 'Hii ni rahisi sana,' aliwaza. 'Nina muda wa kupumzika kidogo chini ya mti huu.'\n\nBasi Sungura alijikunyata kwenye nyasi laini, akasikiliza ndege wakiimba, na usingizi ukamzibua.\n\nWakati huo huo, Kobe aliendelea kutembea polepole, hatua kwa hatua, bila kusimama, bila kukata tamaa.\n\nSungura alipoamka, jua lilikuwa juu angani! Alitazama kwa hofu - na kumwona Kobe akikaribia mstari wa mwisho!\n\nSungura alikimbia kwa mwendo wa umeme, lakini ilikuwa kuchelewa. Kobe alivuka mstari wa mwisho kwanza, huku wanyama wote wakishangilia!\n\nSiku hiyo, Sungura alijifunza somo muhimu: mwendo wa polepole huvunja gogo.",
+            story_type="folktale",
+            age_range="6-10",
+            reading_time=6,
+            language="sw",
+            points_earned=15
+        ),
+        Story(
+            title="Anansi na Chungu cha Hekima",
+            content="Hapo zamani za mbali katika Afrika Magharibi, mungu wa anga aliitwa Nyame alikuwa na chungu kilichojaa hekima yote duniani. Alikificha kwa sababu hakutaka mtu mwingine awe na hekima.\n\nAnansi buibui alitaka hekima hiyo. Alimwendea Nyame na kusema: 'Mungu mkuu, naomba unipe chungu cha hekima.'\n\nNyame alicheka. 'Ni kizito kwako, buibui mdogo. Lakini ukinikamata chatu, chui, na nyigu, nitakupa.'\n\nAnansi alikuwa mjanja. Kwanza, alimkamata chui kwa kuchimba shimo refu na kulifunika kwa majani na vijiti. Chui akaanguka ndani! Kisha Anansi akamtoa - kwa sharti la kuwa mteswa wake.\n\nPili, Anansi alimkamata chatu kwa kumshawishi anyooshe mwili wake wote ili waone nani mrefu zaidi. Kisha akamfunga chatu kwenye fimbo!\n\nKwa nyigu, Anansi alijaza kibuyu kwa maji na kumwaga juu ya kiota wakiwa wamelala, akipiga kelele: 'Kunanyesha! Ingilieni kwenye kibuyu hiki kikavu!' Nyigu wakaruka ndani ili kukaa mahali pakavu, na Anansi akafunga mdomo wa kibuyu.\n\nNyame alishangazwa! Akampa Anansi chungu cha hekima. Lakini Anansi alipokuwa akipanda mti mrefu kuchukua chungu nyumbani, aliwaza: 'Kwa nini nishiriki hekima hii? Nataka yote mwenyewe!'\n\nAlifunga chungu mbele ya kifua chake na kupanda. Lakini chungu kiligonga tumbo lake na kufanya iwe vigumu kupanda. Ndege mdogo aliyekuwa akipita akasema: 'Kwa nini usifunge nyuma yako?'\n\nAnansi alishangaa sana kwamba mdogo kama ndege anaweza kumpa ushauri hata akalishusha chungu. Kilivunjika vipande vipande, na hekima yote ikamwagika, ikiingia ardhini kwa kila mtu.\n\nNdiyo maana leo, hekima ni ya kila mtu - si ya mtu mmoja tu.",
+            story_type="folktale",
+            age_range="8-12",
+            reading_time=7,
+            language="sw",
+            points_earned=20
+        ),
+
+        # HADITHI ZA MAADILI (Moral Stories)
+        Story(
+            title="Mvulana Aliyeita Mbwa Mwitu",
+            content="Hapo zamani, alikuwa na mvulana mchungaji aliyechunga kondoo. Aliishi katika kijiji karibu na msitu na kila siku aliwapeleka kondoo malishoni.\n\nSiku moja, mvulana alichoka. 'Nitawachezea watu wa kijijini,' aliwaza. 'Nitapiga kelele kwamba mbwa mwitu anakuja!'\n\nBasi akaweka mikono midomoni na kupiga kelele: 'MBWA MWITU! MBWA MWITU! Kondoo wanaliwa!'\n\nWatu wa kijijini walimsikia na wakakimbilia mlimani na fimbo na mundu kumfukuza mbwa mwitu. Walipofika... hakukuwa na mbwa mwitu. Kondoo walikuwa wanakula amani, na mvulana alikuwa anaviringika chini akicheka.\n\n'Umekwisha tudanganya!' watu walisema kwa hasira. 'Hilo si jambo la kuchekesha!'\n\nMvulana aliendelea kucheka. Baada ya siku kadhaa, alichoka tena. 'MBWA MWITU! MBWA MWITU!' 'Kuna mbwa mwitu mkubwa anawala kondoo!'\n\nTena, watu waliacha shughuli zao na kukimbilia mlimani. Tena, hapakuwa na mbwa mwitu. Mvulana alicheka zaidi.\n\n'Mvulana huyo ni mwongo,' watu walinung'unika. 'Hatutamwamini tena.'\n\nSiku moja, mbwa mwitu wa kweli alikuja. Alijinyatia kwenye kundi na kumnyakua kondoo! Mvulana alipiga kelele kwa nguvu zake zote: 'MBWA MWITU! MBWA MWITU! MSAIDIE! MBWA MWITU WA KWELI!'\n\nLakini watu walimsikia na kusema: 'Anatudanganya tena. Tumwache.'\n\nHakuna aliyekuja kusaidia. Mbwa mwitu alikula kondoo wengi kabla ya kukimbia. Mvulana alilia sana, lakini ilikuwa kuchelewa.\n\nAlijifunza kwa uchungu: mwongo haaminiwi, hata anaposema ukweli.",
+            story_type="moral",
+            age_range="6-10",
+            reading_time=5,
+            language="sw",
+            points_earned=15
+        ),
+        Story(
+            title="Mti wa Ukarimu",
+            content="Hapo zamani, kulikuwa na mti ambao ulimpenda mvulana mdogo. Kila siku mvulana alikuja kukusanya majani yake kutengeneza taji, kupanda shina lake, kuyumbayumba kwenye matawi yake, na kula matunda yake.\n\nMti ulifurahi. Lakini mvulana alipokua, hakuja mara nyingi. Siku moja alikuja na mti ukasema: 'Njoo ucheze nami!' Lakini mvulana akasema: 'Mimi si mdogo tena. Nataka pesa. Unaweza kunipa pesa?'\n\n'Pesa sina,' mti ukasema. 'Lakini chukua matunda yangu, uyauze sokoni, na utapata pesa.'\n\nMvulana alichukua matunda yote na kuondoka. Mti ulifurahi. Lakini mvulana hakurudi kwa muda mrefu. Aliporudi, alisema: 'Mimi ni mtu mzima sasa. Nahitaji nyumba. Unaweza kunipa nyumba?'\n\n'Kata matawi yangu ujenge nyumba,' mti ukasema. Mvulana akakata matawi yote na kuyachukua. Mti ulifurahi, lakini sio kweli.\n\nMiaka ikapita, mvulana alirudi, sasa ni mzee. 'Nimechoka,' alisema. 'Nahitaji mashua kusafiri.'\n\n'Kata shina langu ufanye mashua,' mti ukasema. Mvulana akakata shina. Sasa mti ulikuwa kigogo tu, na ulihuzunika.\n\nMiaka mingi ilipita. Mzee alirudi mara ya mwisho. 'Samahani,' alisema. 'Sina chochote cha kukupa tena.'\n\n'Sihitaji mengi,' mzee alisema. 'Nafasi tu ya kukaa.'\n\n'Nzuri!' mti ulisema, sasa ni kigogo tu. 'Kigogo ni mahali pazuri pa kukaa.'\n\nNa mzee aliketi. Na mti ulifurahi.",
+            story_type="moral",
+            age_range="8-12",
+            reading_time=6,
+            language="sw",
+            points_earned=20
+        ),
+
+        # HADITHI ZA ELIMU (Educational Stories)
+        Story(
+            title="Safari ya Mbegu Ndogo",
+            content="Hapo zamani, kulikuwa na mbegu ndogo iitwayo Sam. Sam aliishi katika tunda zuri la embe pamoja na ndugu zake. Lakini siku moja, ndege alikula embe hilo!\n\nSam alijisikia akienda chini, chini, chini ndani ya tumba la ndege. 'Hii inatisha!' aliwaza. Lakini hivi karibuni, ndege akaruka hadi mahali pengine na... plop! Sam akatoka katika sehemu mpya iliyojaa udongo.\n\n'Hujambo?' Sam aliita. 'Niko wapi?'\n\nDunia ikasema: 'Uko kwenye udongo, mbegu mdogo. Kunywa maji, jisikie jua, na utakua!'\n\nSam alikunywa maji ya mvua. Akajisikia joto la jua. Kitu cha ajabu kikatokea - gamba lake likapasuka!\n\nKwanza akatoka mzizi mdogo, ukienda chini gizani. 'Natafuta maji!' mzizi ukasema. Kisha akatoka mchipuko wa kijani, ukienda juu kutafuta mwanga. 'Natafuta jua!'\n\nSiku zikapita. Mchipuko ukawa shina. Majani yakatanda kama bendera ndogo za kijani. 'Tunakamata mwanga wa jua!' majani yalisema. 'Tunatengeneza chakula kwa mmea!'\n\nMiezi ikapita. Sam alikuwa mti mdogo sasa. Majani yake yalitengeneza chakula. Mizizi yake ilinywa maji. Alikua mrefu na hodari.\n\nMajira moja ya kuchipua, jambo la pekee lilitokea. Maua meupe yalitokea kote kwa Sam! Nyuki wakaja kutembelea, wakichukua poleni kutoka ua hadi ua.\n\nBaada ya maua kuanguka, matunda madogo ya kijani yalionekana. Yakakua na kukua. Yakaiva na kuwa mekundu. Yakawa maembe!\n\nNa ndani ya maembe hayo? Mbegu mpya, kama Sam. Tayari kuanza safari yao siku moja.",
+            story_type="educational",
+            age_range="7-11",
+            reading_time=6,
+            language="sw",
+            points_earned=20,
+            related_subject_id=3
+        ),
+        Story(
+            title="Adventures ya Namba",
+            content="Hapo zamani, katika Nchi ya Hesabu, waliishi namba 1, 2, 3, 4, na 5. Walikuwa marafiki wakubwa na walipenda kucheza pamoja.\n\nSiku moja, 1 akasema, 'Wacha tuunda namba kubwa zaidi!'\n\n'Vipi?' 2 akauliza.\n\n'Tazama!' 1 akasema. Akasimama karibu na 2. 'Sasa sisi ni 12!'\n\nLakini 3 akatikisa kichwa. 'Hiyo ni kuweka namba pamoja tu. Nionyeshe hesabu halisi!'\n\n3 alipata marafiki wawili nyuma ya mti. '1, 2, tokeni!' akawaita. Wawili wakatoka.\n\n'Sasa,' 3 akasema, 'tazama mwujiza huu: 3 pamoja na 1 pamoja na 1 ni sawa na... 5!'\n\nNamba zote zilishangilia! 'Tena, tena!'\n\nMara hii, 5 alitaka kujaribu. 'Nina tufaha 5,' akasema. 'Nikimpa 2 kwa 3, nitabakiwa na ngapi?'\n\n5 akafumba macho na kufikiri: '5 toa 2... ni sawa na 3!'\n\n'Sahihi!' wengine wakashangilia.\n\nKisha wakajaribu kuzidisha. 2 akamleta pacha wake. Sasa walikuwa na 2 mara mbili.\n\n'Mafungu mawili ya wawili,' 2 akasema. 'Hiyo ni 2 mara 2. Na jibu ni... 4!'\n\nNamba zikacheza kwa furaha. Siku hiyo walijifunza kwamba hesabu sio namba tu - ni mambo mazuri ambayo namba zinaweza kufanya wakifanya kazi pamoja!\n\nNa ukisikiliza kwa makini Nchi ya Hesabu, bado unaweza kusikia wakiimba: '1, 2, 3, 4, 5 - hesabu ni raha na hai!'",
+            story_type="educational",
+            age_range="6-10",
+            reading_time=5,
+            language="sw",
+            points_earned=20,
+            related_subject_id=1
+        ),
+
+        # HADITHI ZA MATUKIO (Adventure Stories)
+        Story(
+            title="Siri ya Pango la Siri",
+            content="Maya na mbwa wake Rocky walikuwa wakichunguza ufukweni wakati wa likizo yao. Maji yalikuwa yamepwa, yakionyesha mawe na madimbwi ambayo hawajawahi kuona.\n\n'Tazama, Rocky!' Maya alinyesha kwenye sehemu nyeusi kati ya mawe mawili makubwa. 'Ni pango!'\n\nRocky alitingisha mkia na kunusa mwingilio. Maya akachukua tochi yake na kuingia ndani. Pango lilikuwa la baridi na likanuka kama chumvi na mwani.\n\nWalienda ndani zaidi. Ghafla, Rocky alianza kubweka. 'Ni nini, kijana?'\n\nPale, kwenye ukuta wa pango, kulikuwa na ujumbe ulioandikwa katika rangi iliyokuwa imechakaa: 'X inaashiria mahali ambapo hazina iko.'\n\nMoyo wa Maya uliruka kwa msisimko. Aliweka mwanga wake pande zote. Kulikuwa na X kubwa iliyochorwa chini! Yeye na Rocky wakachimba kwa mikono. Mchanga ukaruka kila mahali!\n\nKilichi! Mguu wa Rocky uligonga kitu kigumu. Wakachimba zaidi na kuvuta... sanduku la bati la zamani!\n\nMaya alilifungua kwa mikono inayotetemeka. Ndani yalikuwa makombe - mamia ya makombe mazuri ya bahari ya kila rangi! Pia kulikuwa na michoro kwenye mfuniko wa sanduku inayoonyesha pango na ufukwe wa zamani.\n\n'Mtu aliacha makombe haya kwa ajili ya watafiti wengine,' Maya alinong'ona. Alichukua konnmbi mmoja wa zambarau kwa ajili yake na kuwaacha wengine kwa ajili ya wagunduzi wengine.\n\nWaliporudi ufukweni, maji yalikuwa yanaingia. Mwingilio wa pango ulianza kutoweka chini ya mawimbi.\n\nMaya alitabasamu. Ilikuwa ni safari yao ya siri, na alikuwa na konnmbi wa zambarau kuthibitisha kuwa ilitokea kweli!",
+            story_type="adventure",
+            age_range="7-12",
+            reading_time=6,
+            language="sw",
+            points_earned=20
+        ),
+        Story(
+            title="Ramani ya Ajabu Darini",
+            content="Sam alikuwa akimsaidia bibi yake kusafisha dari walipopata sanduku la mbao la zamani lililofunikwa na vumbi. Ndani yalikuwa ramani iliyokuwa imepauka yenye alama za ajabu na X kubwa nyekundu.\n\n'Bibi, hii ni nini?' Sam aliuliza.\n\nMacho ya bibi yakaangaza. 'Hiyo ni ramani ambayo babu yako alitengeneza akiwa na umri wako! Alisema kila wakati kuwa kuna siri kwenye mti wa mwaloni nyumbani.'\n\nSam alikimbilia nyuma ya nyumba akiwa na ramani. Mti wa mwaloni ulikuwa mkubwa sana, matawi yake yakifika angani. Alijifunza ramani - ilionyesha shimo kwenye tawi la tatu kutoka kushoto.\n\nSam alipanda kwa uangalifu. Tawi lililala lakini likabaki imara. Aliingiza mkono ndani ya shimo... na kuvuta kopo la bati lenye kutu!\n\nNdani yalikuwa daftari lililojaa mwandiko wa babu yake. 'Mtafuti mpendwa,' lilianza. 'Ikiwa unasoma hii, wewe ni mdadisi kama mimi!'\n\nDaftari lilijaa michoro ya ndege, wadudu, na mimea ambayo babu yake alikuwa ameiona nyuma ya nyumba. Katika ukurasa wa mwisho, lilisema: 'Hazina halisi ni udadisi. Endelea kuchunguza!'\n\nSam alitabasamu. Alichukua daftari lake mwenyewe na kuanza kuchora ndege aliowaona sasa hivi. Babu yake alikuwa sahihi - udadisi ni safari kubwa kuliko zote.",
+            story_type="adventure",
+            age_range="8-12",
+            reading_time=6,
+            language="sw",
+            points_earned=20
+        ),
+    ]
+
+    all_stories = stories + swahili_stories
+    db.session.add_all(all_stories)
     db.session.commit()
     print("✅ Stories seeded successfully!")
 

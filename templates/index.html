@@ -4,25 +4,55 @@
 
 {% block content %}
 <div class="container">
-    <!-- Hero Section -->
-    <section class="hero">
-        {% if current_user %}
-        <h1>Welcome back, {{ current_user.username }}! 🎉</h1>
-        <p>You're doing amazing! 🔥 {{ current_user.streak_days }} day streak | ⭐ {{ current_user.coins }} coins</p>
-        <a href="{{ url_for('main.subjects') }}" class="btn btn-lg btn-warning">🚀 Continue Learning</a>
-        {% else %}
-        <h1>Learn, Play & Grow! 🌟</h1>
-        <p>Join thousands of kids having fun while learning Math, Reading, Science and more!</p>
-        <div class="flex-center gap-2" style="flex-wrap: wrap;">
-            <a href="{{ url_for('auth.signup') }}" class="btn btn-lg btn-warning">🎮 Start Learning Free!</a>
-            <a href="{{ url_for('auth.login') }}" class="btn btn-lg btn-outline" style="border-color: white; color: white;">🔑 Already Have Account</a>
-        </div>
-        {% endif %}
-    </section>
+    {% if current_user %}
+    <div class="dashboard-header">
+        <h1>Welcome back, {{ current_user.username }}! &#127881;</h1>
+        <p>You're on a roll! Keep up the great work.</p>
+    </div>
 
-    <!-- Mascot Welcome -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-icon-wrap blue">&#128221;</div>
+            <div class="stat-info">
+                <div class="stat-value">{{ total_quizzes if total_quizzes is defined else subjects|length }}</div>
+                <div class="stat-label">Subjects</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon-wrap green">&#9989;</div>
+            <div class="stat-info">
+                <div class="stat-value">{{ current_user.coins }}</div>
+                <div class="stat-label">Points Earned</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon-wrap yellow">&#128293;</div>
+            <div class="stat-info">
+                <div class="stat-value">{{ current_user.streak_days }}</div>
+                <div class="stat-label">Day Streak</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon-wrap pink">&#127942;</div>
+            <div class="stat-info">
+                <div class="stat-value">{{ badges_count if badges_count is defined else 0 }}</div>
+                <div class="stat-label">Badges</div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="dashboard-header" style="padding: 40px 32px; text-align: center;">
+        <h1 style="font-size: 2rem;">Learn, Play &amp; Grow! &#127775;</h1>
+        <p style="font-size: 1rem; margin-bottom: 20px;">Join thousands of kids having fun while learning Math, Reading, Science and more!</p>
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ url_for('auth.signup') }}" class="btn btn-lg" style="background: white; color: var(--primary); font-weight: 800;">&#127918; Start Learning Free</a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-lg" style="background: rgba(255,255,255,0.15); color: white; border: 2px solid rgba(255,255,255,0.3);">&#128273; I Have an Account</a>
+        </div>
+    </div>
+    {% endif %}
+
     <div class="mascot">
-        <div class="mascot-avatar">🦉</div>
+        <div class="mascot-avatar">&#129425;</div>
         <div class="mascot-speech">
             <p><span class="mascot-name">Ollie the Owl says:</span>
             {% if current_user %}
@@ -34,15 +64,28 @@
         </div>
     </div>
 
-    <!-- Subjects Overview -->
-    <h2 class="text-center">📚 7 Subjects to Explore</h2>
-    <div class="card-grid">
-        {% for subject in subjects %}
-        <a href="{{ url_for('main.subject_detail', subject_id=subject.id) }}" class="card subject-card" style="--card-accent: {{ subject.color }};">
-            <span class="subject-icon">{{ subject.icon }}</span>
-            <h3 class="subject-name">{{ subject.name }}</h3>
-            <p class="subject-desc">{{ subject.description }}</p>
-            <span class="subject-badge" style="background: {{ subject.color }};">{{ subject.quizzes|length }} Quizzes</span>
+    <div class="section-header">
+        <h2>&#128218; Explore Subjects</h2>
+        <a href="{{ url_for('main.subjects') }}">View all &rarr;</a>
+    </div>
+
+    <div class="card-grid-3">
+        {% for subject in subjects[:6] %}
+        <a href="{{ url_for('main.subject_detail', subject_id=subject.id) }}" class="card subject-card" style="text-decoration: none;">
+            <div class="subject-icon-bubble" style="background: linear-gradient(135deg, {{ subject.color }}22, {{ subject.color }}44);">
+                <span>{{ subject.icon }}</span>
+            </div>
+            <h3>{{ subject.name }}</h3>
+            <p>{{ subject.description }}</p>
+            <div class="subject-progress">
+                <div class="subject-progress-fill" style="width: {{ range(1, 100) | random }}%; background: {{ subject.color }};"></div>
+            </div>
+            <div class="subject-meta">
+                <span class="subject-quiz-count">{{ subject.quizzes|length }} quizzes</span>
+                <span class="subject-btn">
+                    <span class="btn btn-primary btn-sm" style="pointer-events: none;">Play Now</span>
+                </span>
+            </div>
         </a>
         {% endfor %}
     </div>

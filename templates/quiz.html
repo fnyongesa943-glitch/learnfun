@@ -4,12 +4,11 @@
 
 {% block content %}
 <div class="container-sm">
-    <!-- Quiz Header -->
     <div class="quiz-header">
-        <div class="flex-center gap-2" style="justify-content: space-between; flex-wrap: wrap; margin-bottom: 1rem;">
+        <div class="flex-center" style="justify-content: space-between; flex-wrap: wrap; gap: var(--space-sm);">
             <h2 style="margin: 0;">{{ quiz.title }}</h2>
             <a href="{{ url_for('main.subject_detail', subject_id=quiz.subject_id) }}" class="btn btn-outline btn-sm">
-                ← Exit Quiz
+                &larr; Exit Quiz
             </a>
         </div>
         <div class="quiz-progress">
@@ -18,10 +17,9 @@
             </div>
             <span class="progress-text">0/{{ questions|length }}</span>
         </div>
-        <p style="color: var(--text-secondary); margin: 0;">Answer each question and learn something new! 🌟</p>
+        <p style="color: var(--text-secondary); margin: 0; font-size: 0.9375rem;">Answer each question and learn something new! &#127775;</p>
     </div>
 
-    <!-- Questions -->
     <form method="POST" action="{{ url_for('quiz.submit_quiz', quiz_id=quiz.id) }}">
         {% for question in questions %}
         <div class="question-card" data-question-id="{{ question.id }}" data-correct="{{ question.correct_answer }}">
@@ -48,38 +46,33 @@
                 </button>
             </div>
 
-            <!-- Hint Button -->
             {% if question.hint %}
-            <div class="mt-2" style="text-align: center;">
-                <button type="button" class="btn btn-warning btn-sm hint-btn" onclick="toggleHint(this)">
-                    💡 Need a Hint? (-2 coins)
+            <div style="text-align: center; margin-top: var(--space-md);">
+                <button type="button" class="btn btn-sm hint-btn" style="background: #FEF3C7; color: #92400E; font-weight: 700;" onclick="toggleHint(this)">
+                    &#128161; Need a Hint? (-2 coins)
                 </button>
                 <input type="hidden" name="q{{ question.id }}_hint_used" value="false">
             </div>
             {% endif %}
 
-            <!-- Hint Box -->
-            <div class="explanation hint-box" style="display: none; background: #FEF3C7; border-color: #F59E0B; margin-top: 1rem;">
-                <strong>🦉 Ollie's Hint:</strong> {{ question.hint }}
+            <div class="explanation hint-box" style="display: none;">
+                <strong>&#129425; Ollie's Hint:</strong> {{ question.hint }}
             </div>
 
-            <!-- Explanation (shown after answer) -->
             <div class="explanation" style="display: none;">
-                <strong>💡 Learn more:</strong> {{ question.explanation }}
+                <strong>&#128161; Learn more:</strong> {{ question.explanation }}
             </div>
 
-            <!-- Hidden radio inputs for form submission -->
             <input type="hidden" name="q{{ question.id }}" value="">
 
-            <!-- Next button -->
-            <div style="text-align: center; margin-top: 1.5rem;">
+            <div style="text-align: center; margin-top: var(--space-lg);">
                 {% if loop.last %}
                 <button type="submit" class="btn btn-success btn-lg next-btn" style="display: none;">
-                    See My Results! 🎉
+                    See My Results! &#127881;
                 </button>
                 {% else %}
                 <button type="button" class="btn btn-primary next-btn" style="display: none;">
-                    Next Question →
+                    Next Question &rarr;
                 </button>
                 {% endif %}
             </div>
@@ -87,9 +80,8 @@
         {% endfor %}
     </form>
 
-    <!-- Mascot Encouragement -->
-    <div class="mascot mt-4">
-        <div class="mascot-avatar">🦉</div>
+    <div class="mascot">
+        <div class="mascot-avatar">&#129425;</div>
         <div class="mascot-speech">
             <p><span class="mascot-name">Ollie says:</span> "Take your time and think carefully. You can do this!"</p>
         </div>
@@ -99,7 +91,6 @@
 
 {% block extra_js %}
 <script>
-// Handle hidden input updates for form submission
 document.querySelectorAll('.option-btn').forEach(btn => {
     btn.addEventListener('click', function() {
         const questionCard = this.closest('.question-card');
@@ -112,15 +103,14 @@ document.querySelectorAll('.option-btn').forEach(btn => {
     });
 });
 
-// Toggle Hint
 function toggleHint(btn) {
     const card = btn.closest('.question-card');
     const hintBox = card.querySelector('.hint-box');
     const hintInput = card.querySelector('input[name$="_hint_used"]');
-    
+
     if (hintBox.style.display === 'none') {
         hintBox.style.display = 'block';
-        btn.textContent = '💡 Hint Shown';
+        btn.textContent = '&#128161; Hint Shown';
         btn.disabled = true;
         hintInput.value = 'true';
     }

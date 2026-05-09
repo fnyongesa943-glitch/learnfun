@@ -4,33 +4,36 @@
 
 {% block content %}
 <div class="container">
-    <div class="flex-center gap-2" style="justify-content: space-between; flex-wrap: wrap; margin-bottom: 2rem;">
-        <h1>🛍️ Shop</h1>
-        <div class="user-points">⭐ {{ user.coins }} Coins</div>
+    <div class="flex-center" style="justify-content: space-between; flex-wrap: wrap; gap: var(--space-md); margin-bottom: var(--space-lg);">
+        <div class="page-header" style="margin-bottom: 0;">
+            <h1>&#127991; Shop</h1>
+            <p>Spend your coins on fun items!</p>
+        </div>
+        <div class="user-points">&#11088; {{ user.coins }} Coins</div>
     </div>
 
     <div class="card-grid">
         {% for item in items %}
-        <div class="card text-center">
-            <div style="font-size: 4rem; margin-bottom: 0.5rem;">{{ item.icon }}</div>
-            <h3>{{ item.name }}</h3>
-            <p style="color: var(--text-secondary); font-size: 0.9rem;">{{ item.description }}</p>
-            
+        <div class="card text-center" style="display: flex; flex-direction: column; align-items: center;">
+            <div style="font-size: 3.5rem; margin-bottom: var(--space-sm);">{{ item.icon }}</div>
+            <h3 style="margin-bottom: 4px;">{{ item.name }}</h3>
+            <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: var(--space-md);">{{ item.description }}</p>
+
             {% if item.id in owned_ids %}
-            <form action="{{ url_for('shop.equip_item', item_id=item.id) }}" method="POST">
+            <form action="{{ url_for('shop.equip_item', item_id=item.id) }}" method="POST" style="margin-top: auto; width: 100%;">
                 <button type="submit" class="btn btn-success" style="width: 100%;">
                     {{ 'Equipped' if item.is_active else 'Equip' }}
                 </button>
             </form>
             {% else %}
             {% if user.coins >= item.price %}
-            <form action="{{ url_for('shop.buy_item', item_id=item.id) }}" method="POST">
-                <button type="submit" class="btn btn-warning" style="width: 100%;">
-                    Buy for {{ item.price }} 🪙
+            <form action="{{ url_for('shop.buy_item', item_id=item.id) }}" method="POST" style="margin-top: auto; width: 100%;">
+                <button type="submit" class="btn btn-warning" style="width: 100%; color: #1E293B;">
+                    Buy for {{ item.price }} &#129521;
                 </button>
             </form>
             {% else %}
-            <button class="btn btn-outline" style="width: 100%; opacity: 0.6; cursor: not-allowed;" disabled>
+            <button class="btn btn-secondary" style="width: 100%; opacity: 0.6; cursor: not-allowed; margin-top: auto;" disabled>
                 Need {{ item.price }} Coins
             </button>
             {% endif %}

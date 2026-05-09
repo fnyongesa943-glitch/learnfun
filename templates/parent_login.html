@@ -5,7 +5,7 @@
 {% block content %}
 <div class="auth-container">
     <div class="auth-card">
-        <div style="font-size: 4rem; margin-bottom: 1rem;">🔒</div>
+        <div class="auth-icon">&#128274;</div>
         <h2>Parent Access</h2>
         <p>Enter PIN to view child progress and settings.</p>
 
@@ -15,16 +15,16 @@
                 <input type="password" id="pin" name="pin" class="form-control" placeholder="1234" maxlength="4" required>
             </div>
             <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
-                Unlock Dashboard 🔓
+                Unlock Dashboard &#128274;
             </button>
         </form>
 
-        <p class="mt-3">
-            <a href="{{ url_for('parent.login', pin='1234') }}">🔑 Direct Link (PIN: 1234)</a>
+        <p style="margin-top: var(--space-lg);">
+            <a href="{{ url_for('parent.login', pin='1234') }}" style="font-size: 0.875rem;">&#128273; Direct Link (PIN: 1234)</a>
         </p>
 
-        <p class="mt-3">
-            <a href="{{ url_for('main.index') }}">← Back to Home</a>
+        <p style="margin-top: var(--space-md);">
+            <a href="{{ url_for('main.index') }}" style="font-size: 0.875rem;">&larr; Back to Home</a>
         </p>
     </div>
 </div>

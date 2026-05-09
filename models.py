@@ -198,6 +198,7 @@ class Story(db.Model):
     story_type = db.Column(db.String(50), nullable=False)  # folktale, moral, funny, educational, adventure, imagination
     age_range = db.Column(db.String(20), default='6-12')
     reading_time = db.Column(db.Integer, default=5)  # Minutes
+    language = db.Column(db.String(10), default='en')  # en, sw
     related_subject_id = db.Column(db.Integer, db.ForeignKey('subjects.id'), nullable=True)
     points_earned = db.Column(db.Integer, default=15)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -208,6 +209,7 @@ class Story(db.Model):
         return {
             'id': self.id, 'title': self.title, 'story_type': self.story_type,
             'age_range': self.age_range, 'reading_time': self.reading_time,
+            'language': self.language,
             'points_earned': self.points_earned, 'related_subject_id': self.related_subject_id
         }
 
