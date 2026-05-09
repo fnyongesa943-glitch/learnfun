@@ -18,14 +18,21 @@
             </div>
             <div class="card-grid">
                 {% for grade in grades if grade.category == category %}
-                <a href="{{ url_for('lessons.grade_subjects', grade_id=grade.id) }}" class="card grade-card" style="border-left: 4px solid {{ grade.color }};">
+                {% set gs = grade_stats[grade.id] %}
+                <a href="{{ url_for('lessons.grade_subjects', grade_id=grade.id) if gs.has_content else '#' }}" class="card grade-card{% if not gs.has_content %} disabled-card{% endif %}" style="border-left: 4px solid {{ grade.color }};">
                     <div class="grade-icon">{{ grade.icon }}</div>
                     <h3>{{ grade.name }}</h3>
                     <div class="grade-meta">
-                        <span class="grade-count">{{ grade_stats[grade.id].topic_count }} topics</span>
-                        <span class="grade-count">{{ grade_stats[grade.id].subject_count }} subjects</span>
+                        {% if gs.has_content %}
+                        <span class="grade-count">{{ gs.topic_count }} topics</span>
+                        <span class="grade-count">{{ gs.subject_count }} subjects</span>
+                        {% endif %}
                     </div>
+                    {% if gs.has_content %}
                     <span class="btn btn-primary btn-sm" style="margin-top: 8px;">Start Learning →</span>
+                    {% else %}
+                    <span class="btn btn-secondary btn-sm" style="margin-top: 8px; opacity: 0.6;">Coming Soon ✨</span>
+                    {% endif %}
                 </a>
                 {% endfor %}
             </div>

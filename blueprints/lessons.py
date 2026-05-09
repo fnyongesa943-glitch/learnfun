@@ -23,7 +23,8 @@ def grade_select():
         subject_ids = db.session.query(Topic.subject_id).filter_by(grade_id=g.id).distinct().all()
         grade_stats[g.id] = {
             'topic_count': topic_count,
-            'subject_count': len(subject_ids)
+            'subject_count': len(subject_ids),
+            'has_content': topic_count > 0
         }
 
     return render_template('topics.html', grades=grades, subjects=subjects, grade_stats=grade_stats)

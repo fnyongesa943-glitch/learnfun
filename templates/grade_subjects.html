@@ -45,9 +45,10 @@
     </div>
     {% else %}
     <div class="card text-center" style="padding: 48px 24px;">
-        <div style="font-size: 3rem; margin-bottom: 16px;">📚</div>
-        <h3>Coming Soon!</h3>
-        <p class="text-muted">Lessons for this grade are being created. Check back soon!</p>
+        <div style="font-size: 3rem; margin-bottom: 16px;">🚧</div>
+        <h3>{{ grade.name }} — Coming Soon!</h3>
+        <p class="text-muted">We're working hard to create CBC lessons for {{ grade.name }}. Check back soon for updates!</p>
+        <a href="{{ url_for('lessons.grade_select') }}" class="btn btn-primary" style="margin-top: 12px;">Browse Available Grades</a>
     </div>
     {% endfor %}
 </div>

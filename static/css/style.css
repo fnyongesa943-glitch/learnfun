@@ -1808,6 +1808,18 @@ body {
     box-shadow: var(--shadow-lg);
 }
 
+.grade-card.disabled-card {
+    opacity: 0.7;
+    filter: grayscale(0.3);
+    cursor: default;
+    pointer-events: none;
+}
+
+.grade-card.disabled-card:hover {
+    transform: none;
+    box-shadow: var(--shadow-md);
+}
+
 .grade-icon {
     font-size: 2.5rem;
     margin-bottom: 8px;
@@ -1873,6 +1885,12 @@ body {
     font-weight: 700;
     font-size: 0.9rem;
     transition: all 0.15s ease;
+}
+
+.grade-chip.disabled-chip {
+    opacity: 0.55;
+    cursor: default;
+    pointer-events: none;
 }
 
 .grade-chip:hover {

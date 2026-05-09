@@ -43,6 +43,10 @@ def index():
         subjects = Subject.query.all()
         grades = Grade.query.order_by(Grade.sort_order).all()
 
+        # Track which grades have content (topics)
+        from models import Topic
+        grade_counts = {g.id: Topic.query.filter_by(grade_id=g.id).count() for g in grades}
+
         grades_by_category = {}
         for g in grades:
             if g.category not in grades_by_category:
@@ -69,7 +73,8 @@ def index():
                                grades_by_category=grades_by_category,
                                sample_lessons=sample_lessons,
                                stats=stats,
-                               recent_lessons=recent_lessons)
+                               recent_lessons=recent_lessons,
+                               grade_counts=grade_counts)
     except Exception as e:
         print(f"ERROR in index route: {e}")
         traceback.print_exc()

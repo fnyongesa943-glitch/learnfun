@@ -83,9 +83,11 @@
             <h3>{{ cat }}</h3>
             <div class="grade-mini-list">
                 {% for grade in grades_list %}
-                <a href="{{ url_for('lessons.grade_subjects', grade_id=grade.id) }}" class="grade-chip" style="border-left: 3px solid {{ grade.color }};">
+                {% set gc = grade_counts[grade.id] if grade_counts else 0 %}
+                <a href="{{ url_for('lessons.grade_subjects', grade_id=grade.id) if gc > 0 else '#' }}" class="grade-chip{% if gc == 0 %} disabled-chip{% endif %}" style="border-left: 3px solid {{ grade.color }};">
                     <span>{{ grade.icon }}</span>
                     <span>{{ grade.name }}</span>
+                    {% if gc == 0 %}<small style="font-size: 0.65rem; opacity: 0.7;">Coming Soon</small>{% endif %}
                 </a>
                 {% endfor %}
             </div>
