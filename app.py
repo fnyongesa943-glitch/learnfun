@@ -70,25 +70,38 @@ def run_migrations():
         if 'parent_pin' not in cols:
             db.session.execute(text("ALTER TABLE users ADD COLUMN parent_pin VARCHAR(4) DEFAULT '0000'"))
 
+    # Check subjects table for category column
+    if 'subjects' in inspector.get_table_names():
+        cols = {c['name']: c for c in inspector.get_columns('subjects')}
+        if 'category' not in cols:
+            db.session.execute(text("ALTER TABLE subjects ADD COLUMN category VARCHAR(30) DEFAULT 'Core'"))
+
     # Check questions table
     if 'questions' in inspector.get_table_names():
         cols = {c['name']: c for c in inspector.get_columns('questions')}
         if 'hint' not in cols:
             db.session.execute(text("ALTER TABLE questions ADD COLUMN hint VARCHAR(200) DEFAULT ''"))
 
+    # Check quizzes table for new columns
+    if 'quizzes' in inspector.get_table_names():
+        cols = {c['name']: c for c in inspector.get_columns('quizzes')}
+        if 'lesson_id' not in cols:
+            db.session.execute(text("ALTER TABLE quizzes ADD COLUMN lesson_id INTEGER"))
+        if 'grade_id' not in cols:
+            db.session.execute(text("ALTER TABLE quizzes ADD COLUMN grade_id INTEGER"))
+
     # Create new tables if they don't exist
-    if 'shop_items' not in inspector.get_table_names():
-        db.create_all()
-    if 'user_owned_items' not in inspector.get_table_names():
-        db.create_all()
-    if 'stories' not in inspector.get_table_names():
-        db.create_all()
-    else:
+    for table in ['shop_items', 'user_owned_items', 'stories', 'user_story_reads',
+                  'grades', 'topics', 'lessons', 'user_lesson_progress']:
+        if table not in inspector.get_table_names():
+            db.create_all()
+            break
+
+    # Check stories for language column
+    if 'stories' in inspector.get_table_names():
         cols = {c['name']: c for c in inspector.get_columns('stories')}
         if 'language' not in cols:
             db.session.execute(text("ALTER TABLE stories ADD COLUMN language VARCHAR(10) DEFAULT 'en'"))
-    if 'user_story_reads' not in inspector.get_table_names():
-        db.create_all()
 
     db.session.commit()
 
@@ -815,17 +828,19 @@ def seed_cbc_data():
 
     print("🌱 Seeding CBC curriculum content...")
 
+    # Always update subject categories for existing subjects
+    subject_categories = {s['name']: s['category'] for s in cbc.SUBJECTS}
+    for subj in Subject.query.all():
+        if subj.name in subject_categories and subj.category != subject_categories[subj.name]:
+            subj.category = subject_categories[subj.name]
+            db.session.commit()
+
     if Grade.query.first():
         print("  CBC content already exists, skipping.")
         return
 
     cbc.seed_grades(db, Grade)
     cbc.seed_subjects(db, Subject)
-
-    subject_categories = {s['name']: s['category'] for s in cbc.SUBJECTS}
-    for subj in Subject.query.all():
-        if subj.name in subject_categories:
-            subj.category = subject_categories[subj.name]
 
     cbc.seed_cbc_content(db, Grade, Subject, Topic, Lesson)
     print("✅ CBC curriculum seeded!")
