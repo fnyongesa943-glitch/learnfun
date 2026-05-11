@@ -10,6 +10,7 @@
             <p>Monitor your child's learning progress</p>
         </div>
         <div class="flex-center gap-2">
+            <button onclick="window.print()" class="btn btn-outline btn-sm no-print">&#128424; Print Report</button>
             <span class="level-badge">&#128274; Protected Area</span>
             <a href="{{ url_for('parent.logout') }}" class="btn btn-outline btn-sm">Log Out</a>
         </div>
@@ -63,7 +64,11 @@
                     {{ user.avatar }}
                 </div>
                 <div class="activity-details">
-                    <div class="activity-title">{{ user.username }}</div>
+                    <div class="activity-title">
+                        <a href="{{ url_for('parent.user_report', user_id=user.id) }}" style="text-decoration: none; color: inherit;">
+                            {{ user.username }}
+                        </a>
+                    </div>
                     <div class="activity-meta">Level {{ user.level }} &bull; {{ user.streak_days }} day streak</div>
                 </div>
                 <div class="activity-score high">&#11088; {{ user.total_points }} pts</div>

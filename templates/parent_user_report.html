@@ -1,9 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}My Progress - LEARNFUN CHILDREN LEARNING WEB{% endblock %}
+{% block title %}{{ user.username }}'s Report - LEARNFUN CHILDREN LEARNING WEB{% endblock %}
 
 {% block content %}
 <div class="container">
+    <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-lg);">
+        <a href="{{ url_for('parent.dashboard') }}" class="btn btn-outline btn-sm">&larr; Back to Dashboard</a>
+        <button onclick="window.print()" class="btn btn-primary btn-sm">&#128424; Print Report</button>
+    </div>
+
     <div class="card" style="background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; border: none; margin-bottom: var(--space-lg);">
         <div class="flex-center gap-3" style="flex-wrap: wrap;">
             <div style="width: 72px; height: 72px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; position: relative;">
@@ -14,30 +19,28 @@
             </div>
             <div>
                 <h1 style="margin: 0; color: white;">{{ user.username }}</h1>
-                <p style="margin: 0; opacity: 0.9; color: rgba(255,255,255,0.9);">Level {{ user.level }} &bull; &#128293; {{ user.streak_days }} day streak</p>
+                <p style="margin: 0; opacity: 0.9; color: rgba(255,255,255,0.9);">
+                    Level {{ user.level }} &bull; &#128293; {{ user.streak_days }} day streak &bull; Joined {{ user.created_at.strftime('%b %d, %Y') }}
+                </p>
+            </div>
+            <div style="margin-left: auto; text-align: right;">
+                <div style="font-size: 1.5rem; font-weight: 900;">&#11088; {{ user.total_points }} pts</div>
+                <div style="font-size: 0.8125rem; opacity: 0.8;">{{ user.coins }} coins</div>
             </div>
         </div>
     </div>
 
-    <div class="level-progress">
+    <div class="level-progress" style="margin-bottom: var(--space-lg);">
         <div class="level-header">
             <div class="level-badge">&#11088; Level {{ user.level }}</div>
-            <span style="font-weight: 700; font-size: 0.9375rem;">{{ user.coins }} &#129521; Coins</span>
+            <span style="font-weight: 700; font-size: 0.9375rem;">{{ progress_to_next }}% to next level</span>
         </div>
         <div class="level-bar">
             <div class="level-bar-fill" style="width: {{ progress_to_next }}%;"></div>
         </div>
     </div>
 
-    <div class="no-print" style="text-align: right; margin-bottom: var(--space-md);">
-        <button onclick="window.print()" class="btn btn-outline btn-sm">&#128424; Print Report</button>
-    </div>
-
-    <div class="page-header">
-        <h2>&#128202; Your Stats</h2>
-    </div>
-
-    <div class="stats-grid">
+    <div class="stats-grid" style="margin-bottom: var(--space-lg);">
         <div class="stat-card">
             <div class="stat-icon">&#128221;</div>
             <div class="stat-value">{{ total_quizzes }}</div>
@@ -64,7 +67,7 @@
         <h2>&#128218; Subject Progress</h2>
     </div>
 
-    <div class="card-grid">
+    <div class="card-grid" style="margin-bottom: var(--space-lg);">
         {% for subject in subject_progress %}
         <div class="card">
             <div class="flex-center" style="justify-content: space-between; margin-bottom: var(--space-sm);">
@@ -86,31 +89,7 @@
     </div>
 
     <div class="page-header" style="margin-top: var(--space-xl);">
-        <h2>&#127941; Leaderboard</h2>
-    </div>
-
-    <div class="card">
-        <ul class="activity-list">
-            {% for rank, top_user in leaderboard %}
-            <li class="activity-item">
-                <div class="activity-icon" style="background: {{ '#FEF3C7' if rank == 1 else ('#F1F5F9' if rank == 2 else '#FEE2E2') }}; font-size: 1.25rem; font-weight: 900; color: {{ '#F59E0B' if rank == 1 else '#94A3B8' if rank == 2 else '#EF4444' }};">
-                    {{ rank }}
-                </div>
-                <div class="activity-icon" style="background: #EEF2FF;">
-                    {{ top_user.avatar }}
-                </div>
-                <div class="activity-details">
-                    <div class="activity-title">{{ top_user.username }}</div>
-                    <div class="activity-meta">Level {{ top_user.level }} &bull; &#128293; {{ top_user.streak_days }} day streak</div>
-                </div>
-                <div class="activity-score high">&#11088; {{ top_user.total_points }} pts</div>
-            </li>
-            {% endfor %}
-        </ul>
-    </div>
-
-    <div class="page-header" style="margin-top: var(--space-xl);">
-        <h2>&#127942; Badge Collection</h2>
+        <h2>&#127942; Badges</h2>
     </div>
 
     {% set badge_defs = {
@@ -127,7 +106,7 @@
         'Dedicated': {'icon': '&#128142;', 'description': 'Maintain a 7-day streak'},
     } %}
 
-    <div class="badge-grid">
+    <div class="badge-grid" style="margin-bottom: var(--space-lg);">
         {% for badge_name, badge_def in badge_defs.items() %}
         {% set earned = namespace(found=false) %}
         {% for b in badges %}
@@ -149,7 +128,7 @@
     </div>
 
     <div class="page-header" style="margin-top: var(--space-xl);">
-        <h2>&#128200; Recent Activity</h2>
+        <h2>&#128200; Recent Quiz Activity</h2>
     </div>
 
     {% if recent_activity %}
@@ -175,8 +154,7 @@
     <div class="card text-center" style="padding: var(--space-2xl);">
         <div style="font-size: 2.5rem; margin-bottom: var(--space-sm);">&#128221;</div>
         <h3>No quizzes taken yet!</h3>
-        <p style="color: var(--text-secondary);">Start your learning journey by taking your first quiz!</p>
-        <a href="{{ url_for('main.subjects') }}" class="btn btn-primary" style="margin-top: var(--space-sm);">&#128640; Start Learning</a>
+        <p style="color: var(--text-secondary);">{{ user.username }} hasn't taken any quizzes yet.</p>
     </div>
     {% endif %}
 </div>

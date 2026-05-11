@@ -2504,3 +2504,25 @@ body {
 .dark-mode .topic-header-card { background: var(--bg-card); }
 .dark-mode .grade-chip { background: var(--bg-body); }
 .dark-mode .grade-chip:hover { background: var(--bg-card); }
+
+/* ===== PRINT STYLES ===== */
+@media print {
+    body { background: white !important; color: black !important; }
+    .sidebar, .sidebar-toggle, .topbar, .footer, .btn, .no-print,
+    .flash-messages, .mascot, .shop-btn { display: none !important; }
+    .main-content { margin-left: 0 !important; padding: 0 !important; max-width: 100% !important; }
+    .container, .container-sm { max-width: 100% !important; padding: 0 !important; }
+    .card { break-inside: avoid; box-shadow: none !important; border: 1px solid #ddd !important; }
+    .stat-card { break-inside: avoid; }
+    .badge-grid { break-inside: avoid; }
+    .activity-list { break-inside: avoid; }
+    .progress-bar-container { background: #e5e7eb !important; }
+    .progress-bar-fill { background: #4F46E5 !important; }
+    .level-bar { background: #e5e7eb !important; }
+    .level-bar-fill { background: #4F46E5 !important; }
+    .page-header h2 { color: #111 !important; }
+    .stat-label, .activity-meta, .badge-desc { color: #666 !important; }
+    .level-badge { border: 1px solid #ccc !important; color: #333 !important; }
+    * { background: transparent !important; }
+    .dark-mode .card { background: white !important; border: 1px solid #ddd !important; }
+}
