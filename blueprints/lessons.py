@@ -2,7 +2,7 @@
 Lessons Blueprint - CBC subject topics, lessons, and learning content.
 """
 from flask import Blueprint, render_template, request, session, redirect, url_for, flash, jsonify
-from models import db, Grade, Subject, Topic, Lesson, UserLessonProgress, User, UserBadge, BADGE_DEFINITIONS
+from models import db, Grade, Subject, Topic, Lesson, Quiz, UserLessonProgress, User, UserBadge, BADGE_DEFINITIONS
 from blueprints.auth import login_required
 from datetime import datetime
 import json
@@ -67,6 +67,7 @@ def topic_detail(topic_id):
     """Show all lessons in a topic."""
     topic = Topic.query.get_or_404(topic_id)
     lessons = Lesson.query.filter_by(topic_id=topic_id).order_by(Lesson.order_number).all()
+    topic_quizzes = Quiz.query.filter_by(topic_id=topic_id).all()
 
     # Track progress
     completed_lessons = []
@@ -81,6 +82,7 @@ def topic_detail(topic_id):
 
     return render_template('topic_detail.html',
                            topic=topic, lessons=lessons,
+                           topic_quizzes=topic_quizzes,
                            completed_lessons=completed_lessons,
                            progress_pct=progress_pct)
 

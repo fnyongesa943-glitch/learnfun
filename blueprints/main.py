@@ -113,7 +113,10 @@ def subject_detail(subject_id):
         grade_name = topic.grade.name if topic.grade else 'General'
         if grade_name not in topics_by_grade:
             topics_by_grade[grade_name] = []
-        topics_by_grade[grade_name].append(topic)
+        topics_by_grade[grade_name].append({
+            'topic': topic,
+            'quizzes': Quiz.query.filter_by(topic_id=topic.id).all()
+        })
 
     return render_template('subject_detail.html',
                            subject=subject, quizzes=quizzes,

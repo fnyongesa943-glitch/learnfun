@@ -92,6 +92,8 @@ def run_migrations():
                 migrations.append("ALTER TABLE quizzes ADD COLUMN lesson_id INTEGER")
             if 'grade_id' not in cols:
                 migrations.append("ALTER TABLE quizzes ADD COLUMN grade_id INTEGER")
+            if 'topic_id' not in cols:
+                migrations.append("ALTER TABLE quizzes ADD COLUMN topic_id INTEGER")
     except Exception:
         pass
 
@@ -890,12 +892,14 @@ def seed_cbc_data():
     try:
         cbc.seed_grades(db, Grade)
         cbc.seed_subjects(db, Subject)
-        # Only skip content if topics already exist (grades/subjects may exist but content missing)
         if Topic.query.first():
             print("  CBC topics already exist, skipping content.")
         else:
             cbc.seed_cbc_content(db, Grade, Subject, Topic, Lesson)
             print("✅ CBC curriculum content seeded!")
+        # Seed topic-linked quizzes (always run - checks for duplicates internally)
+        from seed_topic_questions import seed_topic_questions
+        seed_topic_questions()
     except Exception as e:
         print(f"  CBC seeding warning: {e}")
         db.session.rollback()

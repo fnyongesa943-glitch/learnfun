@@ -51,5 +51,38 @@
         </a>
         {% endfor %}
     </div>
+
+    {% if topic_quizzes %}
+    <div class="section-header" style="margin-top: 32px;">
+        <h2>📝 Topic Quizzes</h2>
+    </div>
+    <div class="quiz-list">
+        {% for quiz in topic_quizzes %}
+        <div class="quiz-item">
+            <div class="quiz-info">
+                <div class="quiz-number" style="background: linear-gradient(135deg, {{ topic.subject.color }}, {{ topic.subject.color }}dd);">
+                    {{ loop.index }}
+                </div>
+                <div>
+                    <div class="quiz-title">{{ quiz.title }}</div>
+                    <div class="quiz-desc">{{ quiz.description }} · {{ quiz.questions|length }} questions</div>
+                </div>
+            </div>
+            <div class="flex-center gap-2" style="flex-wrap: wrap;">
+                <span class="difficulty-badge difficulty-{{ quiz.difficulty }}">{{ quiz.difficulty }}</span>
+                {% if current_user %}
+                <a href="{{ url_for('quiz.start_quiz', quiz_id=quiz.id) }}" class="btn btn-primary btn-sm">
+                    Play Now 🚀
+                </a>
+                {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-sm">
+                    Log In to Play
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

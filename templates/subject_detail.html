@@ -33,7 +33,8 @@
             <span class="text-muted">{{ topics|length }} topics</span>
         </div>
         <div class="topic-grid">
-            {% for topic in topics %}
+            {% for item in topics %}
+            {% set topic = item.topic %}
             <a href="{{ url_for('lessons.topic_detail', topic_id=topic.id) }}" class="card topic-card">
                 <div class="topic-card-icon">{{ topic.icon }}</div>
                 <h4>{{ topic.title }}</h4>
@@ -42,6 +43,15 @@
                     <span class="badge difficulty-{{ topic.difficulty }}">{{ topic.difficulty }}</span>
                     <span class="topic-lesson-count">{{ topic.lesson_count() }} lessons</span>
                 </div>
+                {% if item.quizzes %}
+                <div style="margin-top: 8px; display: flex; gap: 4px; flex-wrap: wrap;">
+                    {% for q in item.quizzes %}
+                    <span class="badge" style="background: {{ subject.color }}20; color: {{ subject.color }}; font-size: 0.7rem;">
+                        📝 {{ q.questions|length }} Qs
+                    </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
                 <span class="topic-arrow">→</span>
             </a>
             {% endfor %}

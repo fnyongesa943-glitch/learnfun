@@ -176,10 +176,12 @@ class Quiz(db.Model):
     description = db.Column(db.String(200), default='')
     lesson_id = db.Column(db.Integer, db.ForeignKey('lessons.id'), nullable=True)
     grade_id = db.Column(db.Integer, db.ForeignKey('grades.id'), nullable=True)
+    topic_id = db.Column(db.Integer, db.ForeignKey('topics.id'), nullable=True)
     questions = db.relationship('Question', backref='quiz', lazy=True, cascade='all, delete-orphan')
 
     lesson = db.relationship('Lesson', backref='quizzes')
     grade = db.relationship('Grade', backref='quizzes')
+    topic = db.relationship('Topic', backref='quizzes')
 
     def to_dict(self):
         return {
