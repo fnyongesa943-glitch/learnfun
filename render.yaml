@@ -16,7 +16,5 @@ services:
         value: "587"
       - key: SMTP_USER
         value: fnyongesa943@gmail.com
-      - key: SMTP_PASS
-        value: "Alice,,254"
       - key: FROM_EMAIL
         value: fnyongesa943@gmail.com
