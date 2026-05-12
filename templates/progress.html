@@ -71,6 +71,29 @@
         <h2>Recent Quiz Activity</h2>
     </div>
 
+    <div class="page-header" style="margin-top: var(--space-xl);">
+        <h2>&#128104;&#8205;&#128103;&#8205;&#128102; Profile Settings</h2>
+    </div>
+
+    <div class="card" style="margin-bottom: var(--space-lg);">
+        <p style="margin-top: 0; color: var(--text-secondary);">
+            Add your parent's email so they can view your progress from the Parent Dashboard.
+        </p>
+        <form method="POST" action="{{ url_for('progress.save_parent_email') }}" class="flex-center gap-2" style="flex-wrap: wrap;">
+            <div class="form-group" style="margin: 0; flex: 1; min-width: 200px;">
+                <input type="email" name="parent_email" class="form-control"
+                       placeholder="parent@example.com" value="{{ user.parent_email }}">
+            </div>
+            <button type="submit" class="btn btn-primary">Save</button>
+        </form>
+        {% if user.parent_email %}
+        <p style="margin-bottom: 0; font-size: 0.85rem; color: var(--accent-green);">
+            &#9989; Parent email set: <strong>{{ user.parent_email }}</strong>
+            &mdash; <a href="{{ url_for('parent.dashboard') }}?email={{ user.parent_email }}&pin=1234" target="_blank">View Parent View &#128279;</a>
+        </p>
+        {% endif %}
+    </div>
+
     {% if recent_activity %}
     <div class="card">
         <table class="activity-table">

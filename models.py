@@ -20,6 +20,7 @@ class User(db.Model):
     streak_days = db.Column(db.Integer, default=0)
     last_active = db.Column(db.DateTime, default=datetime.utcnow)
     parent_pin = db.Column(db.String(4), default='0000')
+    parent_email = db.Column(db.String(120), default='')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     scores = db.relationship('Score', backref='user', lazy=True, cascade='all, delete-orphan')

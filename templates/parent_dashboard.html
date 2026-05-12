@@ -6,40 +6,89 @@
 <div class="container">
     <div class="flex-center" style="justify-content: space-between; flex-wrap: wrap; gap: var(--space-md); margin-bottom: var(--space-lg);">
         <div class="page-header" style="margin-bottom: 0;">
-            <h1>&#128202; Parent Dashboard</h1>
-            <p>Monitor your child's learning progress</p>
+            <h1>&#128202; My Children</h1>
+            <p>Email: {{ parent_email }} &mdash; <a href="{{ url_for('parent.logout') }}">Switch Account</a></p>
         </div>
         <div class="flex-center gap-2">
             <button onclick="window.print()" class="btn btn-outline btn-sm no-print">&#128424; Print Report</button>
-            <span class="level-badge">&#128274; Protected Area</span>
-            <a href="{{ url_for('parent.logout') }}" class="btn btn-outline btn-sm">Log Out</a>
+            <span class="level-badge">&#128274; Parent View</span>
         </div>
     </div>
 
-    <div class="stats-grid">
+    {% if child_stats %}
+    <div class="stats-grid" style="margin-bottom: var(--space-lg);">
         <div class="stat-card">
             <div class="stat-icon">&#128104;&#8205;&#128103;&#8205;&#128102;</div>
-            <div class="stat-value">{{ total_users }}</div>
-            <div class="stat-label">Total Learners</div>
+            <div class="stat-value">{{ child_stats|length }}</div>
+            <div class="stat-label">Children</div>
         </div>
         <div class="stat-card">
             <div class="stat-icon">&#128221;</div>
             <div class="stat-value">{{ total_quizzes }}</div>
-            <div class="stat-label">Quizzes Taken</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">&#128293;</div>
-            <div class="stat-value">{{ active_today }}</div>
-            <div class="stat-label">Active Today</div>
+            <div class="stat-label">Total Quizzes</div>
         </div>
     </div>
 
     <div class="page-header" style="margin-top: var(--space-xl);">
-        <h2>&#128218; Subject Popularity</h2>
+        <h2>&#128110; Your Children</h2>
     </div>
 
+    {% for cs in child_stats %}
+    {% set user = cs.user %}
+    <div class="card" style="margin-bottom: var(--space-md); border-left: 4px solid var(--primary);">
+        <div class="flex-center" style="justify-content: space-between; flex-wrap: wrap; gap: var(--space-md);">
+            <div class="flex-center gap-3">
+                <div style="width: 56px; height: 56px; background: var(--bg-secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                    {{ user.avatar }}
+                </div>
+                <div>
+                    <h3 style="margin: 0;">
+                        <a href="{{ url_for('parent.user_report', user_id=user.id) }}" style="text-decoration: none; color: inherit;">
+                            {{ user.username }}
+                        </a>
+                    </h3>
+                    <p style="margin: 2px 0 0; color: var(--text-secondary); font-size: 0.85rem;">
+                        Level {{ user.level }} &#11088; {{ user.total_points }} pts
+                    </p>
+                </div>
+            </div>
+            <div class="flex-center gap-3" style="flex-wrap: wrap;">
+                <div style="text-align: center;">
+                    <div style="font-weight: 800; font-size: 1.2rem; color: var(--primary);">{{ cs.quiz_count }}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Quizzes</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-weight: 800; font-size: 1.2rem; color: var(--accent-green);">{{ cs.avg_score }}%</div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Avg Score</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-weight: 800; font-size: 1.2rem; color: var(--accent-orange);">{{ cs.lessons_done }}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Lessons</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-weight: 800; font-size: 1.2rem; color: var(--accent-purple);">{{ cs.badges_count }}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Badges</div>
+                </div>
+                <a href="{{ url_for('parent.user_report', user_id=user.id) }}" class="btn btn-primary btn-sm">
+                    View Report &#128269;
+                </a>
+            </div>
+        </div>
+        <div class="level-progress" style="margin: var(--space-sm) 0 0;">
+            <div class="level-bar">
+                {% set pct = (user.total_points % 100) %}
+                <div class="level-bar-fill" style="width: {{ pct }}%;"></div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <div class="page-header" style="margin-top: var(--space-xl);">
+        <h2>&#128218; Subject Activity</h2>
+    </div>
     <div class="card-grid">
         {% for stat in subject_stats %}
+        {% if stat.count > 0 %}
         <div class="card" style="border-left: 4px solid {{ stat.color }};">
             <div class="flex-center gap-2">
                 <span style="font-size: 1.5rem;">{{ stat.icon }}</span>
@@ -49,32 +98,28 @@
                 </div>
             </div>
         </div>
-        {% endfor %}
+        {% endif %}
+    {% endfor %}
     </div>
 
-    <div class="page-header" style="margin-top: var(--space-xl);">
-        <h2>&#128075; Recent Learners</h2>
+    {% else %}
+    <div class="card text-center" style="padding: var(--space-2xl);">
+        <div style="font-size: 3rem; margin-bottom: var(--space-md);">&#128104;&#8205;&#128103;&#8205;&#128102;</div>
+        <h2>No Children Linked Yet</h2>
+        <p style="color: var(--text-secondary); max-width: 400px; margin: 0 auto var(--space-lg);">
+            Ask your child to go to their <strong>Progress</strong> page, click <strong>Profile Settings</strong>,
+            and add your email address. Once they do, you'll see them here!
+        </p>
+        <div class="card" style="background: var(--bg-secondary); padding: var(--space-md); text-align: left;">
+            <p style="margin: 0; font-size: 0.85rem;">
+                <strong>&#8505;&#65039; Steps for your child:</strong><br>
+                1. Log in and go to <strong>Progress</strong><br>
+                2. Click <strong>Profile Settings</strong><br>
+                3. Enter your email in the "Parent Email" field<br>
+                4. Save - then come back here and refresh!
+            </p>
+        </div>
     </div>
-
-    <div class="card">
-        <ul class="activity-list">
-            {% for user in recent_users %}
-            <li class="activity-item">
-                <div class="activity-icon" style="background: #EEF2FF;">
-                    {{ user.avatar }}
-                </div>
-                <div class="activity-details">
-                    <div class="activity-title">
-                        <a href="{{ url_for('parent.user_report', user_id=user.id) }}" style="text-decoration: none; color: inherit;">
-                            {{ user.username }}
-                        </a>
-                    </div>
-                    <div class="activity-meta">Level {{ user.level }} &bull; {{ user.streak_days }} day streak</div>
-                </div>
-                <div class="activity-score high">&#11088; {{ user.total_points }} pts</div>
-            </li>
-            {% endfor %}
-        </ul>
-    </div>
+    {% endif %}
 </div>
 {% endblock %}

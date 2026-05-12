@@ -1,7 +1,7 @@
 """
 Progress Blueprint - User dashboard and progress tracking.
 """
-from flask import Blueprint, render_template, session, redirect, url_for, flash
+from flask import Blueprint, render_template, request, session, redirect, url_for, flash
 from models import db, User, Score, Quiz, Subject, UserBadge
 
 progress_bp = Blueprint('progress', __name__)
@@ -62,3 +62,21 @@ def dashboard():
         subject_progress=subject_progress, badges=badges, leaderboard=enumerate(leaderboard, 1),
         recent_activity=recent_activity, progress_to_next=progress_to_next
     )
+
+
+@progress_bp.route('/save_parent_email', methods=['POST'])
+def save_parent_email():
+    """Save the parent email for the current user."""
+    if 'user_id' not in session:
+        flash('Please log in.', 'warning')
+        return redirect(url_for('auth.login'))
+
+    email = request.form.get('parent_email', '').strip().lower()
+    user = User.query.get(session['user_id'])
+    user.parent_email = email
+    db.session.commit()
+    if email:
+        flash('Parent email saved! Your parent can now view your progress.', 'success')
+    else:
+        flash('Parent email removed.', 'info')
+    return redirect(url_for('progress.dashboard'))

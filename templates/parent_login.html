@@ -5,23 +5,30 @@
 {% block content %}
 <div class="auth-container">
     <div class="auth-card">
-        <div class="auth-icon">&#128274;</div>
+        <div class="auth-icon">&#128104;&#8205;&#128103;&#8205;&#128102;</div>
         <h2>Parent Access</h2>
-        <p>Enter PIN to view child progress and settings.</p>
+        <p>Enter your email and PIN to see your children's progress.</p>
 
         <form method="POST" action="{{ url_for('parent.check_pin') }}">
+            <div class="form-group">
+                <label for="email">Your Email Address</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="you@example.com" required>
+            </div>
             <div class="form-group">
                 <label for="pin">4-Digit PIN</label>
                 <input type="password" id="pin" name="pin" class="form-control" placeholder="1234" maxlength="4" required>
             </div>
             <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
-                Unlock Dashboard &#128274;
+                View My Children &#128269;
             </button>
         </form>
 
-        <p style="margin-top: var(--space-lg);">
-            <a href="{{ url_for('parent.login', pin='1234') }}" style="font-size: 0.875rem;">&#128273; Direct Link (PIN: 1234)</a>
-        </p>
+        <div class="card" style="margin-top: var(--space-lg); padding: var(--space-md); background: var(--bg-secondary);">
+            <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary);">
+                <strong>&#8505;&#65039; First time?</strong> Ask your child to add your email in their 
+                <strong>Profile</strong> settings (under Progress). Then log in here with PIN <strong>1234</strong>.
+            </p>
+        </div>
 
         <p style="margin-top: var(--space-md);">
             <a href="{{ url_for('main.index') }}" style="font-size: 0.875rem;">&larr; Back to Home</a>

@@ -97,6 +97,15 @@ def run_migrations():
     except Exception:
         pass
 
+    # Check users table for parent_email column
+    try:
+        if 'users' in inspector.get_table_names():
+            cols = {c['name']: c for c in inspector.get_columns('users')}
+            if 'parent_email' not in cols:
+                migrations.append("ALTER TABLE users ADD COLUMN parent_email VARCHAR(120) DEFAULT ''")
+    except Exception:
+        pass
+
     # Check stories for language column
     try:
         if 'stories' in inspector.get_table_names():
