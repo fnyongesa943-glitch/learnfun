@@ -31,7 +31,6 @@ def create_app():
     from blueprints.auth import auth_bp
     from blueprints.quiz import quiz_bp
     from blueprints.progress import progress_bp
-    from blueprints.shop import shop_bp
     from blueprints.parent import parent_bp
     from blueprints.stories import stories_bp
     from blueprints.lessons import lessons_bp
@@ -40,7 +39,6 @@ def create_app():
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(quiz_bp, url_prefix='/quiz')
     app.register_blueprint(progress_bp, url_prefix='/progress')
-    app.register_blueprint(shop_bp, url_prefix='/shop')
     app.register_blueprint(parent_bp, url_prefix='/parent')
     app.register_blueprint(stories_bp, url_prefix='/stories')
     app.register_blueprint(lessons_bp, url_prefix='/lessons')
@@ -647,6 +645,10 @@ def seed_data():
 
     # --- STORIES ---
     seed_stories()
+
+    # --- ADDITIONAL QUESTIONS (20-100 per subject) ---
+    from seed_more_questions import seed_more_questions as seed_extra_qs
+    seed_extra_qs()
 
     print("Database seeded successfully!")
 
