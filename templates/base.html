@@ -27,21 +27,13 @@
             <li><a href="{{ url_for('main.phonics') }}" class="sidebar-link {% if request.endpoint == 'main.phonics' %}active{% endif %}"><span class="icon">&#128260;</span> Phonics</a></li>
             {% if current_user %}
             <li><a href="{{ url_for('progress.dashboard') }}" class="sidebar-link {% if request.endpoint == 'progress.dashboard' %}active{% endif %}"><span class="icon">&#128202;</span> Progress</a></li>
-            <li><a href="{{ url_for('shop.index') }}" class="sidebar-link {% if request.endpoint == 'shop.index' %}active{% endif %}"><span class="icon">&#127991;</span> Shop</a></li>
             {% endif %}
         </ul>
 
         {% if current_user %}
         <div class="sidebar-user">
-            <div class="sidebar-user-avatar">
-                {{ current_user.avatar }}
-                {% if current_user.avatar_frame != 'none' %}
-                <span style="position: absolute; top: -2px; right: -2px; font-size: 0.6rem;">{{ current_user.avatar_frame }}</span>
-                {% endif %}
-            </div>
             <div class="sidebar-user-info">
                 <div class="sidebar-user-name">{{ current_user.username }}</div>
-                <div class="sidebar-user-meta">Level {{ current_user.level }}</div>
             </div>
             <a href="{{ url_for('auth.logout') }}" class="btn btn-ghost btn-sm" title="Logout">&#128075;</a>
         </div>
@@ -61,12 +53,6 @@
                 </div>
             </div>
             <div class="topbar-right">
-                {% if current_user %}
-                {% if current_user.streak_days > 0 %}
-                <span class="topbar-streak">&#128293; {{ current_user.streak_days }}</span>
-                {% endif %}
-                <span class="topbar-points">&#11088; {{ current_user.coins }}</span>
-                {% endif %}
                 <button class="topbar-btn" id="darkModeToggle" title="Toggle dark mode">&#127769;</button>
             </div>
         </div>
@@ -86,7 +72,7 @@
         </main>
 
         <footer class="footer">
-            <p>&#127752; LEARNFUN CHILDREN LEARNING WEB &mdash; Making Learning Fun for Kids! &#127881;</p>
+            <p>&#127752; LEARNFUN CHILDREN LEARNING WEB</p>
         </footer>
     </div>
 

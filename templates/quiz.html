@@ -17,7 +17,7 @@
             </div>
             <span class="progress-text">0/{{ questions|length }}</span>
         </div>
-        <p style="color: var(--text-secondary); margin: 0; font-size: 0.9375rem;">Answer each question and learn something new! &#127775;</p>
+        <p style="color: var(--text-secondary); margin: 0; font-size: 0.9375rem;">Answer each question carefully.</p>
     </div>
 
     <form method="POST" action="{{ url_for('quiz.submit_quiz', quiz_id=quiz.id) }}">
@@ -49,18 +49,18 @@
             {% if question.hint %}
             <div style="text-align: center; margin-top: var(--space-md);">
                 <button type="button" class="btn btn-sm hint-btn" style="background: #FEF3C7; color: #92400E; font-weight: 700;" onclick="toggleHint(this)">
-                    &#128161; Need a Hint? (-2 coins)
+                    Need a Hint?
                 </button>
                 <input type="hidden" name="q{{ question.id }}_hint_used" value="false">
             </div>
             {% endif %}
 
             <div class="explanation hint-box" style="display: none;">
-                <strong>&#129425; Ollie's Hint:</strong> {{ question.hint }}
+                <strong>Hint:</strong> {{ question.hint }}
             </div>
 
             <div class="explanation" style="display: none;">
-                <strong>&#128161; Learn more:</strong> {{ question.explanation }}
+                <strong>Explanation:</strong> {{ question.explanation }}
             </div>
 
             <input type="hidden" name="q{{ question.id }}" value="">
@@ -68,7 +68,7 @@
             <div style="text-align: center; margin-top: var(--space-lg);">
                 {% if loop.last %}
                 <button type="submit" class="btn btn-success btn-lg next-btn" style="display: none;">
-                    See My Results! &#127881;
+                    See My Results
                 </button>
                 {% else %}
                 <button type="button" class="btn btn-primary next-btn" style="display: none;">
@@ -80,12 +80,6 @@
         {% endfor %}
     </form>
 
-    <div class="mascot">
-        <div class="mascot-avatar">&#129425;</div>
-        <div class="mascot-speech">
-            <p><span class="mascot-name">Ollie says:</span> "Take your time and think carefully. You can do this!"</p>
-        </div>
-    </div>
 </div>
 {% endblock %}
 

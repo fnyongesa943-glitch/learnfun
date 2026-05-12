@@ -6,37 +6,23 @@
 <div class="container">
     {% if current_user %}
     <div class="dashboard-header">
-        <h1>Welcome back, {{ current_user.username }}! 📚</h1>
+        <h1>Welcome back, {{ current_user.username }}!</h1>
         <p>Continue your CBC learning journey</p>
     </div>
 
     <div class="stats-row">
         <div class="stat-card">
-            <div class="stat-icon-wrap blue">📖</div>
+            <div class="stat-icon-wrap blue">&#128218;</div>
             <div class="stat-info">
                 <div class="stat-value">{{ stats.lessons_completed if stats else 0 }}</div>
-                <div class="stat-label">Lessons Done</div>
+                <div class="stat-label">Lessons Completed</div>
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon-wrap green">⭐</div>
+            <div class="stat-icon-wrap green">&#127891;</div>
             <div class="stat-info">
                 <div class="stat-value">{{ current_user.total_points }}</div>
                 <div class="stat-label">Total Points</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon-wrap yellow">🔥</div>
-            <div class="stat-info">
-                <div class="stat-value">{{ current_user.streak_days }}</div>
-                <div class="stat-label">Day Streak</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon-wrap pink">🏆</div>
-            <div class="stat-info">
-                <div class="stat-value">{{ current_user.level }}</div>
-                <div class="stat-label">Level</div>
             </div>
         </div>
     </div>
@@ -63,11 +49,11 @@
 
     {% else %}
     <div class="dashboard-header" style="padding: 40px 32px; text-align: center;">
-        <h1 style="font-size: 2rem;">📚 Kenyan CBC Learning Platform</h1>
-        <p style="font-size: 1rem; margin-bottom: 20px;">Complete lessons, take quizzes, earn points. The fun way to learn the CBC curriculum!</p>
+        <h1 style="font-size: 2rem;">Kenyan CBC Learning Platform</h1>
+        <p style="font-size: 1rem; margin-bottom: 20px;">Complete lessons, take quizzes, and track your progress through the CBC curriculum.</p>
         <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-            <a href="{{ url_for('auth.signup') }}" class="btn btn-lg" style="background: white; color: var(--primary); font-weight: 800;">🚀 Start Learning Free</a>
-            <a href="{{ url_for('auth.login') }}" class="btn btn-lg" style="background: rgba(255,255,255,0.15); color: white; border: 2px solid rgba(255,255,255,0.3);">🔑 I Have an Account</a>
+            <a href="{{ url_for('auth.signup') }}" class="btn btn-lg" style="background: white; color: var(--primary); font-weight: 800;">Start Learning Free</a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-lg" style="background: rgba(255,255,255,0.15); color: white; border: 2px solid rgba(255,255,255,0.3);">I Have an Account</a>
         </div>
     </div>
     {% endif %}
@@ -108,26 +94,14 @@
             <h3>{{ lesson.title }}</h3>
             <p style="font-size: 0.85rem; color: var(--text-secondary);">{{ lesson.topic.subject.name }} · {{ lesson.topic.grade.name }}</p>
             <div class="subject-meta">
-                <span class="subject-quiz-count">+{{ lesson.points_earned }} pts</span>
                 <span class="subject-btn">
-                    <span class="btn btn-primary btn-sm" style="pointer-events: none;">Read →</span>
+                    <span class="btn btn-primary btn-sm" style="pointer-events: none;">Read Lesson</span>
                 </span>
             </div>
         </a>
         {% endfor %}
     </div>
 
-    <div class="mascot">
-        <div class="mascot-avatar">🦉</div>
-        <div class="mascot-speech">
-            <p><span class="mascot-name">Ollie the Owl says:</span>
-            {% if current_user %}
-                "Welcome to CBC Learning! Explore lessons by grade level. Complete them all to earn badges!"
-            {% else %}
-                "Hi there! Sign up to learn with CBC lessons, earn points, and become a star learner!"
-            {% endif %}
-            </p>
-        </div>
-    </div>
+
 </div>
 {% endblock %}
