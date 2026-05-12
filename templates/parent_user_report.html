@@ -4,16 +4,17 @@
 
 {% block content %}
 <div class="container">
+    {% if not email_mode %}
     <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-lg); flex-wrap: wrap; gap: 8px;">
         <a href="{{ url_for('parent.dashboard') }}" class="btn btn-outline btn-sm">&larr; Back to Dashboard</a>
         <div class="flex-center gap-2" style="flex-wrap: wrap;">
-            <a href="{{ url_for('parent.download_pdf', user_id=user.id) }}" class="btn btn-primary btn-sm">&#128196; Download PDF</a>
+            <button onclick="window.print()" class="btn btn-primary btn-sm">&#128196; Download / Print PDF</button>
             <form method="POST" action="{{ url_for('parent.email_report', user_id=user.id) }}" style="display: inline;">
                 <button type="submit" class="btn btn-success btn-sm">&#128231; Email Report</button>
             </form>
-            <button onclick="window.print()" class="btn btn-outline btn-sm">&#128424; Print</button>
         </div>
     </div>
+    {% endif %}
 
     <div class="card" style="background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; border: none; margin-bottom: var(--space-lg);">
         <div class="flex-center gap-3" style="flex-wrap: wrap;">
