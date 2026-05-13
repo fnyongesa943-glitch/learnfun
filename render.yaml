@@ -18,3 +18,39 @@ services:
         value: fnyongesa943@gmail.com
       - key: FROM_EMAIL
         value: fnyongesa943@gmail.com
+
+  - type: web
+    name: learnfun-api
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "5000"
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://learnfun-frontend.onrender.com
+      - key: OPENAI_API_KEY
+        sync: false
+
+  - type: web
+    name: learnfun-frontend
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build
+    startCommand: cd frontend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        value: https://learnfun-api.onrender.com/api
+      - key: NEXT_PUBLIC_APP_URL
+        value: https://learnfun-frontend.onrender.com
