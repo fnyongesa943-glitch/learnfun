@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Code - LEARNFUN CHILDREN LEARNING WEB{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-icon">&#128274;</div>
+        <h2>Enter Reset Code</h2>
+        <p>A 6-digit code was sent to <strong>{{ email }}</strong>. It expires in 10 minutes.</p>
+
+        <form method="POST" action="{{ url_for('auth.verify_otp') }}">
+            <div class="form-group">
+                <label for="otp">6-Digit Code</label>
+                <input type="text" id="otp" name="otp" class="form-control"
+                       placeholder="000000" required pattern="[0-9]{6}"
+                       maxlength="6" inputmode="numeric" autocomplete="one-time-code"
+                       style="font-size: 1.5rem; letter-spacing: 8px; text-align: center; font-weight: 800;">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
+                &#9989; Verify Code
+            </button>
+        </form>
+
+        <p style="margin-top: var(--space-lg); font-size: 0.9375rem;">
+            Didn't get the code?
+            <a href="{{ url_for('auth.forgot_password') }}" style="font-weight: 700;">Try again</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
