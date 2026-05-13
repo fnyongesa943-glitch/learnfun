@@ -7,6 +7,7 @@ from flask import Flask, session
 from seed_cbc import seed_cbc_content
 from models import db, User, Subject, Quiz, Question, Score, UserBadge, ShopItem, UserOwnedItem, Story, UserStoryRead, Grade, Topic, Lesson, UserLessonProgress
 from config import Config
+from apscheduler.schedulers.background import BackgroundScheduler
 
 
 def create_app():
@@ -52,6 +53,30 @@ def create_app():
             except Exception:
                 session.pop('user_id', None)
         return {'current_user': user}
+
+    def send_weekly_reports():
+        with app.app_context():
+            try:
+                parents = db.session.query(User.parent_email).filter(
+                    User.parent_email != '', User.parent_email.isnot(None)
+                ).distinct().all()
+                for (parent_email,) in parents:
+                    children = User.query.filter_by(parent_email=parent_email).all()
+                    for child in children:
+                        from blueprints.parent import get_child_report_data
+                        from report_generator import send_report_email
+                        data = get_child_report_data(child)
+                        try:
+                            send_report_email(parent_email, child.username, data)
+                        except Exception:
+                            pass
+                print(f"Weekly reports sent to {len(parents)} parents")
+            except Exception as e:
+                print(f"Weekly report error: {e}")
+
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(send_weekly_reports, 'cron', day_of_week='sun', hour=8, minute=0)
+    scheduler.start()
 
     return app
 

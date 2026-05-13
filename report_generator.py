@@ -60,7 +60,7 @@ def _build_email_html(data):
             <tbody>{subject_rows}</tbody>
         </table>
 
-        <h2 style="font-size:1.1rem;color:#333;margin:20px 0 15px;">🏅 Badges ({data['badges']|length})</h2>
+        <h2 style="font-size:1.1rem;color:#333;margin:20px 0 15px;">🏅 Badges ({len(data['badges'])})</h2>
         <div style="margin-bottom:20px;">{badges_html if badges_html else '<p style="color:#999;">No badges earned yet.</p>'}</div>
 
         <h2 style="font-size:1.1rem;color:#333;margin:20px 0 15px;">📈 Recent Quiz Activity</h2>

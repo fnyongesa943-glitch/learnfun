@@ -18,6 +18,8 @@ services:
         value: fnyongesa943@gmail.com
       - key: FROM_EMAIL
         value: fnyongesa943@gmail.com
+      - key: SMTP_PASS
+        sync: false
 
   - type: web
     name: learnfun-api
