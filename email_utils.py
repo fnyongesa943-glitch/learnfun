@@ -12,7 +12,7 @@ def send_otp_email(to_email, otp):
     from_email = os.environ.get('FROM_EMAIL', smtp_user)
 
     if not smtp_user or not smtp_pass:
-        return False
+        return False, 'SMTP credentials not set in environment variables.'
 
     subject = 'Your LearnFun Password Reset Code'
     body = f"""
@@ -38,13 +38,15 @@ def send_otp_email(to_email, otp):
     msg.attach(MIMEText(body, 'html'))
 
     try:
-        server = smtplib.SMTP(smtp_host, smtp_port, timeout=10)
+        server = smtplib.SMTP(smtp_host, smtp_port, timeout=15)
         server.starttls()
         server.login(smtp_user, smtp_pass)
         server.send_message(msg)
         server.quit()
-        return True
+        return True, ''
     except smtplib.SMTPAuthenticationError:
-        return False
-    except Exception:
-        return False
+        return False, 'Email authentication failed. Check SMTP_USER and SMTP_PASS.'
+    except smtplib.SMTPException as e:
+        return False, f'SMTP error: {e}'
+    except Exception as e:
+        return False, f'Email error: {e}'

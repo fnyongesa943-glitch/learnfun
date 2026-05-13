@@ -97,14 +97,14 @@ def forgot_password():
             db.session.commit()
 
             from email_utils import send_otp_email
-            sent = send_otp_email(email, otp)
+            sent, error = send_otp_email(email, otp)
 
             if sent:
                 session['reset_email'] = email
                 flash('A 6-digit code has been sent to your email.', 'success')
                 return redirect(url_for('auth.verify_otp'))
             else:
-                flash('Could not send email. Make sure SMTP is configured.', 'warning')
+                flash(f'Could not send email: {error}', 'warning')
         else:
             flash('No account found with that email.', 'error')
 
