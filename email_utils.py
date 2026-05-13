@@ -38,11 +38,13 @@ def send_otp_email(to_email, otp):
     msg.attach(MIMEText(body, 'html'))
 
     try:
-        server = smtplib.SMTP(smtp_host, smtp_port)
+        server = smtplib.SMTP(smtp_host, smtp_port, timeout=10)
         server.starttls()
         server.login(smtp_user, smtp_pass)
         server.send_message(msg)
         server.quit()
         return True
+    except smtplib.SMTPAuthenticationError:
+        return False
     except Exception:
         return False
