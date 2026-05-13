@@ -85,6 +85,7 @@ def logout():
 
 @auth_bp.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
+    reset_link = None
     if request.method == 'POST':
         email = request.form.get('email', '').strip()
         user = User.query.filter_by(email=email).first()
@@ -95,12 +96,11 @@ def forgot_password():
             user.reset_token_expires = datetime.utcnow() + timedelta(hours=1)
             db.session.commit()
             reset_link = url_for('auth.reset_password', token=token, _external=True)
-            flash(f'Reset link generated: {reset_link}', 'success')
+            flash('Reset link generated! Copy it below.', 'success')
         else:
             flash('If that email is registered, a reset link has been generated.', 'info')
-        return redirect(url_for('auth.forgot_password'))
 
-    return render_template('forgot_password.html')
+    return render_template('forgot_password.html', reset_link=reset_link)
 
 
 @auth_bp.route('/reset-password/<token>', methods=['GET', 'POST'])
