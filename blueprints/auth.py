@@ -1,9 +1,11 @@
 """
-Authentication Blueprint - Handles user login, signup, and logout.
+Authentication Blueprint - Handles user login, signup, logout, and password reset.
 """
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from models import db, User
 from functools import wraps
+from datetime import datetime, timedelta
+import secrets
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -79,3 +81,52 @@ def logout():
     session.pop('user_id', None)
     flash('See you next time!', 'info')
     return redirect(url_for('main.index'))
+
+
+@auth_bp.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        user = User.query.filter_by(email=email).first()
+
+        if user:
+            token = secrets.token_urlsafe(32)
+            user.reset_token = token
+            user.reset_token_expires = datetime.utcnow() + timedelta(hours=1)
+            db.session.commit()
+            reset_link = url_for('auth.reset_password', token=token, _external=True)
+            flash(f'Reset link generated: {reset_link}', 'success')
+        else:
+            flash('If that email is registered, a reset link has been generated.', 'info')
+        return redirect(url_for('auth.forgot_password'))
+
+    return render_template('forgot_password.html')
+
+
+@auth_bp.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    user = User.query.filter_by(reset_token=token).first()
+    if not user or not user.reset_token_expires or user.reset_token_expires < datetime.utcnow():
+        flash('Invalid or expired reset link.', 'error')
+        return redirect(url_for('auth.forgot_password'))
+
+    if request.method == 'POST':
+        password = request.form.get('password', '')
+        confirm = request.form.get('confirm_password', '')
+
+        if len(password) < 4:
+            flash('Password must be at least 4 characters!', 'error')
+            return render_template('reset_password.html', token=token)
+
+        if password != confirm:
+            flash('Passwords do not match!', 'error')
+            return render_template('reset_password.html', token=token)
+
+        user.set_password(password)
+        user.reset_token = None
+        user.reset_token_expires = None
+        db.session.commit()
+        flash('Password reset successfully! Log in with your new password.', 'success')
+        return redirect(url_for('auth.login'))
+
+    return render_template('reset_password.html', token=token)

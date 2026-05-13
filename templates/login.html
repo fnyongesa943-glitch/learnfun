@@ -28,6 +28,10 @@
             </button>
         </form>
 
+        <p style="margin-top: var(--space-md); font-size: 0.875rem;">
+            <a href="{{ url_for('auth.forgot_password') }}">Forgot Password?</a>
+        </p>
+
         <p style="margin-top: var(--space-lg); font-size: 0.9375rem;">
             Don't have an account?
             <a href="{{ url_for('auth.signup') }}" style="font-weight: 700;">Sign up here!</a>

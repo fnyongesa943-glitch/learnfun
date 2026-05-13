@@ -21,6 +21,8 @@ class User(db.Model):
     last_active = db.Column(db.DateTime, default=datetime.utcnow)
     parent_pin = db.Column(db.String(4), default='0000')
     parent_email = db.Column(db.String(120), default='')
+    reset_token = db.Column(db.String(100), unique=True, nullable=True)
+    reset_token_expires = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     scores = db.relationship('Score', backref='user', lazy=True, cascade='all, delete-orphan')

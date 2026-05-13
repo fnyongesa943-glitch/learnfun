@@ -103,6 +103,10 @@ def run_migrations():
             cols = {c['name']: c for c in inspector.get_columns('users')}
             if 'parent_email' not in cols:
                 migrations.append("ALTER TABLE users ADD COLUMN parent_email VARCHAR(120) DEFAULT ''")
+            if 'reset_token' not in cols:
+                migrations.append("ALTER TABLE users ADD COLUMN reset_token VARCHAR(100) DEFAULT NULL")
+            if 'reset_token_expires' not in cols:
+                migrations.append("ALTER TABLE users ADD COLUMN reset_token_expires TIMESTAMP DEFAULT NULL")
     except Exception:
         pass
 
