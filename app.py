@@ -880,6 +880,7 @@ def seed_stories():
 def seed_cbc_data():
     """Seed CBC curriculum content (grades, topics, lessons)."""
     import seed_cbc as cbc
+    import seed_cbc_missing as cbc_missing
 
     print("🌱 Seeding CBC curriculum content...")
 
@@ -909,6 +910,8 @@ def seed_cbc_data():
         # Seed topic-linked quizzes (always run - checks for duplicates internally)
         from seed_topic_questions import seed_topic_questions
         seed_topic_questions()
+        # Seed missing grade content (PP1, PP2, G5-G9)
+        cbc_missing.seed_missing_content(db, Grade, Subject, Topic, Lesson)
     except Exception as e:
         print(f"  CBC seeding warning: {e}")
         db.session.rollback()
