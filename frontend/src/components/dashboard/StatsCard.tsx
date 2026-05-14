@@ -42,51 +42,73 @@ export default function StatsCard({
       initial={{ opacity: 0, y: 20 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.5, ease: 'easeOut' }}
+      whileHover={{ y: -4, scale: 1.02 }}
       className={cn(
-        'relative overflow-hidden rounded-xl p-5 bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-700 shadow-sm',
+        'group relative overflow-hidden rounded-2xl p-5',
+        'bg-white/80 dark:bg-surface-800/80 backdrop-blur-sm',
+        'border border-surface-200/50 dark:border-surface-700/50',
+        'shadow-sm hover:shadow-xl hover:shadow-primary-500/5',
+        'transition-all duration-300',
         className
       )}
     >
-      <div className="flex items-start justify-between">
-        <div className="space-y-2">
-          <p className="text-sm text-surface-500 dark:text-surface-400">{label}</p>
-          <div className="flex items-baseline gap-1">
-            <motion.span className="text-2xl font-bold text-surface-900 dark:text-surface-50">
-              {rounded}
-            </motion.span>
-            {suffix && (
-              <span className="text-sm font-medium text-surface-500">{suffix}</span>
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+        <div className={cn(
+          'absolute -top-1/2 -right-1/2 h-full w-full rounded-full blur-3xl opacity-20 bg-gradient-to-br',
+          gradient
+        )} />
+      </div>
+      <div className="relative z-10">
+        <div className="flex items-start justify-between">
+          <div className="space-y-2.5">
+            <p className="text-sm font-medium text-surface-400 dark:text-surface-500 tracking-wide uppercase">
+              {label}
+            </p>
+            <div className="flex items-baseline gap-1">
+              <motion.span className="text-3xl font-extrabold text-surface-900 dark:text-surface-50 tracking-tight">
+                {rounded}
+              </motion.span>
+              {suffix && (
+                <span className="text-lg font-semibold text-surface-400">{suffix}</span>
+              )}
+            </div>
+            {trend && (
+              <div
+                className={cn(
+                  'flex items-center gap-1.5 text-xs font-semibold',
+                  trend.positive ? 'text-success-500' : 'text-danger-500'
+                )}
+              >
+                <div className={cn(
+                  'flex items-center justify-center h-5 w-5 rounded-full',
+                  trend.positive ? 'bg-success-500/10' : 'bg-danger-500/10'
+                )}>
+                  {trend.positive ? (
+                    <TrendingUp className="h-3 w-3" />
+                  ) : (
+                    <TrendingDown className="h-3 w-3" />
+                  )}
+                </div>
+                <span>{trend.value}%</span>
+                <span className="text-surface-400 font-normal">vs last week</span>
+              </div>
             )}
           </div>
-          {trend && (
-            <div
-              className={cn(
-                'flex items-center gap-1 text-xs font-medium',
-                trend.positive ? 'text-success-500' : 'text-danger-500'
-              )}
-            >
-              {trend.positive ? (
-                <TrendingUp className="h-3.5 w-3.5" />
-              ) : (
-                <TrendingDown className="h-3.5 w-3.5" />
-              )}
-              <span>{trend.value}%</span>
-              <span className="text-surface-400">vs last week</span>
-            </div>
-          )}
-        </div>
-        <div
-          className={cn(
-            'flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-lg',
-            gradient
-          )}
-        >
-          {icon}
+          <div
+            className={cn(
+              'flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-lg shadow-primary-500/10',
+              'group-hover:scale-110 group-hover:shadow-xl group-hover:shadow-primary-500/20',
+              'transition-all duration-300',
+              gradient
+            )}
+          >
+            {icon}
+          </div>
         </div>
       </div>
       <div
         className={cn(
-          'absolute -bottom-4 -right-4 h-20 w-20 rounded-full opacity-10 bg-gradient-to-br',
+          'absolute -bottom-4 -right-4 h-24 w-24 rounded-full opacity-5 bg-gradient-to-br',
           gradient
         )}
       />
