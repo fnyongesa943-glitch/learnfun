@@ -65,9 +65,12 @@ function playSound() {
     const word = document.getElementById('modalWord').textContent;
     if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
-        const utter = new SpeechSynthesisUtterance(letter + ' says ' + word);
-        utter.rate = 0.7;
-        utter.pitch = 1.2;
+        const utter = new SpeechSynthesisUtterance(letter + ' says ' + word + '!');
+        utter.rate = 0.5;
+        utter.pitch = 2.0;
+        const voices = window.speechSynthesis.getVoices();
+        const childVoice = voices.find(v => /child|girl|female|kid/i.test(v.name)) || voices.find(v => v.lang === 'en-US' && /female|zira/i.test(v.name));
+        if (childVoice) utter.voice = childVoice;
         window.speechSynthesis.speak(utter);
     }
 }
