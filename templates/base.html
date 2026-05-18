@@ -7,10 +7,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=9.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=10.0">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p class="loading-text">Loading your adventure...</p>
+    </div>
+
     <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">&#9776;</button>
 
     <aside class="sidebar" id="sidebar">
@@ -94,8 +100,17 @@
             sidebar.classList.remove('open');
         }
     });
+
+    // Hide loading overlay when page is fully loaded
+    window.addEventListener('load', function() {
+        const overlay = document.getElementById('loadingOverlay');
+        if (overlay) {
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.remove(), 300);
+        }
+    });
     </script>
-    <script src="{{ url_for('static', filename='js/main.js') }}?v=9.0"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}?v=10.0"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

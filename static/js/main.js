@@ -107,6 +107,27 @@ const SoundFX = {
             oscillator.start(startTime + i * 0.15);
             oscillator.stop(startTime + i * 0.15 + 0.3);
         });
+    },
+
+    playStreak() {
+        if (!this.enabled) return;
+        this.init();
+        const ctx = this.audioContext;
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx.destination);
+
+        oscillator.type = 'triangle';
+        oscillator.frequency.setValueAtTime(600, ctx.currentTime);
+        oscillator.frequency.linearRampToValueAtTime(900, ctx.currentTime + 0.2);
+
+        gainNode.gain.setValueAtTime(0.25, ctx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+
+        oscillator.start(ctx.currentTime);
+        oscillator.stop(ctx.currentTime + 0.3);
     }
 };
 
@@ -133,6 +154,109 @@ function createConfetti(count) {
     }
 
     setTimeout(() => container.remove(), 5000);
+}
+
+// ---- Score Popup ----
+function showScorePopup(points) {
+    const popup = document.createElement('div');
+    popup.className = 'score-popup';
+    popup.textContent = `\uD83C\uDF89 +${points} points!`;
+    document.body.appendChild(popup);
+    setTimeout(() => popup.remove(), 1500);
+}
+
+// ---- Streak System ----
+const StreakTracker = {
+    count: 0,
+    max: 0,
+    
+    recordCorrect() {
+        this.count++;
+        if (this.count > this.max) this.max = this.count;
+        return this.count;
+    },
+    
+    recordWrong() {
+        this.count = 0;
+    },
+    
+    getStreak() {
+        return this.count;
+    },
+    
+    showStreakBadge() {
+        if (this.count >= 3) {
+            const badge = document.createElement('div');
+            badge.className = 'streak-badge feedback-bounce';
+            badge.textContent = `\uD83D\uDD25 ${this.count} in a row!`;
+            document.body.appendChild(badge);
+            SoundFX.playStreak();
+            setTimeout(() => badge.remove(), 2000);
+        }
+    }
+};
+
+// ---- Count Up Animation ----
+function animateCountUp(element, target, duration = 500) {
+    const start = parseInt(element.textContent) || 0;
+    const startTime = performance.now();
+
+    function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = Math.floor(start + (target - start) * eased);
+        element.textContent = current;
+
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        } else {
+            element.classList.add('count-up');
+            setTimeout(() => element.classList.remove('count-up'), 300);
+        }
+    }
+
+    requestAnimationFrame(update);
+}
+
+// ---- Button Ripple Effect ----
+function initRippleEffect() {
+    document.querySelectorAll('.btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            const rect = this.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+            
+            this.style.setProperty('--x', x + '%');
+            this.style.setProperty('--y', y + '%');
+            
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple';
+            ripple.style.left = (e.clientX - rect.left) + 'px';
+            ripple.style.top = (e.clientY - rect.top) + 'px';
+            this.appendChild(ripple);
+            
+            setTimeout(() => ripple.remove(), 600);
+        });
+    });
+}
+
+// ---- Intersection Observer for Appear Animations ----
+function initAppearAnimations() {
+    if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+        document.querySelectorAll('.appear').forEach(el => observer.observe(el));
+    } else {
+        document.querySelectorAll('.appear').forEach(el => el.classList.add('visible'));
+    }
 }
 
 // ---- Avatar Selection ----
@@ -302,25 +426,6 @@ function updateSoundIcon(btn) {
     btn.title = SoundFX.enabled ? 'Mute sound' : 'Enable sound';
 }
 
-// ---- Animate Numbers on Scroll ----
-function animateValue(element, start, end, duration) {
-    const range = end - start;
-    const startTime = performance.now();
-
-    function update(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const value = Math.floor(start + range * progress);
-        element.textContent = value;
-
-        if (progress < 1) {
-            requestAnimationFrame(update);
-        }
-    }
-
-    requestAnimationFrame(update);
-}
-
 // ---- Dark Mode Toggle ----
 function initDarkMode() {
     const toggle = document.getElementById('darkModeToggle');
@@ -341,15 +446,167 @@ function initDarkMode() {
     });
 }
 
+// ---- Enhanced Quiz Interactions (Modern) ----
+function initModernQuiz() {
+    const questionCards = document.querySelectorAll('.question-card-new');
+    if (questionCards.length === 0) return;
+
+    let currentQuestion = 0;
+    let totalScore = 0;
+    let streak = 0;
+    const totalQuestions = questionCards.length;
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+    // Hide all questions except first
+    questionCards.forEach((card, index) => {
+        if (index > 0) card.style.display = 'none';
+    });
+
+    function updateProgress(current) {
+        const pct = ((current) / totalQuestions) * 100;
+        const progressFill = document.getElementById('quizProgressFill');
+        const progressCurrent = document.getElementById('progressCurrent');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        
+        if (progressFill) {
+            progressFill.style.width = pct + '%';
+            progressFill.classList.add('progress-bar-animated');
+        }
+        if (progressCurrent) {
+            animateCountUp(progressCurrent, current, 300);
+        }
+        if (scoreDisplay) {
+            scoreDisplay.textContent = '\u2B50 ' + totalScore + ' pts';
+            scoreDisplay.classList.add('count-up');
+            setTimeout(() => scoreDisplay.classList.remove('count-up'), 300);
+        }
+    }
+
+    function showFeedback(questionCard, isCorrect, points) {
+        const popup = questionCard.querySelector('.feedback-popup');
+        if (!popup) return;
+        
+        const icon = popup.querySelector('.feedback-icon');
+        const text = popup.querySelector('.feedback-text');
+
+        if (isCorrect) {
+            popup.className = 'feedback-popup feedback-correct';
+            icon.textContent = '\uD83D\uDD25';
+            text.textContent = 'Awesome! Great job!';
+            popup.style.display = 'flex';
+            popup.style.animation = 'feedbackSlideIn 0.4s ease, feedbackBounce 0.6s ease';
+            
+            if (points > 0) {
+                setTimeout(() => showScorePopup(points), 400);
+            }
+        } else {
+            popup.className = 'feedback-popup feedback-incorrect';
+            icon.textContent = '\uD83D\uDCA1';
+            text.textContent = 'Try again next time!';
+            popup.style.display = 'flex';
+            popup.style.animation = 'feedbackSlideIn 0.4s ease, wrongShake 0.4s ease';
+        }
+
+        setTimeout(() => { popup.style.display = 'none'; }, 2000);
+    }
+
+    function selectAnswer(btn) {
+        const card = btn.closest('.question-card-new');
+        const options = card.querySelectorAll('.option-btn-new');
+        const userAnswer = btn.dataset.answer;
+        const correctAnswer = card.dataset.correct;
+        const questionId = card.dataset.questionId;
+        const points = parseInt(card.dataset.points) || 10;
+        const hiddenInput = card.querySelector(`input[name="q${questionId}"]`);
+
+        if (hiddenInput) hiddenInput.value = userAnswer;
+
+        options.forEach(opt => {
+            opt.style.pointerEvents = 'none';
+            opt.classList.remove('option-selected');
+        });
+
+        if (userAnswer === correctAnswer) {
+            btn.classList.add('option-correct');
+            totalScore += points;
+            streak = StreakTracker.recordCorrect();
+            SoundFX.playCorrect();
+            showFeedback(card, true, points);
+            StreakTracker.showStreakBadge();
+        } else {
+            btn.classList.add('option-wrong');
+            options.forEach(opt => {
+                if (opt.dataset.answer === correctAnswer) {
+                    opt.classList.add('option-correct');
+                }
+            });
+            StreakTracker.recordWrong();
+            SoundFX.playIncorrect();
+            showFeedback(card, false, 0);
+        }
+
+        const explanation = card.querySelector('.explanation-new');
+        if (explanation) {
+            explanation.style.display = 'block';
+            explanation.style.animation = 'slideIn 0.3s ease';
+        }
+
+        updateProgress(currentQuestion + 1);
+
+        if (currentQuestion < totalQuestions - 1) {
+            const nextBtn = document.getElementById('nextBtn-' + questionId);
+            if (nextBtn) {
+                nextBtn.style.display = 'inline-flex';
+                nextBtn.style.animation = 'pulse 1s infinite';
+            }
+        } else {
+            const finishBtn = document.getElementById('finishBtn');
+            if (finishBtn) {
+                finishBtn.style.display = 'inline-flex';
+                finishBtn.style.animation = 'pulse 1s infinite';
+            }
+        }
+    }
+
+    document.querySelectorAll('.option-btn-new').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const card = this.closest('.question-card-new');
+            if (card.querySelector('.option-correct, .option-wrong')) return;
+            selectAnswer(this);
+        });
+    });
+
+    document.querySelectorAll('.btn-next').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const currentCard = btn.closest('.question-card-new');
+            currentCard.style.display = 'none';
+            currentQuestion++;
+
+            if (currentQuestion < totalQuestions) {
+                const nextCard = questionCards[currentQuestion];
+                nextCard.style.display = 'block';
+                nextCard.style.animation = 'slideIn 0.3s ease';
+                SoundFX.playClick();
+            }
+        });
+    });
+
+    updateProgress(0);
+}
+
 // ---- Initialize on DOM Ready ----
 document.addEventListener('DOMContentLoaded', () => {
     initDarkMode();
     initSoundToggle();
     initAvatarSelection();
     initQuiz();
+    initModernQuiz();
     initQuizResult();
     initFlashMessages();
+    initRippleEffect();
+    initAppearAnimations();
 
+    // Subtle hover sound on interactive elements
     document.querySelectorAll('.btn, .nav-link, .subject-card, .quiz-item').forEach(el => {
         el.addEventListener('mouseenter', () => SoundFX.playClick());
     });
