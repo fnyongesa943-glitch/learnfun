@@ -36,7 +36,7 @@ PHONICS_DATA = [
 ]
 
 
-@main_bp.route('/')
+@main_bp.route('/', methods=['GET', 'POST'])
 def index():
     import traceback
     try:
