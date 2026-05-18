@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <!-- Trophy -->
+  <path d="M60 50 L140 50 L130 100 Q100 120 70 100 Z" fill="#FFD93D"/>
+  <rect x="85" y="120" width="30" height="15" rx="3" fill="#FF9800"/>
+  <rect x="75" y="135" width="50" height="8" rx="4" fill="#FF9800"/>
+  <!-- Trophy handles -->
+  <path d="M60 60 Q40 60 45 80 Q50 95 70 85" fill="none" stroke="#FFD93D" stroke-width="8" stroke-linecap="round"/>
+  <path d="M140 60 Q160 60 155 80 Q150 95 130 85" fill="none" stroke="#FFD93D" stroke-width="8" stroke-linecap="round"/>
+  <!-- Star on trophy -->
+  <polygon points="100,65 105,80 120,80 108,90 112,105 100,95 88,105 92,90 80,80 95,80" fill="#FF9800"/>
+  <!-- Rising chart bars -->
+  <rect x="40" y="150" width="15" height="20" rx="3" fill="#4CAF50" opacity="0.6"/>
+  <rect x="60" y="140" width="15" height="30" rx="3" fill="#4CAF50" opacity="0.7"/>
+  <rect x="80" y="130" width="15" height="40" rx="3" fill="#4CAF50" opacity="0.8"/>
+  <rect x="100" y="120" width="15" height="50" rx="3" fill="#4CAF50" opacity="0.9"/>
+  <rect x="120" y="110" width="15" height="60" rx="3" fill="#4CAF50"/>
+  <!-- Trend line -->
+  <polyline points="47,148 67,138 87,128 107,118 127,108" fill="none" stroke="#2196F3" stroke-width="3" stroke-linecap="round"/>
+  <!-- Confetti stars -->
+  <polygon points="30,30 33,40 43,40 35,46 38,56 30,50 22,56 25,46 17,40 27,40" fill="#FF4081" opacity="0.7"/>
+  <polygon points="170,40 173,48 181,48 175,53 177,61 170,56 163,61 165,53 159,48 167,48" fill="#2196F3" opacity="0.7"/>
+  <circle cx="160" cy="25" r="5" fill="#FFD93D" opacity="0.8"/>
+  <circle cx="25" cy="70" r="4" fill="#FF9800" opacity="0.8"/>
+</svg>

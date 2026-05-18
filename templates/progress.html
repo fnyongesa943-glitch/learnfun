@@ -6,6 +6,9 @@
 <div class="container">
     {# ============================ PROFILE CARD ============================ #}
     <div class="profile-card">
+        <div class="profile-illustration">
+            <img src="{{ url_for('static', filename='images/progress-achievement.svg') }}" alt="Achievement unlocked" class="profile-svg">
+        </div>
         <div class="profile-avatar-wrap">
             <div class="profile-avatar">{{ user.avatar }}</div>
             <span class="profile-level-badge">{{ user.get_level_name() }}</span>

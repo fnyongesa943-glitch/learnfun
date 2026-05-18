@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <!-- Explorer child -->
+  <circle cx="100" cy="70" r="35" fill="#FFD93D"/>
+  <!-- Safari hat -->
+  <ellipse cx="100" cy="45" rx="30" ry="10" fill="#FF9800"/>
+  <rect x="80" y="35" width="40" height="15" rx="5" fill="#FF9800"/>
+  <circle cx="100" cy="40" r="4" fill="#4CAF50"/>
+  <!-- Eyes -->
+  <circle cx="88" cy="65" r="5" fill="#333"/>
+  <circle cx="112" cy="65" r="5" fill="#333"/>
+  <circle cx="90" cy="63" r="2" fill="white"/>
+  <circle cx="114" cy="63" r="2" fill="white"/>
+  <!-- Smile -->
+  <path d="M90 80 Q100 90 110 80" stroke="#333" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- Body with backpack -->
+  <rect x="80" y="105" width="40" height="45" rx="12" fill="#4CAF50"/>
+  <rect x="70" y="110" width="15" height="30" rx="6" fill="#2196F3"/>
+  <!-- Binoculars -->
+  <circle cx="125" cy="120" r="8" fill="#333"/>
+  <circle cx="140" cy="120" r="8" fill="#333"/>
+  <rect x="130" y="118" width="5" height="4" fill="#333"/>
+  <line x1="120" y1="125" x2="115" y2="135" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+  <!-- Map in hand -->
+  <rect x="65" y="125" width="20" height="25" rx="2" fill="#FFD93D" transform="rotate(-10 75 137)"/>
+  <line x1="70" y1="130" x2="80" y2="128" stroke="#FF9800" stroke-width="1" transform="rotate(-10 75 137)"/>
+  <line x1="68" y1="135" x2="78" y2="133" stroke="#FF9800" stroke-width="1" transform="rotate(-10 75 137)"/>
+  <line x1="72" y1="140" x2="82" y2="138" stroke="#FF9800" stroke-width="1" transform="rotate(-10 75 137)"/>
+  <!-- Trees in background -->
+  <rect x="25" y="150" width="8" height="25" fill="#8B4513"/>
+  <circle cx="29" cy="140" r="18" fill="#4CAF50"/>
+  <circle cx="22" cy="145" r="12" fill="#4CAF50" opacity="0.8"/>
+  <circle cx="36" cy="148" r="10" fill="#4CAF50" opacity="0.7"/>
+  <!-- Path -->
+  <path d="M30 180 Q60 170 90 175 Q120 180 150 170 Q170 165 180 170" fill="none" stroke="#FF9800" stroke-width="4" stroke-linecap="round" stroke-dasharray="8,4"/>
+  <!-- Stars/sparkles -->
+  <polygon points="160,30 163,38 171,38 165,43 167,51 160,46 153,51 155,43 149,38 157,38" fill="#FFD93D" opacity="0.8"/>
+  <polygon points="40,20 42,26 48,26 43,30 45,36 40,32 35,36 37,30 32,26 38,26" fill="#FF4081" opacity="0.7"/>
+  <circle cx="175" cy="50" r="4" fill="#2196F3" opacity="0.6"/>
+</svg>

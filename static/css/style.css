@@ -3809,3 +3809,106 @@ body::after {
 
 .dark-mode .stage-locked-info { background: #1F2937; color: #9E9E9E; }
 
+/* ============================
+   ILLUSTRATION STYLES
+   ============================ */
+
+/* Hero illustration */
+.hero-svg-illustration {
+    width: 100%;
+    max-width: 380px;
+    height: auto;
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1));
+    animation: illustrationFloat 4s ease-in-out infinite;
+}
+
+@keyframes illustrationFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Quiz illustration */
+.quiz-illustration {
+    display: flex;
+    justify-content: center;
+    margin-top: 16px;
+}
+
+.quiz-svg {
+    width: 100%;
+    max-width: 180px;
+    height: auto;
+    opacity: 0.85;
+    animation: illustrationFloat 3s ease-in-out infinite;
+    animation-delay: 0.5s;
+}
+
+/* Profile/Progress illustration */
+.profile-illustration {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.profile-svg {
+    width: 100%;
+    max-width: 160px;
+    height: auto;
+    animation: illustrationFloat 3.5s ease-in-out infinite;
+}
+
+/* Adventure header illustration */
+.adventure-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.adventure-header-content {
+    flex: 1;
+}
+
+.adventure-header-illustration {
+    flex: 0 0 180px;
+}
+
+.adventure-svg {
+    width: 100%;
+    max-width: 180px;
+    height: auto;
+    animation: illustrationFloat 4s ease-in-out infinite;
+    animation-delay: 1s;
+}
+
+/* Responsive adjustments for illustrations */
+@media (max-width: 768px) {
+    .hero-svg-illustration {
+        max-width: 280px;
+    }
+    
+    .adventure-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .adventure-header-illustration {
+        flex: none;
+        max-width: 150px;
+    }
+    
+    .profile-svg,
+    .quiz-svg {
+        max-width: 120px;
+    }
+}
+
+/* Dark mode adjustments for illustrations */
+.dark-mode .hero-svg-illustration,
+.dark-mode .quiz-svg,
+.dark-mode .profile-svg,
+.dark-mode .adventure-svg {
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3)) brightness(0.9);
+}
+

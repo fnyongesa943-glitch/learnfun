@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 350" width="100%" height="100%">
+  <defs>
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2196F3;stop-opacity:0.1"/>
+      <stop offset="100%" style="stop-color:#4CAF50;stop-opacity:0.05"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="350" fill="url(#skyGrad)" rx="20"/>
+  
+  <!-- Desk -->
+  <rect x="80" y="220" width="240" height="15" rx="8" fill="#FF9800"/>
+  <rect x="100" y="235" width="12" height="60" rx="4" fill="#FF9800"/>
+  <rect x="288" y="235" width="12" height="60" rx="4" fill="#FF9800"/>
+  
+  <!-- Book on desk -->
+  <rect x="140" y="200" width="60" height="20" rx="3" fill="#4CAF50"/>
+  <rect x="145" y="195" width="50" height="15" rx="2" fill="#2196F3"/>
+  <rect x="148" y="197" width="20" height="2" fill="white" opacity="0.6"/>
+  <rect x="148" y="201" width="30" height="2" fill="white" opacity="0.6"/>
+  <rect x="148" y="205" width="25" height="2" fill="white" opacity="0.6"/>
+  
+  <!-- Pencil cup -->
+  <rect x="260" y="195" width="25" height="25" rx="4" fill="#FF4081"/>
+  <line x1="267" y1="195" x2="265" y2="175" stroke="#FFD93D" stroke-width="3" stroke-linecap="round"/>
+  <line x1="272" y1="195" x2="274" y2="170" stroke="#4CAF50" stroke-width="3" stroke-linecap="round"/>
+  <line x1="278" y1="195" x2="280" y2="178" stroke="#2196F3" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Child 1 - Left side, reading -->
+  <circle cx="150" cy="120" r="35" fill="#FFD93D"/>
+  <circle cx="140" cy="115" r="5" fill="#333"/>
+  <circle cx="160" cy="115" r="5" fill="#333"/>
+  <path d="M140 130 Q150 140 160 130" stroke="#333" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <rect x="130" y="155" width="40" height="45" rx="10" fill="#2196F3"/>
+  <rect x="125" y="160" width="12" height="35" rx="6" fill="#2196F3" transform="rotate(-15 130 160)"/>
+  <rect x="163" y="160" width="12" height="35" rx="6" fill="#2196F3" transform="rotate(15 168 160)"/>
+  
+  <!-- Child 2 - Right side, writing -->
+  <circle cx="250" cy="115" r="32" fill="#FF9800"/>
+  <circle cx="242" cy="110" r="4" fill="#333"/>
+  <circle cx="258" cy="110" r="4" fill="#333"/>
+  <path d="M242 125 Q250 135 258 125" stroke="#333" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <rect x="232" y="147" width="36" height="53" rx="10" fill="#4CAF50"/>
+  <rect x="228" y="152" width="10" height="30" rx="5" fill="#4CAF50" transform="rotate(-10 233 152)"/>
+  <rect x="262" y="152" width="10" height="30" rx="5" fill="#4CAF50" transform="rotate(10 267 152)"/>
+  <!-- Pencil in hand -->
+  <line x1="265" y1="175" x2="280" y2="200" stroke="#FFD93D" stroke-width="4" stroke-linecap="round"/>
+  
+  <!-- Floating stars -->
+  <g fill="#FFD93D" opacity="0.8">
+    <polygon points="60,80 65,95 80,95 68,105 72,120 60,110 48,120 52,105 40,95 55,95"/>
+    <polygon points="340,60 343,70 353,70 345,78 348,88 340,82 332,88 335,78 327,70 337,70"/>
+    <polygon points="320,150 323,158 331,158 325,164 327,172 320,168 313,172 315,164 309,158 317,158"/>
+  </g>
+  
+  <!-- Lightbulb above -->
+  <circle cx="200" cy="50" r="18" fill="#FFD93D"/>
+  <rect x="193" y="68" width="14" height="8" rx="3" fill="#FF9800"/>
+  <line x1="200" y1="30" x2="200" y2="20" stroke="#FFD93D" stroke-width="2" stroke-linecap="round"/>
+  <line x1="180" y1="40" x2="172" y2="35" stroke="#FFD93D" stroke-width="2" stroke-linecap="round"/>
+  <line x1="220" y1="40" x2="228" y2="35" stroke="#FFD93D" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Books stack on left -->
+  <rect x="95" y="190" width="40" height="8" rx="2" fill="#FF4081"/>
+  <rect x="98" y="182" width="35" height="8" rx="2" fill="#2196F3"/>
+  <rect x="92" y="174" width="38" height="8" rx="2" fill="#4CAF50"/>
+  
+  <!-- Globe -->
+  <circle cx="330" cy="180" r="25" fill="#2196F3"/>
+  <ellipse cx="330" cy="180" rx="15" ry="25" fill="none" stroke="#4CAF50" stroke-width="2"/>
+  <line x1="305" y1="180" x2="355" y2="180" stroke="#4CAF50" stroke-width="2"/>
+  <rect x="325" y="205" width="10" height="12" rx="2" fill="#FF9800"/>
+  <rect x="318" y="215" width="24" height="4" rx="2" fill="#FF9800"/>
+</svg>

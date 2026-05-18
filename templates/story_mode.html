@@ -6,12 +6,17 @@
 <div class="container-sm">
     {# ============================ ADVENTURE HEADER ============================ #}
     <div class="adventure-header">
-        <h1 class="adventure-title">&#127752; Adventure Mode</h1>
-        <p class="adventure-subtitle">Complete each stage to unlock the next! Can you conquer them all?</p>
-        <div class="adventure-player-info">
-            <span class="adv-player-avatar">{{ user.avatar }}</span>
-            <span class="adv-player-name">{{ user.username }}</span>
-            <span class="adv-player-level">{{ user.get_level_name() }} &middot; {{ user.total_points }} pts</span>
+        <div class="adventure-header-content">
+            <h1 class="adventure-title">&#127752; Adventure Mode</h1>
+            <p class="adventure-subtitle">Complete each stage to unlock the next! Can you conquer them all?</p>
+            <div class="adventure-player-info">
+                <span class="adv-player-avatar">{{ user.avatar }}</span>
+                <span class="adv-player-name">{{ user.username }}</span>
+                <span class="adv-player-level">{{ user.get_level_name() }} &middot; {{ user.total_points }} pts</span>
+            </div>
+        </div>
+        <div class="adventure-header-illustration">
+            <img src="{{ url_for('static', filename='images/adventure-explorer.svg') }}" alt="Adventure explorer" class="adventure-svg">
         </div>
     </div>
 
