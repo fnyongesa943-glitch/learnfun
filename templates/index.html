@@ -163,15 +163,15 @@
     </div>
 
     <div class="grade-grid">
-        {% for cat, grades_list in grades_by_category.items() %}
+        {% for cat, grades_list in grades_by_category.items()|default([]) %}
         <div class="grade-category-card">
             <h3>{{ cat }}</h3>
             <div class="grade-mini-list">
-                {% for grade in grades_list %}
-                {% set gc = grade_counts.get(grade.id, 0) if grade_counts else 0 %}
-                <a href="{{ url_for('lessons.grade_subjects', grade_id=grade.id) if gc > 0 else '#' }}" class="grade-chip{% if gc == 0 %} disabled-chip{% endif %}" style="border-left: 3px solid {{ grade.color }};">
-                    <span>{{ grade.icon }}</span>
-                    <span>{{ grade.name }}</span>
+                {% for grade in grades_list|default([]) %}
+                {% set gc = grade_counts.get(grade.id, 0) if grade_counts is defined else 0 %}
+                <a href="{{ url_for('lessons.grade_subjects', grade_id=grade.id) if gc > 0 else '#' }}" class="grade-chip{% if gc == 0 %} disabled-chip{% endif %}" style="border-left: 3px solid {{ grade.color|default('#6366F1') }};">
+                    <span>{{ grade.icon|default('📚') }}</span>
+                    <span>{{ grade.name|default('Grade') }}</span>
                     {% if gc == 0 %}<small style="font-size: 0.65rem; opacity: 0.7;">Coming Soon</small>{% endif %}
                 </a>
                 {% endfor %}
@@ -181,15 +181,17 @@
     </div>
 
     {# ============================ SAMPLE LESSONS ============================ #}
+    {% if sample_lessons is defined and sample_lessons %}
     <div class="section-header">
         <h2>&#128214; Sample Lessons</h2>
     </div>
 
     <div class="card-grid-3">
         {% for lesson in sample_lessons %}
+        {% if lesson and lesson.topic and lesson.topic.subject and lesson.topic.grade %}
         <a href="{{ url_for('lessons.view_lesson', lesson_id=lesson.id) }}" class="card subject-card">
             <div class="subject-icon-bubble" style="background: linear-gradient(135deg, {{ lesson.topic.subject.color }}22, {{ lesson.topic.subject.color }}44);">
-                <span>{{ lesson.image_emoji }}</span>
+                <span>{{ lesson.image_emoji|default('📖') }}</span>
             </div>
             <h3>{{ lesson.title }}</h3>
             <p class="subject-sub">{{ lesson.topic.subject.name }} &middot; {{ lesson.topic.grade.name }}</p>
@@ -197,7 +199,9 @@
                 <span class="btn btn-primary btn-sm">Read Lesson</span>
             </div>
         </a>
+        {% endif %}
         {% endfor %}
     </div>
+    {% endif %}
 </div>
 {% endblock %}
