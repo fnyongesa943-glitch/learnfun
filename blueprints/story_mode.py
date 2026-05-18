@@ -1,7 +1,7 @@
 """
 Story Mode Blueprint - Adventure journey with locked stages.
 """
-from flask import Blueprint, render_template, session, jsonify, redirect, url_for, flash
+from flask import Blueprint, render_template, session, jsonify, redirect, url_for, flash, request
 from models import db, User, AdventureStage, StoryProgress, Quiz, Question, Score
 from blueprints.auth import login_required
 from datetime import datetime
