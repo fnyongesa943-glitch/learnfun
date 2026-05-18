@@ -1,18 +1,29 @@
 {% extends "base.html" %}
 
-{% block title %}My Progress - LEARNFUN CHILDREN LEARNING WEB{% endblock %}
+{% block title %}My Progress - LearnFun Adventure{% endblock %}
 
 {% block content %}
 <div class="container">
-    <div class="card" style="background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; border: none; margin-bottom: var(--space-lg);">
-        <div class="flex-center gap-3" style="flex-wrap: wrap;">
-            <div style="width: 72px; height: 72px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; position: relative;">
-                {{ user.avatar }}
+    {# ============================ PROFILE CARD ============================ #}
+    <div class="profile-card">
+        <div class="profile-avatar-wrap">
+            <div class="profile-avatar">{{ user.avatar }}</div>
+            <span class="profile-level-badge">{{ user.get_level_name() }}</span>
+        </div>
+        <div class="profile-info">
+            <h1 class="profile-name">{{ user.username }}</h1>
+            <div class="profile-stats-row">
+                <span class="profile-stat">&#11088; {{ user.total_points }} pts</span>
+                <span class="profile-stat">&#127942; Level {{ user.level }}</span>
+                <span class="profile-stat">&#128293; {{ user.streak_days }} day streak</span>
+                <span class="profile-stat">&#129726; {{ user.coins }} coins</span>
             </div>
-            <div>
-                <h1 style="margin: 0; color: white;">{{ user.username }}</h1>
-                <p style="margin: 0; opacity: 0.9; color: rgba(255,255,255,0.9);">{{ user.total_points }} total points</p>
+        </div>
+        <div class="profile-level-progress">
+            <div class="level-mini-bar">
+                <div class="level-mini-fill" style="width: {{ user.get_level_progress() }}%;"></div>
             </div>
+            <span class="level-mini-text">{{ user.get_level_progress() }}% to next level</span>
         </div>
     </div>
 
@@ -20,78 +31,75 @@
         <button onclick="window.print()" class="btn btn-outline btn-sm">&#128424; Print Report</button>
     </div>
 
-    <div class="page-header">
+    {# ============================ STATISTICS ============================ #}
+    <div class="section-header">
         <h2>Your Statistics</h2>
     </div>
 
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon">&#128221;</div>
-            <div class="stat-value">{{ total_quizzes }}</div>
-            <div class="stat-label">Quizzes Taken</div>
+    <div class="stats-grid-new">
+        <div class="stat-card-new stat-blue">
+            <span class="stat-card-icon">&#128221;</span>
+            <span class="stat-card-value">{{ total_quizzes }}</span>
+            <span class="stat-card-label">Quizzes Taken</span>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon">&#127919;</div>
-            <div class="stat-value">{{ avg_score }}%</div>
-            <div class="stat-label">Average Score</div>
+        <div class="stat-card-new stat-green">
+            <span class="stat-card-icon">&#127919;</span>
+            <span class="stat-card-value">{{ avg_score }}%</span>
+            <span class="stat-card-label">Average Score</span>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon">&#128218;</div>
-            <div class="stat-value">{{ subject_progress|selectattr('percentage', '>=', 100)|list|length }}/{{ subject_progress|length }}</div>
-            <div class="stat-label">Subjects Completed</div>
+        <div class="stat-card-new stat-purple">
+            <span class="stat-card-icon">&#128218;</span>
+            <span class="stat-card-value">{{ subject_progress|selectattr('percentage', '>=', 100)|list|length }}/{{ subject_progress|length }}</span>
+            <span class="stat-card-label">Subjects Done</span>
         </div>
     </div>
 
-    <div class="page-header" style="margin-top: var(--space-xl);">
+    {# ============================ SUBJECT PROGRESS ============================ #}
+    <div class="section-header">
         <h2>Subject Progress</h2>
     </div>
 
     <div class="card-grid">
         {% for subject in subject_progress %}
-        <div class="card">
-            <div class="flex-center" style="justify-content: space-between; margin-bottom: var(--space-sm);">
-                <div class="flex-center gap-2">
-                    <span style="font-size: 1.5rem;">{{ subject.icon }}</span>
-                    <h3 style="margin: 0; color: {{ subject.color }}; font-size: 1rem;">{{ subject.name }}</h3>
+        <div class="card subject-progress-card">
+            <div class="subject-progress-header">
+                <div class="subject-progress-title">
+                    <span class="subject-progress-icon" style="background: {{ subject.color }}15;">{{ subject.icon }}</span>
+                    <h3 style="margin: 0; color: {{ subject.color }};">{{ subject.name }}</h3>
                 </div>
-                <span style="font-weight: 800; color: {{ subject.color }};">{{ subject.percentage }}%</span>
+                <span class="subject-progress-pct" style="color: {{ subject.color }};">{{ subject.percentage }}%</span>
             </div>
             <div class="progress-bar-container" style="margin-bottom: var(--space-sm);">
                 <div class="progress-bar-fill" style="width: {{ subject.percentage }}%; background: {{ subject.color }};"></div>
             </div>
-            <div class="flex-center" style="justify-content: space-between; font-size: 0.8125rem;">
-                <span style="color: var(--text-secondary);">{{ subject.completed }}/{{ subject.total }} quizzes</span>
+            <div class="subject-progress-footer">
+                <span>{{ subject.completed }}/{{ subject.total }} quizzes</span>
                 <span style="font-weight: 700; color: var(--accent-green);">Best: {{ subject.best_score }}%</span>
             </div>
         </div>
         {% endfor %}
     </div>
 
-    <div class="page-header" style="margin-top: var(--space-xl);">
+    {# ============================ BADGES ============================ #}
+    {% if badges %}
+    <div class="section-header">
+        <h2>&#127942; Your Badges</h2>
+    </div>
+
+    <div class="badge-grid-new">
+        {% for badge in badges %}
+        <div class="badge-card-new">
+            <span class="badge-emoji-new">{{ badge.badge_icon }}</span>
+            <div class="badge-name-new">{{ badge.badge_name }}</div>
+            <div class="badge-desc-new">{{ badge.badge_description }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {# ============================ RECENT ACTIVITY ============================ #}
+    <div class="section-header">
         <h2>Recent Quiz Activity</h2>
-    </div>
-
-    <div class="page-header" style="margin-top: var(--space-xl);">
-        <h2>&#128104;&#8205;&#128103;&#8205;&#128102; Profile Settings</h2>
-    </div>
-
-    <div class="card" style="margin-bottom: var(--space-lg);">
-        <p style="margin-top: 0; color: var(--text-secondary);">
-            Add your parent's email so they can view your progress from the Parent Dashboard.
-        </p>
-        <form method="POST" action="{{ url_for('progress.save_parent_email') }}" class="flex-center gap-2" style="flex-wrap: wrap;">
-            <div class="form-group" style="margin: 0; flex: 1; min-width: 200px;">
-                <input type="email" name="parent_email" class="form-control"
-                       placeholder="parent@example.com" value="{{ user.parent_email }}">
-            </div>
-            <button type="submit" class="btn btn-primary">Save</button>
-        </form>
-        {% if user.parent_email %}
-        <p style="margin-bottom: 0; font-size: 0.85rem; color: var(--accent-green);">
-            &#9989; Parent email set: <strong>{{ user.parent_email }}</strong>
-            &mdash; <a href="{{ url_for('parent.dashboard') }}?email={{ user.parent_email }}&pin=1234" target="_blank">View Parent View &#128279;</a>
-        </p>
-        {% endif %}
     </div>
 
     {% if recent_activity %}
@@ -122,8 +130,34 @@
         <div style="font-size: 2.5rem; margin-bottom: var(--space-sm);">&#128221;</div>
         <h3>No quizzes taken yet</h3>
         <p style="color: var(--text-secondary);">Start your learning journey by taking your first quiz.</p>
-        <a href="{{ url_for('main.subjects') }}" class="btn btn-primary" style="margin-top: var(--space-sm);">Start Learning</a>
+        <a href="{{ url_for('story_mode.adventure_map') }}" class="btn btn-primary" style="margin-top: var(--space-sm);">
+            &#127752; Start Adventure
+        </a>
     </div>
     {% endif %}
+
+    {# ============================ PROFILE SETTINGS ============================ #}
+    <div class="section-header">
+        <h2>&#128104;&#8205;&#128103;&#8205;&#128102; Profile Settings</h2>
+    </div>
+
+    <div class="card" style="margin-bottom: var(--space-lg);">
+        <p style="margin-top: 0; color: var(--text-secondary);">
+            Add your parent's email so they can view your progress from the Parent Dashboard.
+        </p>
+        <form method="POST" action="{{ url_for('progress.save_parent_email') }}" class="flex-center gap-2" style="flex-wrap: wrap;">
+            <div class="form-group" style="margin: 0; flex: 1; min-width: 200px;">
+                <input type="email" name="parent_email" class="form-control"
+                       placeholder="parent@example.com" value="{{ user.parent_email }}">
+            </div>
+            <button type="submit" class="btn btn-primary">Save</button>
+        </form>
+        {% if user.parent_email %}
+        <p style="margin-bottom: 0; font-size: 0.85rem; color: var(--accent-green);">
+            &#9989; Parent email set: <strong>{{ user.parent_email }}</strong>
+            &mdash; <a href="{{ url_for('parent.dashboard') }}?email={{ user.parent_email }}&pin=1234" target="_blank">View Parent View &#128279;</a>
+        </p>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}

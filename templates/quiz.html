@@ -1,112 +1,233 @@
 {% extends "base.html" %}
 
-{% block title %}{{ quiz.title }} - LEARNFUN CHILDREN LEARNING WEB{% endblock %}
+{% block title %}{{ quiz.title }} - LearnFun Adventure{% endblock %}
 
 {% block content %}
 <div class="container-sm">
-    <div class="quiz-header">
-        <div class="flex-center" style="justify-content: space-between; flex-wrap: wrap; gap: var(--space-sm);">
-            <h2 style="margin: 0;">{{ quiz.title }}</h2>
-            <a href="{{ url_for('main.subject_detail', subject_id=quiz.subject_id) }}" class="btn btn-outline btn-sm">
-                &larr; Exit Quiz
+    {# ============================ QUIZ HEADER ============================ #}
+    <div class="quiz-header-new">
+        <div class="quiz-header-top">
+            <h2 class="quiz-title">{{ quiz.title }}</h2>
+            <a href="{{ url_for('main.subject_detail', subject_id=quiz.subject_id) }}" class="btn btn-outline btn-sm quiz-exit-btn">
+                &#10005; Exit
             </a>
         </div>
-        <div class="quiz-progress">
-            <div class="progress-bar-container">
-                <div class="progress-bar-fill" style="width: 0%;"></div>
+
+        {# Animated progress bar #}
+        <div class="quiz-progress-new">
+            <div class="progress-bar-new">
+                <div class="progress-bar-fill-new" id="quizProgressFill" style="width: 0%;"></div>
             </div>
-            <span class="progress-text">0/{{ questions|length }}</span>
+            <div class="progress-meta">
+                <span class="progress-count"><span id="progressCurrent">0</span> / {{ questions|length }}</span>
+                <span class="progress-points" id="scoreDisplay">&#11088; 0 pts</span>
+            </div>
         </div>
-        <p style="color: var(--text-secondary); margin: 0; font-size: 0.9375rem;">Answer each question carefully.</p>
+
+        <p class="quiz-subtitle">Answer each question carefully. You'll get instant feedback!</p>
     </div>
 
-    <form method="POST" action="{{ url_for('quiz.submit_quiz', quiz_id=quiz.id) }}">
+    {# ============================ QUESTION CARDS ============================ #}
+    <form method="POST" action="{{ url_for('quiz.submit_quiz', quiz_id=quiz.id) }}" id="quizForm">
         {% for question in questions %}
-        <div class="question-card" data-question-id="{{ question.id }}" data-correct="{{ question.correct_answer }}">
-            <span class="question-number">Question {{ loop.index }} of {{ questions|length }}</span>
+        <div class="question-card-new" data-question-id="{{ question.id }}" data-correct="{{ question.correct_answer }}" data-points="{{ question.points }}" {% if loop.index > 1 %}style="display: none;"{% endif %}>
+            <div class="question-header">
+                <span class="question-number-badge">Q{{ loop.index }}</span>
+                <span class="question-points-badge">{{ question.points }} pts</span>
+            </div>
 
-            <p class="question-text">{{ question.text }}</p>
+            <p class="question-text-new">{{ question.text }}</p>
 
-            <div class="options-grid">
-                <button type="button" class="option-btn" data-answer="A">
-                    <span class="option-label">A</span>
-                    <span>{{ question.option_a }}</span>
+            <div class="options-grid-new">
+                <button type="button" class="option-btn-new" data-answer="A" data-question="{{ question.id }}">
+                    <span class="option-letter">A</span>
+                    <span class="option-text">{{ question.option_a }}</span>
                 </button>
-                <button type="button" class="option-btn" data-answer="B">
-                    <span class="option-label">B</span>
-                    <span>{{ question.option_b }}</span>
+                <button type="button" class="option-btn-new" data-answer="B" data-question="{{ question.id }}">
+                    <span class="option-letter">B</span>
+                    <span class="option-text">{{ question.option_b }}</span>
                 </button>
-                <button type="button" class="option-btn" data-answer="C">
-                    <span class="option-label">C</span>
-                    <span>{{ question.option_c }}</span>
+                <button type="button" class="option-btn-new" data-answer="C" data-question="{{ question.id }}">
+                    <span class="option-letter">C</span>
+                    <span class="option-text">{{ question.option_c }}</span>
                 </button>
-                <button type="button" class="option-btn" data-answer="D">
-                    <span class="option-label">D</span>
-                    <span>{{ question.option_d }}</span>
+                <button type="button" class="option-btn-new" data-answer="D" data-question="{{ question.id }}">
+                    <span class="option-letter">D</span>
+                    <span class="option-text">{{ question.option_d }}</span>
                 </button>
             </div>
 
+            {# Instant feedback popup #}
+            <div class="feedback-popup" id="feedback-{{ question.id }}" style="display: none;">
+                <span class="feedback-icon"></span>
+                <span class="feedback-text"></span>
+            </div>
+
+            {# Hint section #}
             {% if question.hint %}
-            <div style="text-align: center; margin-top: var(--space-md);">
-                <button type="button" class="btn btn-sm hint-btn" style="background: #FEF3C7; color: #92400E; font-weight: 700;" onclick="toggleHint(this)">
-                    Need a Hint?
+            <div class="hint-section">
+                <button type="button" class="btn-hint" onclick="toggleHint(this)">
+                    &#128161; Need a Hint?
                 </button>
+                <div class="hint-box-new" style="display: none;">
+                    {{ question.hint }}
+                </div>
                 <input type="hidden" name="q{{ question.id }}_hint_used" value="false">
             </div>
             {% endif %}
 
-            <div class="explanation hint-box" style="display: none;">
-                <strong>Hint:</strong> {{ question.hint }}
-            </div>
-
-            <div class="explanation" style="display: none;">
-                <strong>Explanation:</strong> {{ question.explanation }}
+            {# Explanation (shown after answer) #}
+            <div class="explanation-new" style="display: none;">
+                <strong>&#128161; Explanation:</strong> {{ question.explanation }}
             </div>
 
             <input type="hidden" name="q{{ question.id }}" value="">
 
-            <div style="text-align: center; margin-top: var(--space-lg);">
+            {# Navigation buttons #}
+            <div class="question-nav">
                 {% if loop.last %}
-                <button type="submit" class="btn btn-success btn-lg next-btn" style="display: none;">
-                    See My Results
+                <button type="submit" class="btn-finish" style="display: none;" id="finishBtn">
+                    &#127881; See My Results
                 </button>
                 {% else %}
-                <button type="button" class="btn btn-primary next-btn" style="display: none;">
-                    Next Question &rarr;
+                <button type="button" class="btn-next" style="display: none;" id="nextBtn-{{ question.id }}">
+                    Next Question &#10140;
                 </button>
                 {% endif %}
             </div>
         </div>
         {% endfor %}
     </form>
-
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-document.querySelectorAll('.option-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const questionCard = this.closest('.question-card');
-        const questionId = questionCard.dataset.questionId;
-        const answer = this.dataset.answer;
-        const hiddenInput = questionCard.querySelector(`input[name="q${questionId}"]`);
-        if (hiddenInput) {
-            hiddenInput.value = answer;
+(function() {
+    const questionCards = document.querySelectorAll('.question-card-new');
+    let currentQuestion = 0;
+    let totalScore = 0;
+    const totalQuestions = questionCards.length;
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+    if (totalQuestions === 0) return;
+
+    function updateProgress(current) {
+        const pct = ((current) / totalQuestions) * 100;
+        document.getElementById('quizProgressFill').style.width = pct + '%';
+        document.getElementById('progressCurrent').textContent = current;
+        document.getElementById('scoreDisplay').textContent = '\u2B50 ' + totalScore + ' pts';
+    }
+
+    function showFeedback(questionCard, isCorrect) {
+        const popup = questionCard.querySelector('.feedback-popup');
+        const icon = popup.querySelector('.feedback-icon');
+        const text = popup.querySelector('.feedback-text');
+
+        if (isCorrect) {
+            popup.className = 'feedback-popup feedback-correct';
+            icon.textContent = '\uD83D\uDD25';
+            text.textContent = 'Awesome! Great job!';
+        } else {
+            popup.className = 'feedback-popup feedback-incorrect';
+            icon.textContent = '\uD83D\uDCA1';
+            text.textContent = 'Try again next time!';
         }
+        popup.style.display = 'flex';
+        popup.style.animation = 'feedbackPop 0.4s ease';
+
+        setTimeout(() => { popup.style.display = 'none'; }, 2000);
+    }
+
+    function selectAnswer(btn) {
+        const card = btn.closest('.question-card-new');
+        const options = card.querySelectorAll('.option-btn-new');
+        const userAnswer = btn.dataset.answer;
+        const correctAnswer = card.dataset.correct;
+        const questionId = card.dataset.questionId;
+        const points = parseInt(card.dataset.points) || 10;
+        const hiddenInput = card.querySelector(`input[name="q${questionId}"]`);
+
+        if (hiddenInput) hiddenInput.value = userAnswer;
+
+        options.forEach(opt => {
+            opt.style.pointerEvents = 'none';
+            opt.classList.remove('option-selected');
+        });
+
+        if (userAnswer === correctAnswer) {
+            btn.classList.add('option-correct');
+            totalScore += points;
+            SoundFX.playCorrect();
+        } else {
+            btn.classList.add('option-wrong');
+            options.forEach(opt => {
+                if (opt.dataset.answer === correctAnswer) {
+                    opt.classList.add('option-correct');
+                }
+            });
+            SoundFX.playIncorrect();
+        }
+
+        showFeedback(card, userAnswer === correctAnswer);
+
+        const explanation = card.querySelector('.explanation-new');
+        if (explanation) {
+            explanation.style.display = 'block';
+            explanation.style.animation = 'slideIn 0.3s ease';
+        }
+
+        updateProgress(currentQuestion + 1);
+
+        if (currentQuestion < totalQuestions - 1) {
+            const nextBtn = document.getElementById('nextBtn-' + questionId);
+            if (nextBtn) {
+                nextBtn.style.display = 'inline-flex';
+                nextBtn.style.animation = 'pulse 1s infinite';
+            }
+        } else {
+            const finishBtn = document.getElementById('finishBtn');
+            if (finishBtn) {
+                finishBtn.style.display = 'inline-flex';
+                finishBtn.style.animation = 'pulse 1s infinite';
+            }
+        }
+    }
+
+    document.querySelectorAll('.option-btn-new').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const card = this.closest('.question-card-new');
+            if (card.querySelector('.option-correct, .option-wrong')) return;
+            selectAnswer(this);
+        });
     });
-});
+
+    document.querySelectorAll('.btn-next').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const currentCard = btn.closest('.question-card-new');
+            currentCard.style.display = 'none';
+            currentQuestion++;
+
+            if (currentQuestion < totalQuestions) {
+                const nextCard = questionCards[currentQuestion];
+                nextCard.style.display = 'block';
+                nextCard.style.animation = 'slideIn 0.3s ease';
+            }
+        });
+    });
+
+    updateProgress(0);
+})();
 
 function toggleHint(btn) {
-    const card = btn.closest('.question-card');
-    const hintBox = card.querySelector('.hint-box');
+    const card = btn.closest('.question-card-new');
+    const hintBox = card.querySelector('.hint-box-new');
     const hintInput = card.querySelector('input[name$="_hint_used"]');
-
     if (hintBox.style.display === 'none') {
         hintBox.style.display = 'block';
-        btn.textContent = '&#128161; Hint Shown';
+        btn.innerHTML = '\uD83D\uDCA1 Hint Shown';
         btn.disabled = true;
-        hintInput.value = 'true';
+        if (hintInput) hintInput.value = 'true';
     }
 }
 </script>

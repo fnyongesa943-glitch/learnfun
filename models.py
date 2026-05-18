@@ -64,6 +64,33 @@ class User(db.Model):
             return True
         return False
 
+    def get_level_name(self):
+        """Return themed level name based on total points."""
+        if self.total_points <= 50:
+            return 'Beginner'
+        elif self.total_points <= 150:
+            return 'Explorer'
+        else:
+            return 'Genius'
+
+    def get_level_progress(self):
+        """Return progress percentage to next level."""
+        if self.total_points <= 50:
+            return int((self.total_points / 50) * 100)
+        elif self.total_points <= 150:
+            return int(((self.total_points - 50) / 100) * 100)
+        else:
+            return min(100, int(((self.total_points - 150) / 350) * 100))
+
+    def get_next_level_threshold(self):
+        """Return points needed for next level."""
+        if self.total_points <= 50:
+            return 50
+        elif self.total_points <= 150:
+            return 150
+        else:
+            return 500
+
     def to_dict(self):
         return {
             'id': self.id, 'username': self.username, 'email': self.email,
@@ -306,6 +333,40 @@ class UserStoryRead(db.Model):
     points_awarded = db.Column(db.Boolean, default=False)
     user = db.relationship('User', backref='read_stories')
     story = db.relationship('Story', backref='read_by')
+
+
+class StoryProgress(db.Model):
+    __tablename__ = 'story_progress'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    stage_id = db.Column(db.Integer, db.ForeignKey('adventure_stages.id'), nullable=False)
+    completed = db.Column(db.Boolean, default=False)
+    score = db.Column(db.Integer, default=0)
+    completed_at = db.Column(db.DateTime, nullable=True)
+    attempts = db.Column(db.Integer, default=0)
+    user = db.relationship('User', backref='story_progress')
+    stage = db.relationship('AdventureStage', backref='user_progress')
+
+
+class AdventureStage(db.Model):
+    __tablename__ = 'adventure_stages'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(300), default='')
+    theme = db.Column(db.String(30), default='jungle')
+    order_number = db.Column(db.Integer, default=0)
+    quiz_id = db.Column(db.Integer, db.ForeignKey('quizzes.id'), nullable=False)
+    points_reward = db.Column(db.Integer, default=20)
+    is_boss = db.Column(db.Boolean, default=False)
+    quiz = db.relationship('Quiz', backref='adventure_stage')
+
+    def to_dict(self):
+        return {
+            'id': self.id, 'title': self.title, 'description': self.description,
+            'theme': self.theme, 'order_number': self.order_number,
+            'quiz_id': self.quiz_id, 'points_reward': self.points_reward,
+            'is_boss': self.is_boss
+        }
 
 
 BADGE_DEFINITIONS = {

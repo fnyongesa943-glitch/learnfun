@@ -105,3 +105,21 @@ def check_and_award_badges(user):
                 new_badges.append(defn)
 
     return new_badges
+
+
+@quiz_bp.route('/check-answer/<int:question_id>', methods=['POST'])
+@login_required
+def check_answer(question_id):
+    """AJAX endpoint: check a single answer instantly."""
+    data = request.get_json()
+    user_answer = data.get('answer', '')
+
+    question = Question.query.get_or_404(question_id)
+    is_correct = user_answer == question.correct_answer
+
+    return jsonify({
+        'correct': is_correct,
+        'correct_answer': question.correct_answer,
+        'explanation': question.explanation,
+        'points': question.points if is_correct else 0
+    })

@@ -6,15 +6,22 @@
 // ---- Sound Effects using Web Audio API ----
 const SoundFX = {
     audioContext: null,
+    enabled: true,
 
     init() {
-        // Initialize audio context on first user interaction
         if (!this.audioContext) {
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
         }
     },
 
+    toggle() {
+        this.enabled = !this.enabled;
+        localStorage.setItem('soundEnabled', this.enabled);
+        return this.enabled;
+    },
+
     playCorrect() {
+        if (!this.enabled) return;
         this.init();
         const ctx = this.audioContext;
         const oscillator = ctx.createOscillator();
@@ -23,11 +30,10 @@ const SoundFX = {
         oscillator.connect(gainNode);
         gainNode.connect(ctx.destination);
 
-        // Happy ascending tones
         oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
-        oscillator.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1); // E5
-        oscillator.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2); // G5
+        oscillator.frequency.setValueAtTime(523.25, ctx.currentTime);
+        oscillator.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1);
+        oscillator.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2);
 
         gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
@@ -37,6 +43,7 @@ const SoundFX = {
     },
 
     playIncorrect() {
+        if (!this.enabled) return;
         this.init();
         const ctx = this.audioContext;
         const oscillator = ctx.createOscillator();
@@ -45,10 +52,9 @@ const SoundFX = {
         oscillator.connect(gainNode);
         gainNode.connect(ctx.destination);
 
-        // Gentle descending tone (not discouraging)
         oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(440, ctx.currentTime); // A4
-        oscillator.frequency.setValueAtTime(349.23, ctx.currentTime + 0.15); // F4
+        oscillator.frequency.setValueAtTime(440, ctx.currentTime);
+        oscillator.frequency.setValueAtTime(349.23, ctx.currentTime + 0.15);
 
         gainNode.gain.setValueAtTime(0.2, ctx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
@@ -58,6 +64,7 @@ const SoundFX = {
     },
 
     playClick() {
+        if (!this.enabled) return;
         this.init();
         const ctx = this.audioContext;
         const oscillator = ctx.createOscillator();
@@ -77,11 +84,11 @@ const SoundFX = {
     },
 
     playCelebration() {
+        if (!this.enabled) return;
         this.init();
         const ctx = this.audioContext;
 
-        // Play a fanfare sequence
-        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        const notes = [523.25, 659.25, 783.99, 1046.50];
         const startTime = ctx.currentTime;
 
         notes.forEach((freq, i) => {
@@ -104,27 +111,27 @@ const SoundFX = {
 };
 
 // ---- Confetti Effect ----
-function createConfetti() {
+function createConfetti(count) {
     const container = document.createElement('div');
     container.className = 'confetti-container';
     document.body.appendChild(container);
 
     const colors = ['#6366F1', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#3B82F6'];
+    const total = count || 60;
 
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < total; i++) {
         const confetti = document.createElement('div');
         confetti.className = 'confetti';
         confetti.style.left = Math.random() * 100 + '%';
         confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
-        confetti.style.animationDelay = Math.random() * 2 + 's';
+        confetti.style.animationDelay = Math.random() * 1.5 + 's';
         confetti.style.animationDuration = (2 + Math.random() * 2) + 's';
-        confetti.style.width = (5 + Math.random() * 10) + 'px';
-        confetti.style.height = (5 + Math.random() * 10) + 'px';
+        confetti.style.width = (6 + Math.random() * 10) + 'px';
+        confetti.style.height = (6 + Math.random() * 10) + 'px';
         confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
         container.appendChild(confetti);
     }
 
-    // Remove container after animation
     setTimeout(() => container.remove(), 5000);
 }
 
@@ -145,7 +152,7 @@ function initAvatarSelection() {
     });
 }
 
-// ---- Quiz Functionality ----
+// ---- Quiz Functionality (legacy - for fallback) ----
 function initQuiz() {
     const questionCards = document.querySelectorAll('.question-card');
     let currentQuestion = 0;
@@ -153,17 +160,14 @@ function initQuiz() {
 
     if (totalQuestions === 0) return;
 
-    // Show only first question initially
     questionCards.forEach((card, index) => {
         if (index > 0) {
             card.style.display = 'none';
         }
     });
 
-    // Update progress
     updateProgress(1, totalQuestions);
 
-    // Handle option selection
     document.querySelectorAll('.option-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const questionCard = this.closest('.question-card');
@@ -174,13 +178,11 @@ function initQuiz() {
 
             SoundFX.playClick();
 
-            // Disable all options after selection
             options.forEach(opt => {
                 opt.style.pointerEvents = 'none';
                 opt.classList.remove('selected');
             });
 
-            // Show correct/wrong
             if (userAnswer === correctAnswer) {
                 this.classList.add('correct-answer');
                 questionCard.classList.add('correct');
@@ -188,7 +190,6 @@ function initQuiz() {
             } else {
                 this.classList.add('wrong-answer');
                 questionCard.classList.add('incorrect');
-                // Highlight correct answer
                 options.forEach(opt => {
                     if (opt.dataset.answer === correctAnswer) {
                         opt.classList.add('correct-answer');
@@ -197,14 +198,12 @@ function initQuiz() {
                 SoundFX.playIncorrect();
             }
 
-            // Show explanation
             const explanation = questionCard.querySelector('.explanation');
             if (explanation) {
                 explanation.style.display = 'block';
                 explanation.style.animation = 'slideIn 0.3s ease';
             }
 
-            // Show next button
             const nextBtn = questionCard.querySelector('.next-btn');
             if (nextBtn) {
                 nextBtn.style.display = 'inline-flex';
@@ -213,7 +212,6 @@ function initQuiz() {
         });
     });
 
-    // Handle next button
     document.querySelectorAll('.next-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const currentCard = btn.closest('.question-card');
@@ -249,18 +247,17 @@ function initQuizResult() {
 
     const score = parseInt(scoreElement.textContent);
 
-    // Add appropriate class
     if (score >= 80) {
         scoreElement.classList.add('excellent');
-        createConfetti();
+        createConfetti(80);
         SoundFX.playCelebration();
     } else if (score >= 50) {
         scoreElement.classList.add('good');
+        createConfetti(30);
     } else {
         scoreElement.classList.add('try-again');
     }
 
-    // Animate stars
     const stars = document.querySelectorAll('.result-stars span');
     stars.forEach((star, index) => {
         star.style.opacity = '0';
@@ -280,6 +277,29 @@ function initFlashMessages() {
             setTimeout(() => flash.remove(), 300);
         }, 4000);
     });
+}
+
+// ---- Sound Toggle ----
+function initSoundToggle() {
+    const saved = localStorage.getItem('soundEnabled');
+    if (saved !== null) {
+        SoundFX.enabled = saved === 'true';
+    }
+
+    const toggleBtn = document.getElementById('soundToggle');
+    if (toggleBtn) {
+        updateSoundIcon(toggleBtn);
+        toggleBtn.addEventListener('click', () => {
+            SoundFX.toggle();
+            updateSoundIcon(toggleBtn);
+            SoundFX.playClick();
+        });
+    }
+}
+
+function updateSoundIcon(btn) {
+    btn.textContent = SoundFX.enabled ? '\uD83D\uDD0A' : '\uD83D\uDD07';
+    btn.title = SoundFX.enabled ? 'Mute sound' : 'Enable sound';
 }
 
 // ---- Animate Numbers on Scroll ----
@@ -306,17 +326,16 @@ function initDarkMode() {
     const toggle = document.getElementById('darkModeToggle');
     if (!toggle) return;
 
-    // Check saved preference
     const saved = localStorage.getItem('darkMode');
     if (saved === 'true') {
         document.body.classList.add('dark-mode');
-        toggle.textContent = '☀️';
+        toggle.textContent = '\u2600\uFE0F';
     }
 
     toggle.addEventListener('click', () => {
         document.body.classList.toggle('dark-mode');
         const isDark = document.body.classList.contains('dark-mode');
-        toggle.textContent = isDark ? '☀️' : '🌙';
+        toggle.textContent = isDark ? '\u2600\uFE0F' : '\uD83C\uDF19';
         localStorage.setItem('darkMode', isDark);
         SoundFX.playClick();
     });
@@ -325,12 +344,12 @@ function initDarkMode() {
 // ---- Initialize on DOM Ready ----
 document.addEventListener('DOMContentLoaded', () => {
     initDarkMode();
+    initSoundToggle();
     initAvatarSelection();
     initQuiz();
     initQuizResult();
     initFlashMessages();
 
-    // Add hover sound to buttons
     document.querySelectorAll('.btn, .nav-link, .subject-card, .quiz-item').forEach(el => {
         el.addEventListener('mouseenter', () => SoundFX.playClick());
     });

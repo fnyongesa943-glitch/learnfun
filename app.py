@@ -5,7 +5,7 @@ Updated with new subjects, shop, stories, and enhanced features.
 import os
 from flask import Flask, session
 from seed_cbc import seed_cbc_content
-from models import db, User, Subject, Quiz, Question, Score, UserBadge, ShopItem, UserOwnedItem, Story, UserStoryRead, Grade, Topic, Lesson, UserLessonProgress
+from models import db, User, Subject, Quiz, Question, Score, UserBadge, ShopItem, UserOwnedItem, Story, UserStoryRead, Grade, Topic, Lesson, UserLessonProgress, AdventureStage, StoryProgress
 from config import Config
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -35,6 +35,7 @@ def create_app():
     from blueprints.parent import parent_bp
     from blueprints.stories import stories_bp
     from blueprints.lessons import lessons_bp
+    from blueprints.story_mode import story_mode_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -43,6 +44,7 @@ def create_app():
     app.register_blueprint(parent_bp, url_prefix='/parent')
     app.register_blueprint(stories_bp, url_prefix='/stories')
     app.register_blueprint(lessons_bp, url_prefix='/lessons')
+    app.register_blueprint(story_mode_bp, url_prefix='/adventure')
 
     @app.context_processor
     def inject_user():
@@ -182,6 +184,17 @@ def run_migrations():
     # Ensure new tables exist
     try:
         db.create_all()
+    except Exception:
+        pass
+
+    # Migrate adventure_stages for quiz_id FK if missing
+    try:
+        if 'adventure_stages' in inspector.get_table_names():
+            cols = {c['name']: c for c in inspector.get_columns('adventure_stages')}
+            if 'quiz_id' not in cols:
+                migrations.append("ALTER TABLE adventure_stages ADD COLUMN quiz_id INTEGER NOT NULL DEFAULT 1")
+            if 'is_boss' not in cols:
+                migrations.append("ALTER TABLE adventure_stages ADD COLUMN is_boss BOOLEAN DEFAULT 0")
     except Exception:
         pass
 
@@ -690,6 +703,9 @@ def seed_data():
     from seed_more_questions import seed_more_questions as seed_extra_qs
     seed_extra_qs()
 
+    # --- ADVENTURE STAGES ---
+    seed_adventure_stages()
+
     print("Database seeded successfully!")
 
 
@@ -904,6 +920,50 @@ def seed_stories():
     db.session.add_all(all_stories)
     db.session.commit()
     print("✅ Stories seeded successfully!")
+
+
+def seed_adventure_stages():
+    """Seed adventure stages for story mode."""
+    from models import AdventureStage, Quiz
+
+    if AdventureStage.query.first():
+        return
+
+    # Map quiz titles to stages
+    stage_quiz_titles = [
+        ('Letters A-F', 'jungle', 'The Letter Forest', 'Explore the magical forest where letters come alive!', False),
+        ('Count 1-10', 'jungle', 'Number Valley', 'Cross the river by counting stepping stones!', False),
+        ('Animal Kingdom', 'jungle', 'Wild Safari', 'Meet amazing animals and learn their secrets!', False),
+        ('Addition Fun', 'jungle', 'Jungle Boss', 'Solve addition puzzles to pass the guardian!', True),
+        ('Word Puzzles', 'ocean', 'Pirate Bay', 'Decode pirate messages to find hidden treasure!', False),
+        ('Weather', 'ocean', 'Stormy Seas', 'Navigate through rain, sun, and wind!', False),
+        ('Continents', 'ocean', 'Ocean Boss', 'Cross the seven seas to reach new lands!', True),
+        ('Phonics A-G', 'space', 'Rocket Launch', 'Learn letter sounds to fuel your rocket!', False),
+        ('Space', 'space', 'Asteroid Belt', 'Dodge asteroids using space knowledge!', False),
+        ('Story Time', 'space', 'Space Boss', 'Outsmart the alien riddle master!', True),
+        ('Subtraction Pro', 'castle', 'Castle Gates', 'Open the castle doors with subtraction magic!', False),
+        ('Famous Places', 'castle', 'Royal Garden', 'Discover treasures in the king\'s garden!', False),
+        ('Mixed Operations', 'castle', 'Castle Boss', 'Face the ultimate math challenge!', True),
+    ]
+
+    stages = []
+    for idx, (quiz_title, theme, title, desc, is_boss) in enumerate(stage_quiz_titles, 1):
+        quiz = Quiz.query.filter_by(title=quiz_title).first()
+        if quiz:
+            stages.append(AdventureStage(
+                title=title,
+                description=desc,
+                theme=theme,
+                order_number=idx,
+                quiz_id=quiz.id,
+                points_reward=20 if not is_boss else 40,
+                is_boss=is_boss
+            ))
+
+    if stages:
+        db.session.add_all(stages)
+        db.session.commit()
+        print(f"✅ {len(stages)} adventure stages seeded!")
 
 
 def seed_cbc_data():

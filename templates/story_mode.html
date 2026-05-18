@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Adventure Mode - LearnFun{% endblock %}
+
+{% block content %}
+<div class="container-sm">
+    {# ============================ ADVENTURE HEADER ============================ #}
+    <div class="adventure-header">
+        <h1 class="adventure-title">&#127752; Adventure Mode</h1>
+        <p class="adventure-subtitle">Complete each stage to unlock the next! Can you conquer them all?</p>
+        <div class="adventure-player-info">
+            <span class="adv-player-avatar">{{ user.avatar }}</span>
+            <span class="adv-player-name">{{ user.username }}</span>
+            <span class="adv-player-level">{{ user.get_level_name() }} &middot; {{ user.total_points }} pts</span>
+        </div>
+    </div>
+
+    {# ============================ ADVENTURE PATH ============================ #}
+    <div class="adventure-path">
+        {% for item in stages %}
+        {% set stage = item.stage %}
+        {% set is_locked = not item.completed and loop.index0 > 0 and not stages[loop.index0 - 1].completed %}
+        {% set is_first = loop.index0 == 0 %}
+
+        {# Connector between stages #}
+        {% if not loop.first %}
+        <div class="stage-connector {{ 'connector-locked' if is_locked else 'connector-unlocked' }}">
+            {% if item.completed %}
+            <span class="connector-check">&#10004;&#65039;</span>
+            {% elif is_locked %}
+            <span class="connector-lock">&#128274;</span>
+            {% else %}
+            <span class="connector-arrow">&#10140;</span>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {# Stage card #}
+        <div class="stage-card {{ 'stage-completed' if item.completed }} {{ 'stage-locked' if is_locked and not is_first }} {{ 'stage-current' if not item.completed and (is_first or stages[loop.index0 - 1].completed) }} {{ 'stage-boss' if stage.is_boss }}"
+             data-theme="{{ stage.theme }}">
+
+            <div class="stage-bg-icon">
+                {% if stage.theme == 'jungle' %}
+                    {% if stage.is_boss %}&#129428;{% else %}&#127794;{% endif %}
+                {% elif stage.theme == 'space' %}
+                    {% if stage.is_boss %}&#128126;{% else %}&#127756;{% endif %}
+                {% elif stage.theme == 'ocean' %}
+                    {% if stage.is_boss %}&#128059;{% else %}&#128031;{% endif %}
+                {% elif stage.theme == 'castle' %}
+                    {% if stage.is_boss %}&#128125;{% else %}&#127961;{% endif %}
+                {% else %}
+                    {% if stage.is_boss %}&#129428;{% else %}&#127752;{% endif %}
+                {% endif %}
+            </div>
+
+            <div class="stage-content">
+                <div class="stage-number">{{ loop.index }}</div>
+
+                {% if stage.is_boss %}
+                <span class="stage-boss-badge">&#128123; BOSS</span>
+                {% endif %}
+
+                <h3 class="stage-title">{{ stage.title }}</h3>
+                <p class="stage-desc">{{ stage.description }}</p>
+
+                {% if item.completed %}
+                <div class="stage-complete-info">
+                    <span class="stage-complete-check">&#9989; Completed</span>
+                    {% if item.score > 0 %}
+                    <span class="stage-complete-score">{{ item.score }}%</span>
+                    {% endif %}
+                    <span class="stage-complete-attempts">{{ item.attempts }} attempt{{ 's' if item.attempts != 1 }}</span>
+                </div>
+                <a href="{{ url_for('quiz.start_quiz', quiz_id=stage.quiz_id) }}" class="btn-stage btn-replay">
+                    &#128260; Replay
+                </a>
+                {% elif is_locked and not is_first %}
+                <div class="stage-locked-info">
+                    <span class="lock-icon">&#128274;</span>
+                    <span>Complete Stage {{ loop.index - 1 }} first!</span>
+                </div>
+                {% else %}
+                <div class="stage-points-badge">+{{ stage.points_reward }} points</div>
+                <a href="{{ url_for('story_mode.start_stage', stage_id=stage.id) }}" class="btn-stage btn-play">
+                    {% if is_first and not item.completed %}&#128640; Start!{% else %}&#127918; Play{% endif %}
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+
+        {# End marker #}
+        {% set all_completed = stages|map(attribute='completed')|list|select('equalto', true)|list|length == stages|length %}
+        <div class="stage-connector {{ 'connector-unlocked' if all_completed else 'connector-locked' }}">
+            {% if all_completed %}&#127881;{% else %}&#128274;{% endif %}
+        </div>
+        <div class="stage-end {{ 'stage-end-unlocked' if all_completed else 'stage-end-locked' }}">
+            <span class="end-icon">{% if all_completed %}&#127942;{% else %}&#128274;{% endif %}</span>
+            <span class="end-text">{% if all_completed %}All Complete!{% else %}Keep going!{% endif %}</span>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}LEARNFUN CHILDREN LEARNING WEB - Kids Learning{% endblock %}</title>
+    <title>{% block title %}LearnFun Adventure - Play, Learn & Win!{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=8.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=9.0">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -16,11 +16,14 @@
     <aside class="sidebar" id="sidebar">
         <a href="{{ url_for('main.index') }}" class="sidebar-brand">
             <span class="logo">&#127752;</span>
-            <span>LEARNFUN CHILDREN LEARNING WEB</span>
+            <span>LearnFun Adventure</span>
         </a>
 
         <ul class="sidebar-nav">
             <li><a href="{{ url_for('main.index') }}" class="sidebar-link {% if request.endpoint == 'main.index' %}active{% endif %}"><span class="icon">&#127968;</span> Home</a></li>
+            {% if current_user %}
+            <li><a href="{{ url_for('story_mode.adventure_map') }}" class="sidebar-link {% if 'story_mode' in request.endpoint %}active{% endif %}"><span class="icon">&#127752;</span> Adventure</a></li>
+            {% endif %}
             <li><a href="{{ url_for('lessons.grade_select') }}" class="sidebar-link {% if 'lessons' in request.endpoint %}active{% endif %}"><span class="icon">&#128218;</span> CBC Learning</a></li>
             <li><a href="{{ url_for('main.subjects') }}" class="sidebar-link {% if 'subject' in request.endpoint %}active{% endif %}"><span class="icon">&#128214;</span> Subjects</a></li>
             <li><a href="{{ url_for('stories.story_list') }}" class="sidebar-link {% if 'stories' in request.endpoint %}active{% endif %}"><span class="icon">&#128218;</span> Stories</a></li>
@@ -35,6 +38,7 @@
             <div class="sidebar-user-avatar">{{ current_user.avatar }}</div>
             <div class="sidebar-user-info">
                 <div class="sidebar-user-name">{{ current_user.username }}</div>
+                <div class="sidebar-user-level" style="font-size: 0.7rem; opacity: 0.8;">{{ current_user.get_level_name() }} &middot; {{ current_user.total_points }} pts</div>
             </div>
             <a href="{{ url_for('auth.logout') }}" class="btn btn-ghost btn-sm" title="Logout">&#128075;</a>
         </div>
@@ -54,6 +58,7 @@
                 </div>
             </div>
             <div class="topbar-right">
+                <button class="topbar-btn" id="soundToggle" title="Toggle sound">&#128264;</button>
                 <button class="topbar-btn" id="darkModeToggle" title="Toggle dark mode">&#127769;</button>
             </div>
         </div>
@@ -73,7 +78,7 @@
         </main>
 
         <footer class="footer">
-            <p>&#127752; LEARNFUN CHILDREN LEARNING WEB</p>
+            <p>&#127752; LearnFun Adventure &mdash; Play, Learn & Win!</p>
         </footer>
     </div>
 
@@ -90,7 +95,7 @@
         }
     });
     </script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}?v=9.0"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
