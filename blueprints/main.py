@@ -45,28 +45,41 @@ def index():
 
         # Track which grades have content (topics)
         from models import Topic
-        grade_counts = {g.id: Topic.query.filter_by(grade_id=g.id).count() for g in grades}
+        grade_counts = {}
+        for g in grades:
+            try:
+                grade_counts[g.id] = Topic.query.filter_by(grade_id=g.id).count()
+            except Exception:
+                grade_counts[g.id] = 0
 
         grades_by_category = {}
         for g in grades:
-            if g.category not in grades_by_category:
-                grades_by_category[g.category] = []
-            grades_by_category[g.category].append(g)
+            cat = getattr(g, 'category', 'General')
+            if cat not in grades_by_category:
+                grades_by_category[cat] = []
+            grades_by_category[cat].append(g)
 
-        sample_lessons = Lesson.query.order_by(Lesson.id).limit(6).all()
+        sample_lessons = []
+        try:
+            sample_lessons = Lesson.query.order_by(Lesson.id).limit(6).all()
+        except Exception:
+            pass
 
         stats = None
         recent_lessons = []
         if 'user_id' in session:
             from models import User
-            user = User.query.get(session['user_id'])
-            if user is not None:
-                completed = UserLessonProgress.query.filter_by(user_id=user.id, completed=True).count()
-                stats = {'lessons_completed': completed}
-                recent_progress = UserLessonProgress.query.filter_by(
-                    user_id=user.id, completed=True
-                ).order_by(UserLessonProgress.completed_at.desc()).limit(3).all()
-                recent_lessons = [p.lesson for p in recent_progress if p.lesson and p.lesson.topic]
+            try:
+                user = User.query.get(session['user_id'])
+                if user is not None:
+                    completed = UserLessonProgress.query.filter_by(user_id=user.id, completed=True).count()
+                    stats = {'lessons_completed': completed}
+                    recent_progress = UserLessonProgress.query.filter_by(
+                        user_id=user.id, completed=True
+                    ).order_by(UserLessonProgress.completed_at.desc()).limit(3).all()
+                    recent_lessons = [p.lesson for p in recent_progress if p.lesson and getattr(p.lesson, 'topic', None)]
+            except Exception:
+                pass
 
         return render_template('index.html',
                                subjects=subjects,
@@ -76,6 +89,9 @@ def index():
                                recent_lessons=recent_lessons,
                                grade_counts=grade_counts)
     except Exception as e:
+        import logging
+        logging.error(f"ERROR in index route: {e}")
+        logging.error(traceback.format_exc())
         print(f"ERROR in index route: {e}")
         traceback.print_exc()
         return f"<h1>Internal Error</h1><pre>{traceback.format_exc()}</pre>", 500
