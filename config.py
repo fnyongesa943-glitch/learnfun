@@ -21,3 +21,10 @@ class Config:
     SMTP_USER = os.environ.get('SMTP_USER', '')
     SMTP_PASS = os.environ.get('SMTP_PASS', '')
     FROM_EMAIL = os.environ.get('FROM_EMAIL', '')
+
+    # M-Pesa Daraja API settings
+    MPESA_CONSUMER_KEY = os.environ.get('MPESA_CONSUMER_KEY', '')
+    MPESA_CONSUMER_SECRET = os.environ.get('MPESA_CONSUMER_SECRET', '')
+    MPESA_SHORTCODE = os.environ.get('MPESA_SHORTCODE', '174379')
+    MPESA_PASSKEY = os.environ.get('MPESA_PASSKEY', '')
+    MPESA_CALLBACK_URL = os.environ.get('MPESA_CALLBACK_URL', 'https://your-domain.com/payments/mpesa-callback')

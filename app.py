@@ -3,6 +3,7 @@ Kids Learning App - Main Application Entry Point
 Updated with new subjects, shop, stories, and enhanced features.
 """
 import os
+from datetime import datetime
 from flask import Flask, session
 from seed_cbc import seed_cbc_content
 from models import db, User, Subject, Quiz, Question, Score, UserBadge, ShopItem, UserOwnedItem, Story, UserStoryRead, Grade, Topic, Lesson, UserLessonProgress, AdventureStage, StoryProgress
@@ -36,6 +37,7 @@ def create_app():
     from blueprints.stories import stories_bp
     from blueprints.lessons import lessons_bp
     from blueprints.story_mode import story_mode_bp
+    from blueprints.payments import payments_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -45,6 +47,7 @@ def create_app():
     app.register_blueprint(stories_bp, url_prefix='/stories')
     app.register_blueprint(lessons_bp, url_prefix='/lessons')
     app.register_blueprint(story_mode_bp, url_prefix='/adventure')
+    app.register_blueprint(payments_bp)
 
     @app.context_processor
     def inject_user():
@@ -54,7 +57,19 @@ def create_app():
                 user = User.query.get(session['user_id'])
             except Exception:
                 session.pop('user_id', None)
-        return {'current_user': user}
+
+        def check_premium():
+            if not user:
+                return False
+            if not user.is_premium:
+                return False
+            if user.subscription_expiry and user.subscription_expiry < datetime.utcnow():
+                user.is_premium = False
+                db.session.commit()
+                return False
+            return True
+
+        return {'current_user': user, 'check_premium': check_premium}
 
     def send_weekly_reports():
         with app.app_context():
@@ -124,10 +139,16 @@ def run_migrations():
     except Exception:
         pass
 
-    # Check users table for parent_email column
+    # Check users table for premium columns
     try:
         if 'users' in inspector.get_table_names():
             cols = {c['name']: c for c in inspector.get_columns('users')}
+            if 'is_premium' not in cols:
+                migrations.append("ALTER TABLE users ADD COLUMN is_premium BOOLEAN DEFAULT 0")
+            if 'phone_number' not in cols:
+                migrations.append("ALTER TABLE users ADD COLUMN phone_number VARCHAR(20) DEFAULT ''")
+            if 'subscription_expiry' not in cols:
+                migrations.append("ALTER TABLE users ADD COLUMN subscription_expiry TIMESTAMP DEFAULT NULL")
             if 'parent_email' not in cols:
                 migrations.append("ALTER TABLE users ADD COLUMN parent_email VARCHAR(120) DEFAULT ''")
             if 'reset_token' not in cols:

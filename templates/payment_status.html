@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{% if success %}Payment Successful{% else %}Payment Failed{% endif %} - LearnFun{% endblock %}
+{% block content %}
+<div class="container-sm">
+    <div class="status-container {% if success %}status-success{% else %}status-failed{% endif %}">
+        <div class="status-icon">
+            {% if success %}&#127881;{% else %}&#128557;{% endif %}
+        </div>
+        <h2>{% if success %}Payment Successful!{% else %}Payment Failed{% endif %}</h2>
+        <p>{{ message }}</p>
+        <div class="status-actions">
+            {% if success %}
+            <a href="{{ url_for('main.index') }}" class="btn btn-primary btn-lg">&#127968; Start Learning</a>
+            <a href="{{ url_for('progress.dashboard') }}" class="btn btn-secondary btn-lg">&#128202; View Progress</a>
+            {% else %}
+            <a href="{{ url_for('payments.upgrade') }}" class="btn btn-primary btn-lg">&#128179; Try Again</a>
+            <a href="{{ url_for('main.index') }}" class="btn btn-secondary btn-lg">&#127968; Go Home</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

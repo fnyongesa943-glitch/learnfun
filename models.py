@@ -21,6 +21,9 @@ class User(db.Model):
     last_active = db.Column(db.DateTime, default=datetime.utcnow)
     parent_pin = db.Column(db.String(4), default='0000')
     parent_email = db.Column(db.String(120), default='')
+    is_premium = db.Column(db.Boolean, default=False)
+    phone_number = db.Column(db.String(20), default='')
+    subscription_expiry = db.Column(db.DateTime, nullable=True)
     reset_token = db.Column(db.String(100), unique=True, nullable=True)
     reset_token_expires = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -367,6 +370,47 @@ class AdventureStage(db.Model):
             'quiz_id': self.quiz_id, 'points_reward': self.points_reward,
             'is_boss': self.is_boss
         }
+
+
+class Payment(db.Model):
+    __tablename__ = 'payments'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    amount = db.Column(db.Integer, nullable=False)
+    phone_number = db.Column(db.String(20), nullable=False)
+    status = db.Column(db.String(20), default='pending')
+    transaction_id = db.Column(db.String(100), unique=True, nullable=True)
+    merchant_request_id = db.Column(db.String(100), nullable=True)
+    checkout_request_id = db.Column(db.String(100), nullable=True)
+    result_code = db.Column(db.Integer, nullable=True)
+    result_desc = db.Column(db.String(200), nullable=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    user = db.relationship('User', backref='payments')
+
+
+class DigitalProduct(db.Model):
+    __tablename__ = 'digital_products'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, default='')
+    price = db.Column(db.Integer, nullable=False)
+    file_path = db.Column(db.String(200), default='')
+    emoji = db.Column(db.String(20), default='📄')
+    category = db.Column(db.String(50), default='worksheet')
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class UserDownload(db.Model):
+    __tablename__ = 'user_downloads'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('digital_products.id'), nullable=False)
+    payment_id = db.Column(db.Integer, db.ForeignKey('payments.id'), nullable=True)
+    downloaded_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user = db.relationship('User', backref='downloads')
+    product = db.relationship('DigitalProduct', backref='downloads')
+    payment = db.relationship('Payment', backref='downloads')
 
 
 BADGE_DEFINITIONS = {

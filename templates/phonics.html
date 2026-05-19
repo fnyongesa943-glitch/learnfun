@@ -1,42 +1,75 @@
 {% extends "base.html" %}
 
-{% block title %}ABC Phonics - LEARNFUN CHILDREN LEARNING WEB{% endblock %}
+{% block title %}ABC Phonics - Learn Letters A to Z!{% endblock %}
 
 {% block content %}
 <div class="container">
-    <div class="page-header text-center">
-        <h1>&#128260; ABC Phonics Chart</h1>
-        <p>Click on any letter to hear its sound! &#127926;</p>
+    {# ============================ PHONICS HEADER ============================ #}
+    <div class="phonics-page-header">
+        <div class="phonics-header-content">
+            <h1 class="phonics-page-title">&#128260; ABC Phonics</h1>
+            <p class="phonics-page-subtitle">Click any letter to learn its sound and word!</p>
+        </div>
+        <div class="phonics-header-illustration">
+            <div class="phonics-mascot">
+                <span class="mascot-emoji">&#129425;</span>
+                <div class="mascot-speech-bubble">
+                    <p>Click a letter, listen, and repeat! &#127926;</p>
+                </div>
+            </div>
+        </div>
     </div>
 
+    {# ============================ ALPHABET GRID ============================ #}
     <div class="phonics-grid" id="phonicsGrid">
         {% for p in phonics %}
-        <div class="phonics-card" onclick="showPhonic('{{ p.letter }}', '{{ p.sound }}', '{{ p.word }}', '{{ p.emoji }}')">
-            <div class="phonics-letter">{{ p.letter }}</div>
-            <div class="phonics-sound">says "{{ p.sound }}"</div>
+        <div class="phonics-card" 
+             onclick="showPhonic('{{ p.letter }}', '{{ p.word }}', '{{ p.emoji }}', '{{ p.color }}')"
+             style="--letter-color: {{ p.color }};"
+             data-letter="{{ p.letter }}">
+            <div class="phonics-letter-badge" style="background: {{ p.color }};">
+                {{ p.letter }}
+            </div>
             <div class="phonics-emoji">{{ p.emoji }}</div>
             <div class="phonics-word">{{ p.word }}</div>
+            <div class="phonics-for-text">{{ p.letter }} for {{ p.word }}</div>
         </div>
         {% endfor %}
     </div>
 
-    <div class="phonics-modal" id="phonicsModal" onclick="closeModal()">
+    {# ============================ PHONICS MODAL ============================ #}
+    <div class="phonics-modal" id="phonicsModal" onclick="closeModal(event)">
         <div class="phonics-modal-content" onclick="event.stopPropagation()">
             <button class="modal-close" onclick="closeModal()">&#10006;</button>
-            <div class="modal-letter" id="modalLetter">A</div>
-            <div class="modal-sound">says "<span id="modalSound">a</span>"</div>
+            
+            <div class="modal-letter-circle" id="modalLetterCircle">
+                <span class="modal-letter" id="modalLetter">A</span>
+            </div>
+            
             <div class="modal-emoji" id="modalEmoji">&#127822;</div>
-            <div class="modal-word" id="modalWord">Apple</div>
-            <button class="btn btn-primary btn-lg" onclick="playSound()" style="width: 100%;">
-                &#128266; Hear the Sound!
-            </button>
-        </div>
-    </div>
-
-    <div class="mascot">
-        <div class="mascot-avatar">&#129425;</div>
-        <div class="mascot-speech">
-            <p><span class="mascot-name">Ollie says:</span> "Try clicking each letter! First learn the sound, then try saying the whole word. You're doing great!"</p>
+            
+            <div class="modal-phrase">
+                <span class="modal-letter-highlight" id="modalLetterHighlight">A</span>
+                <span class="modal-for">for</span>
+                <span class="modal-word" id="modalWord">Apple</span>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn-phonics btn-play-sound" onclick="playSound()" id="playSoundBtn">
+                    &#128266; Hear It!
+                </button>
+                <button class="btn-phonics btn-repeat-sound" onclick="playSound()" id="repeatSoundBtn" style="display: none;">
+                    &#128260; Repeat
+                </button>
+            </div>
+            
+            <div class="modal-auto-play">
+                <label class="auto-play-toggle">
+                    <input type="checkbox" id="autoPlayToggle">
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-label">Auto-play sounds</span>
+                </label>
+            </div>
         </div>
     </div>
 </div>
@@ -44,36 +77,97 @@
 
 {% block extra_js %}
 <script>
-let currentSound = '';
+let currentLetter = '';
+let currentWord = '';
+let currentEmoji = '';
+let currentColor = '';
+let isSpeaking = false;
 
-function showPhonic(letter, sound, word, emoji) {
+function showPhonic(letter, word, emoji, color) {
+    currentLetter = letter;
+    currentWord = word;
+    currentEmoji = emoji;
+    currentColor = color;
+
     document.getElementById('modalLetter').textContent = letter;
-    document.getElementById('modalSound').textContent = sound;
+    document.getElementById('modalLetterHighlight').textContent = letter;
     document.getElementById('modalWord').textContent = word;
     document.getElementById('modalEmoji').textContent = emoji;
-    currentSound = sound;
+    
+    const circle = document.getElementById('modalLetterCircle');
+    circle.style.background = `linear-gradient(135deg, ${color}22, ${color}44)`;
+    circle.style.borderColor = color;
+    document.getElementById('modalLetter').style.color = color;
+    document.getElementById('modalLetterHighlight').style.color = color;
+    
+    document.getElementById('repeatSoundBtn').style.display = 'none';
+    document.getElementById('playSoundBtn').style.display = 'inline-flex';
+    
     document.getElementById('phonicsModal').classList.add('active');
-    setTimeout(() => playSound(), 300);
+    
+    const autoPlay = document.getElementById('autoPlayToggle').checked;
+    if (autoPlay) {
+        setTimeout(() => playSound(), 300);
+    }
 }
 
-function closeModal() {
+function closeModal(event) {
+    if (event && event.target !== event.currentTarget) return;
     document.getElementById('phonicsModal').classList.remove('active');
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+    }
+    isSpeaking = false;
 }
 
 function playSound() {
-    const letter = document.getElementById('modalLetter').textContent;
-    const word = document.getElementById('modalWord').textContent;
-    if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utter = new SpeechSynthesisUtterance(letter + ' says ' + word);
-        utter.rate = 0.7;
-        utter.pitch = 1.2;
-        window.speechSynthesis.speak(utter);
+    if (!('speechSynthesis' in window)) {
+        alert('Speech synthesis is not supported in your browser.');
+        return;
     }
+    
+    window.speechSynthesis.cancel();
+    
+    const utter = new SpeechSynthesisUtterance(currentLetter + ' for ' + currentWord);
+    utter.rate = 0.65;
+    utter.pitch = 1.3;
+    utter.volume = 1;
+    
+    const voices = window.speechSynthesis.getVoices();
+    const preferredVoice = voices.find(v => 
+        v.name.includes('Female') || 
+        v.name.includes('Samantha') || 
+        v.name.includes('Google') ||
+        v.name.includes('Microsoft')
+    );
+    if (preferredVoice) {
+        utter.voice = preferredVoice;
+    }
+    
+    utter.onstart = () => {
+        isSpeaking = true;
+        document.getElementById('playSoundBtn').innerHTML = '&#128266; Speaking...';
+        document.getElementById('playSoundBtn').style.pointerEvents = 'none';
+    };
+    
+    utter.onend = () => {
+        isSpeaking = false;
+        document.getElementById('playSoundBtn').innerHTML = '&#128266; Hear It!';
+        document.getElementById('playSoundBtn').style.pointerEvents = 'auto';
+        document.getElementById('repeatSoundBtn').style.display = 'inline-flex';
+    };
+    
+    window.speechSynthesis.speak(utter);
 }
 
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeModal();
 });
+
+if ('speechSynthesis' in window) {
+    window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+    };
+}
 </script>
 {% endblock %}

@@ -36,6 +36,7 @@
             <li><a href="{{ url_for('main.phonics') }}" class="sidebar-link {% if request.endpoint == 'main.phonics' %}active{% endif %}"><span class="icon">&#128260;</span> Phonics</a></li>
             {% if current_user %}
             <li><a href="{{ url_for('progress.dashboard') }}" class="sidebar-link {% if request.endpoint == 'progress.dashboard' %}active{% endif %}"><span class="icon">&#128202;</span> Progress</a></li>
+            <li><a href="{{ url_for('payments.upgrade') }}" class="sidebar-link {% if 'payments' in request.endpoint %}active{% endif %}"><span class="icon">&#128081;</span> Upgrade</a></li>
             {% endif %}
         </ul>
 
@@ -43,7 +44,13 @@
         <div class="sidebar-user">
             <div class="sidebar-user-avatar">{{ current_user.avatar }}</div>
             <div class="sidebar-user-info">
-                <div class="sidebar-user-name">{{ current_user.username }}</div>
+                <div class="sidebar-user-name">{{ current_user.username }}
+                    {% if current_user.is_premium %}
+                    <span class="premium-badge">&#128081; Premium</span>
+                    {% else %}
+                    <span class="free-badge">&#127793; Free</span>
+                    {% endif %}
+                </div>
                 <div class="sidebar-user-level" style="font-size: 0.7rem; opacity: 0.8;">{{ current_user.get_level_name() }} &middot; {{ current_user.total_points }} pts</div>
             </div>
             <a href="{{ url_for('auth.logout') }}" class="btn btn-ghost btn-sm" title="Logout">&#128075;</a>

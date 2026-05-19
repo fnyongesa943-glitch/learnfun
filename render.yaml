@@ -25,6 +25,16 @@ services:
         sync: false
       - key: FROM_EMAIL
         sync: false
+      - key: MPESA_CONSUMER_KEY
+        sync: false
+      - key: MPESA_CONSUMER_SECRET
+        sync: false
+      - key: MPESA_PASSKEY
+        sync: false
+      - key: MPESA_SHORTCODE
+        value: "174379"
+      - key: MPESA_CALLBACK_URL
+        sync: false
 
   - type: web
     name: learnfun-api

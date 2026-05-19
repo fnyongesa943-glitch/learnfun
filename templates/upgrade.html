@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+{% block title %}Upgrade to Premium - LearnFun{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="upgrade-header">
+        <div class="upgrade-header-content">
+            <span class="upgrade-badge-icon">&#127775;</span>
+            <h1>Unlock the Full Learning Adventure!</h1>
+            <p>Get unlimited access to all lessons, quizzes, worksheets, and progress tracking.</p>
+        </div>
+    </div>
+
+    {% if not current_user or not current_user.is_premium %}
+    <div class="pricing-grid">
+        <div class="pricing-card free-card">
+            <div class="pricing-card-header">
+                <span class="pricing-plan-icon">&#127793;</span>
+                <h3>Free Plan</h3>
+                <div class="pricing-amount">KES 0</div>
+                <p class="pricing-period">forever</p>
+            </div>
+            <ul class="pricing-features">
+                <li><span class="check">&#10003;</span> Basic alphabet lessons</li>
+                <li><span class="check">&#10003;</span> Simple phonics</li>
+                <li><span class="check">&#10003;</span> Limited stories</li>
+                <li><span class="cross">&#10007;</span> Advanced lessons</li>
+                <li><span class="cross">&#10007;</span> Interactive quizzes</li>
+                <li><span class="cross">&#10007;</span> Progress tracking</li>
+            </ul>
+            <div class="pricing-card-footer">
+                {% if current_user %}
+                <span class="btn btn-secondary" style="width:100%;cursor:default;">Current Plan</span>
+                {% else %}
+                <a href="{{ url_for('auth.signup') }}" class="btn btn-primary" style="width:100%;">Get Started</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="pricing-card premium-card featured">
+            <div class="pricing-badge">Best Value</div>
+            <div class="pricing-card-header">
+                <span class="pricing-plan-icon">&#128081;</span>
+                <h3>Premium Learning Plan</h3>
+                <div class="pricing-amount">KES {{ plan.price }}</div>
+                <p class="pricing-period">per month</p>
+            </div>
+            <ul class="pricing-features">
+                {% for feature in plan.features %}
+                <li><span class="check">&#10003;</span> {{ feature }}</li>
+                {% endfor %}
+                <li><span class="check">&#10003;</span> Secure M-Pesa payment</li>
+                <li><span class="check">&#10003;</span> Instant access after payment</li>
+            </ul>
+            <div class="pricing-card-footer">
+                <button class="btn btn-premium" onclick="showPaymentModal('subscription')" style="width:100%;">
+                    &#128640; Upgrade Now
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {% if digital_products %}
+    <div class="digital-products-section">
+        <h2>&#128230; Digital Products</h2>
+        <p class="section-subtitle">One-time purchase worksheets and learning packs. No subscription needed!</p>
+        <div class="card-grid">
+            {% for product in digital_products %}
+            <div class="card digital-product-card">
+                <div class="product-emoji">{{ product.emoji }}</div>
+                <h3>{{ product.name }}</h3>
+                <p>{{ product.description }}</p>
+                <div class="product-price">KES {{ product.price }}</div>
+                <button class="btn btn-primary" onclick="showProductModal('{{ product.id }}', '{{ product.name }}', '{{ product.price }}')" style="width:100%;">
+                    &#128722; Buy Now
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Payment Modal -->
+    <div class="payment-modal-overlay" id="paymentModal">
+        <div class="payment-modal">
+            <button class="payment-modal-close" onclick="closePaymentModal()">&times;</button>
+            <div class="payment-modal-header">
+                <span class="payment-modal-icon">&#128179;</span>
+                <h3 id="paymentModalTitle">Complete Your Purchase</h3>
+            </div>
+            <div class="payment-modal-body">
+                <div class="payment-summary">
+                    <div class="payment-summary-row">
+                        <span>Plan</span>
+                        <span id="paymentSummaryPlan">Premium Learning Plan</span>
+                    </div>
+                    <div class="payment-summary-row">
+                        <span>Amount</span>
+                        <span class="payment-amount" id="paymentSummaryAmount">KES 200</span>
+                    </div>
+                </div>
+                <form id="paymentForm">
+                    <input type="hidden" name="amount" id="paymentAmount" value="200">
+                    <input type="hidden" name="type" id="paymentType" value="subscription">
+                    <input type="hidden" name="product_id" id="paymentProductId" value="">
+                    <div class="form-group">
+                        <label for="phone_number">M-Pesa Phone Number</label>
+                        <input type="tel" id="phone_number" name="phone_number" class="form-control"
+                               placeholder="e.g. 0712345678" required
+                               value="{{ current_user.phone_number if current_user else '' }}">
+                        <small style="color:var(--text-light);font-size:0.8rem;">Enter the Safaricom number to receive the STK Push</small>
+                    </div>
+                    <div class="payment-trust">
+                        <span>&#128274;</span> Secure M-Pesa payment
+                        <span>&#9889;</span> Instant activation
+                    </div>
+                    <button type="submit" class="btn btn-premium btn-lg" id="payBtn" style="width:100%;">
+                        &#128179; Pay with M-Pesa
+                    </button>
+                </form>
+                <div class="payment-loading" id="paymentLoading" style="display:none;">
+                    <div class="payment-spinner"></div>
+                    <p>STK Push sent! Check your phone and enter your M-Pesa PIN to complete payment.</p>
+                    <p class="payment-loading-sub">Waiting for confirmation...</p>
+                    <button class="btn btn-secondary btn-sm" onclick="checkPaymentStatus()">Check Status</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="already-premium">
+        <div class="premium-hero">
+            <span class="premium-hero-icon">&#127881;</span>
+            <h2>You're a Premium Member!</h2>
+            <p>Enjoy unlimited access to all lessons, quizzes, and features.</p>
+            <div class="premium-details">
+                <span>&#128197; Expires: {{ current_user.subscription_expiry.strftime('%d %B %Y') if current_user.subscription_expiry else 'Lifetime' }}</span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+let checkoutRequestId = null;
+let statusCheckInterval = null;
+
+function showPaymentModal(type) {
+    document.getElementById('paymentModal').classList.add('active');
+    document.getElementById('paymentType').value = type;
+    document.getElementById('paymentModalTitle').textContent = 'Complete Your Purchase';
+    document.getElementById('paymentSummaryPlan').textContent = 'Premium Learning Plan';
+    document.getElementById('paymentSummaryAmount').textContent = 'KES 200';
+    document.getElementById('paymentAmount').value = '200';
+    document.getElementById('payBtn').style.display = '';
+    document.getElementById('paymentLoading').style.display = 'none';
+    document.getElementById('paymentForm').style.display = '';
+}
+
+function showProductModal(productId, productName, productPrice) {
+    document.getElementById('paymentModal').classList.add('active');
+    document.getElementById('paymentType').value = 'product';
+    document.getElementById('paymentProductId').value = productId;
+    document.getElementById('paymentModalTitle').textContent = 'Buy ' + productName;
+    document.getElementById('paymentSummaryPlan').textContent = productName;
+    document.getElementById('paymentSummaryAmount').textContent = 'KES ' + productPrice;
+    document.getElementById('paymentAmount').value = productPrice;
+    document.getElementById('payBtn').style.display = '';
+    document.getElementById('paymentLoading').style.display = 'none';
+    document.getElementById('paymentForm').style.display = '';
+}
+
+function closePaymentModal() {
+    document.getElementById('paymentModal').classList.remove('active');
+    if (statusCheckInterval) {
+        clearInterval(statusCheckInterval);
+        statusCheckInterval = null;
+    }
+}
+
+document.getElementById('paymentForm')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('payBtn');
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
+
+    const formData = new FormData(this);
+
+    try {
+        const resp = await fetch('{{ url_for("payments.initiate_payment") }}', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await resp.json();
+
+        if (data.success) {
+            document.getElementById('paymentForm').style.display = 'none';
+            document.getElementById('paymentLoading').style.display = 'block';
+            checkoutRequestId = data.checkout_request_id;
+            statusCheckInterval = setInterval(checkPaymentStatus, 5000);
+        } else {
+            alert('Payment failed: ' + (data.error || 'Unknown error'));
+            btn.disabled = false;
+            btn.textContent = 'Pay with M-Pesa';
+        }
+    } catch (err) {
+        alert('Network error. Please try again.');
+        btn.disabled = false;
+        btn.textContent = 'Pay with M-Pesa';
+    }
+});
+
+async function checkPaymentStatus() {
+    if (!checkoutRequestId) return;
+    try {
+        const resp = await fetch('{{ url_for("payments.payment_status", checkout_request_id="__ID__") }}'.replace('__ID__', checkoutRequestId));
+        const data = await resp.json();
+        if (data.status === 'success') {
+            clearInterval(statusCheckInterval);
+            statusCheckInterval = null;
+            window.location.href = '{{ url_for("payments.payment_success") }}';
+        } else if (data.status === 'failed') {
+            clearInterval(statusCheckInterval);
+            statusCheckInterval = null;
+            window.location.href = '{{ url_for("payments.payment_failed") }}';
+        }
+    } catch (err) {
+        console.error('Status check error:', err);
+    }
+}
+</script>
+{% endblock %}
